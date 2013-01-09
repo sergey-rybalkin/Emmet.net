@@ -1,0 +1,151 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<CommandTable xmlns="http://schemas.microsoft.com/VisualStudio/2005-10-18/CommandTable" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <Extern href="stdidcmd.h"/>
+  <Extern href="vsshlids.h"/>
+  <Extern href="CommandIds.h"/>
+  <Extern href="Resource.h"/>
+  <Extern href="..\Emmet\Guids.h"/>
+
+  <Commands package="guidEmmetPkg">
+    <Menus>
+      <Menu guid="guidEmmetCmdSet" id="EmmetSubMenu" priority="0x0100" type="Menu">
+        <Parent guid="guidEmmetCmdSet" id="EmmetTopMenuGroup"/>
+        <Strings>
+          <ButtonText>Emmet</ButtonText>
+          <CommandName>Emmet</CommandName>
+        </Strings>
+      </Menu>
+    </Menus>
+    
+    <Groups>
+
+      <Group guid="guidEmmetCmdSet" id="EmmetTopMenuGroup" priority="0x0100">
+        <Parent guid="guidSHLMainMenu" id="IDM_VS_MENU_TOOLS"/>
+      </Group>
+      
+      <Group guid="guidEmmetCmdSet" id="EmmetSubMenuGroup" priority="0x0600">
+        <Parent guid="guidEmmetCmdSet" id="EmmetSubMenu"/>
+      </Group>
+
+    </Groups>
+    
+    <Buttons>
+
+      <Button guid="guidEmmetCmdSet" id="cmdidExpandAbbreviation" priority="0x0100" type="Button">
+        <Parent guid="guidEmmetCmdSet" id="EmmetSubMenuGroup" />
+        <Icon guid="guidImages" id="bmpPic1" />
+        <Strings>
+          <ButtonText>Expand Abbreviation</ButtonText>
+          <CommandName>Emmet - Expand Abbreviation</CommandName>
+          <CanonicalName>Emmet.ExpandWithAbbreviation</CanonicalName>
+          <LocCanonicalName>Emmet.ExpandWithAbbreviation</LocCanonicalName>
+        </Strings>
+      </Button>
+
+      <Button guid="guidEmmetCmdSet" id="cmdidWrapWithAbbreviation" priority="0x0100" type="Button">
+        <Parent guid="guidEmmetCmdSet" id="EmmetSubMenuGroup" />
+        <Icon guid="guidImages" id="bmpPic1" />
+        <Strings>
+          <ButtonText>Wrap with Abbreviation</ButtonText>
+          <CommandName>Emmet - Expand Abbreviation</CommandName>
+          <CanonicalName>Emmet.WrapWithAbbreviation</CanonicalName>
+          <LocCanonicalName>Emmet.WrapWithAbbreviation</LocCanonicalName>
+        </Strings>
+      </Button>
+      
+      <Button guid="guidEmmetCmdSet" id="cmdidToggleComment" priority="0x0100" type="Button">
+        <Parent guid="guidEmmetCmdSet" id="EmmetSubMenuGroup" />
+        <Icon guid="guidImages" id="bmpPic1" />
+        <Strings>
+          <ButtonText>Toggle Comment</ButtonText>
+          <CommandName>Emmet - Toggle Comment</CommandName>
+          <CanonicalName>Emmet.ToggleComment</CanonicalName>
+          <LocCanonicalName>Emmet.ToggleComment</LocCanonicalName>
+        </Strings>
+      </Button>
+  
+      <Button guid="guidEmmetCmdSet" id="cmdidRemoveTag" priority="0x0100" type="Button">
+        <Parent guid="guidEmmetCmdSet" id="EmmetSubMenuGroup" />
+        <Icon guid="guidImages" id="bmpPic1" />
+        <Strings>
+          <ButtonText>Remove Tag</ButtonText>
+          <CommandName>Emmet - Remove Tag</CommandName>
+          <CanonicalName>Emmet.RemoveTag</CanonicalName>
+          <LocCanonicalName>Emmet.RemoveTag</LocCanonicalName>
+        </Strings>
+      </Button>
+
+      <Button guid="guidEmmetCmdSet" id="cmdidMergeLines" priority="0x0100" type="Button">
+        <Parent guid="guidEmmetCmdSet" id="EmmetSubMenuGroup" />
+        <Icon guid="guidImages" id="bmpPic1" />
+        <Strings>
+          <ButtonText>Merge Lines</ButtonText>
+          <CommandName>Emmet - Merge Lines</CommandName>
+          <CanonicalName>Emmet.MergeLines</CanonicalName>
+          <LocCanonicalName>Emmet.MergeLines</LocCanonicalName>
+        </Strings>
+      </Button>
+
+      <Button guid="guidEmmetCmdSet" id="cmdidUpdateImageSize" priority="0x0100" type="Button">
+        <Parent guid="guidEmmetCmdSet" id="EmmetSubMenuGroup" />
+        <Icon guid="guidImages" id="bmpPic1" />
+        <Strings>
+          <ButtonText>Update Image Size</ButtonText>
+          <CommandName>Emmet - Update Image Size</CommandName>
+          <CanonicalName>Emmet.UpdateImageSize</CanonicalName>
+          <LocCanonicalName>Emmet.UpdateImageSize</LocCanonicalName>
+        </Strings>
+      </Button>
+
+      <Button guid="guidEmmetCmdSet" id="cmdidExpandAbbreviationInternal" priority="0x0100" type="Button">
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <Strings>
+          <ButtonText>Expand Abbreviation</ButtonText>
+          <CommandName>Emmet - Expand Abbreviation</CommandName>
+          <CanonicalName>Emmet.ExpandWithAbbreviation</CanonicalName>
+          <LocCanonicalName>Emmet.ExpandWithAbbreviation</LocCanonicalName>
+        </Strings>
+      </Button>
+
+      <Button guid="guidEmmetCmdSet" id="cmdidWrapWithAbbreviationInternal" priority="0x0100" type="Button">
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <Strings>
+          <ButtonText>Wrap with Abbreviation</ButtonText>
+          <CommandName>Emmet - Expand Abbreviation</CommandName>
+          <CanonicalName>Emmet.WrapWithAbbreviation</CanonicalName>
+          <LocCanonicalName>Emmet.WrapWithAbbreviation</LocCanonicalName>
+        </Strings>
+      </Button>
+
+    </Buttons>
+   
+    <Bitmaps>
+      <Bitmap guid="guidImages" href="Images.png" usedList="bmpPic1, bmpPic2, bmpPicSearch, bmpPicX, bmpPicArrows"/>
+    </Bitmaps>
+ 
+  </Commands>
+
+  <KeyBindings>
+    <KeyBinding guid="guidEmmetCmdSet" id="cmdidExpandAbbreviation" editor="guidHtmlEditor" key1="X" mod1="Control Shift Alt"/>
+    <KeyBinding guid="guidEmmetCmdSet" id="cmdidExpandAbbreviation" editor="guidCssEditor" key1="X" mod1="Control Shift Alt"/>
+  
+    <KeyBinding guid="guidEmmetCmdSet" id="cmdidWrapWithAbbreviation" editor="guidHtmlEditor" key1="W" mod1="Control Alt"/>
+  
+    <KeyBinding guid="guidEmmetCmdSet" id="cmdidToggleComment" editor="guidHtmlEditor" key1="VK_DIVIDE" mod1="Control Alt"/>
+    <KeyBinding guid="guidEmmetCmdSet" id="cmdidToggleComment" editor="guidCssEditor" key1="VK_DIVIDE" mod1="Control Alt"/>
+  
+    <KeyBinding guid="guidEmmetCmdSet" id="cmdidRemoveTag" editor="guidHtmlEditor" key1="R" mod1="Control Shift Alt"/>
+  
+    <KeyBinding guid="guidEmmetCmdSet" id="cmdidMergeLines" editor="guidHtmlEditor" key1="M" mod1="Control Shift Alt"/>
+  
+    <KeyBinding guid="guidEmmetCmdSet" id="cmdidUpdateImageSize" editor="guidHtmlEditor" key1="U" mod1="Control Shift Alt"/>
+    <KeyBinding guid="guidEmmetCmdSet" id="cmdidUpdateImageSize" editor="guidCssEditor" key1="U" mod1="Control Shift Alt"/>
+  </KeyBindings>
+  
+  <Symbols>
+    <GuidSymbol name="guidCssEditor" value="{A764E89A-518D-11D2-9A89-00C04F79EFC3}"></GuidSymbol>
+    <GuidSymbol name="guidHtmlEditor" value="{CB3FCFEB-03DF-11D1-81D2-00A0C91BBEE3}"></GuidSymbol>
+  </Symbols>
+
+</CommandTable>

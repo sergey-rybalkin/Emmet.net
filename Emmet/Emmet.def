@@ -1,0 +1,7 @@
+﻿; Emmet.def : Declares the module parameters.
+
+LIBRARY      "Emmet.DLL"
+
+EXPORTS
+	DllCanUnloadNow            PRIVATE
+	DllGetClassObject          PRIVATE
