@@ -18,3 +18,7 @@ Below is the list of actions that are currently implemented in this extension. T
 4. Toggle Comment (Ctrl+Alt+Num /) - http://docs.emmet.io/actions/toggle-comment/
 5. Merge Lines (Ctrl+Alt+Shift+M) - http://docs.emmet.io/actions/merge-lines/
 6. Update Image Size (Ctrl+Alt+Shift+U) - http://docs.emmet.io/actions/update-image-size/
+
+## Binaries
+
+Precompiled version can be downloaded here - http://dl.dropbox.com/u/38120966/Emmet.vsix
