@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "EditorProxy.h"
+#include <memory.h>
 
 using namespace v8;
 
@@ -151,7 +152,8 @@ Handle<Value> EditorReplaceContent(const Arguments& args)
     editPoint->Insert(CComBSTR(asciiContent.length(), *asciiContent));
 
     if (EmmetAction_ExpandAbbreviation == g_CurAction ||
-        EmmetAction_WrapWithAbbreviation == g_CurAction)
+        EmmetAction_WrapWithAbbreviation == g_CurAction ||
+        EmmetAction_RemoveTag == g_CurAction)
     {
         g_pSelection->MoveToAbsoluteOffset(start + 1, TRUE);
         g_pSelection->SmartFormat();
@@ -305,9 +307,18 @@ BOOL CEditorProxy::Initialize(Document* pDoc, TextDocument* pTextDoc, TextSelect
     g_CurAction = action;
 
     CComBSTR bstrLang;
+    CComBSTR bstrName;
     pDoc->get_Language(&bstrLang);
+    pDoc->get_Name(&bstrName);
 
-    if (bstrLang == L"CSS")
+    bool isSass = false;
+    if (bstrName.Length() > 5)
+    {
+        CComBSTR bstrExtension(((LPOLESTR)bstrName) + bstrName.Length() - 5);
+        isSass = bstrExtension == L".scss";
+    }
+
+    if (bstrLang == L"CSS" || isSass)
         g_isHtml = false;
     else if (bstrLang == "HTML")
         g_isHtml = true;

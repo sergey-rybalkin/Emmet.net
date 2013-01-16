@@ -1,6 +1,4 @@
-﻿// Package.h
-
-#pragma once
+﻿#pragma once
 
 #include <atlstr.h>
 #include <VSLCommandTarget.h>
@@ -12,37 +10,9 @@
 #include "..\EmmetUI\CommandIds.h"
 
 #include "EmmetEngine.h"
+#include "PromptDlg.h"
 
 using namespace VSL;
-
-char szAbbreviation[256]; // receives name of item to delete.
-UINT nchAbbreviation = 0;
- 
-BOOL CALLBACK PromptDlgProc(HWND hwndDlg, 
-                            UINT message, 
-                            WPARAM wParam, 
-                            LPARAM lParam) 
-{ 
-    switch (message) 
-    { 
-        case WM_COMMAND: 
-            switch (LOWORD(wParam)) 
-            { 
-                case IDOK: 
-                    nchAbbreviation = GetDlgItemTextA(hwndDlg, IDC_ABBREVIATION, szAbbreviation, 256);
-                    if (0 == nchAbbreviation)
-                        *szAbbreviation = 0;
- 
-                    // Fall through. 
- 
-                case IDCANCEL: 
-                    EndDialog(hwndDlg, wParam); 
-                    return TRUE; 
-            } 
-    } 
-    return FALSE; 
-} 
-
 
 class ATL_NO_VTABLE CEmmetPackage : 
 	// CComObjectRootEx and CComCoClass are used to implement a non-thread safe COM object, and 
@@ -75,20 +45,19 @@ VSL_DECLARE_NOT_COPYABLE(CEmmetPackage)
 public:
 	CEmmetPackage()
 	{
-        m_pEngine = NULL;
+        m_initialized = FALSE;
 	}
 	
 	~CEmmetPackage()
 	{
-        if (NULL != m_pEngine)
-            delete m_pEngine;
 	}
 
     // This method will be called after IVsPackage::SetSite is called with a valid site
 	void PostSited(IVsPackageEnums::SetSiteResult /*result*/)
 	{
 		// Initialize the output window utility class
-		m_OutputWindow.SetSite(GetVsSiteCache());
+		m_outputWindow.SetSite(GetVsSiteCache());
+        InitializeEngine();
 	}
     
 	// This function provides the error information if it is not possible to load
@@ -153,109 +122,65 @@ VSL_BEGIN_COMMAND_MAP()
                           CommandHandler::ExecHandler(&OnUpdateImageSizeCommand))
 VSL_END_VSCOMMAND_MAP()
 
-void ShowDiagnosticMessage(PWSTR szMessage, OLEMSGICON icon = OLEMSGICON_INFO)
-{
-    // Get the string for the title of the message box from the resource dll.
-	CComBSTR bstrTitle;
-	VSL_CHECKBOOL_GLE(bstrTitle.LoadStringW(_AtlBaseModule.GetResourceInstance(), IDS_PROJNAME));
-	// Get a pointer to the UI Shell service to show the message box.
-    CComPtr<IVsUIShell> spUiShell = this->GetVsSiteCache().GetCachedService<IVsUIShell, SID_SVsUIShell>();
-	LONG lResult;
-	HRESULT hr = spUiShell->ShowMessageBox(
-	                             0,
-	                             CLSID_NULL,
-	                             bstrTitle,
-	                             W2OLE(szMessage),
-	                             NULL,
-	                             0,
-	                             OLEMSGBUTTON_OK,
-	                             OLEMSGDEFBUTTON_FIRST,
-	                             icon,
-	                             0,
-	                             &lResult);
-	VSL_CHECKHRESULT(hr);
-}
-
-void WriteToOutputWindow(PWSTR szMessage)
-{
-    m_OutputWindow.OutputMessage(szMessage);
-    m_OutputWindow.OutputMessage(L"\n");
-}
-
 void OnExpandAbbreviationCommand(CommandHandler* /*pSender*/, DWORD /*flags*/, VARIANT* /*pIn*/, VARIANT* /*pOut*/)
 {
-    if (NULL == m_pEngine)
-        InitializeEngine();
-
-    if (EmmetResult_OK != m_pEngine->ExpandAbbreviation())
-        ShowDiagnosticMessage(L"Expand abbreviation failed", OLEMSGICON_WARNING);
+    EmmetResult result = m_engine->ExpandAbbreviation();
+    if (EmmetResult_OK != result)
+        ShowDiagnosticMessage(L"Expand abbreviation failed", result);
 }
 
 void OnWrapWithAbbreviationCommand(CommandHandler* /*pSender*/, DWORD /*flags*/, VARIANT* /*pIn*/, VARIANT* /*pOut*/)
 {
-    if (NULL == m_pEngine)
-        InitializeEngine();
-
     CComPtr<IVsUIShell> spUiShell = this->GetVsSiteCache().GetCachedService<IVsUIShell, SID_SVsUIShell>();
     HWND hwndOwner;
     spUiShell->GetDialogOwnerHwnd(&hwndOwner);
     spUiShell->EnableModeless(FALSE);
-    INT_PTR dlgResult = DialogBox(GetModuleHandle(L"emmet.dll"),
-                                  MAKEINTRESOURCE(IDD_PROMPT_ABBREVIATION),
-                                  hwndOwner,
-                                  PromptDlgProc);
-    if (dlgResult && nchAbbreviation > 0)
-    {
-        EmmetResult engineResult = m_pEngine->WrapWithAbbreviation(szAbbreviation, nchAbbreviation);
-        if (EmmetResult_OK != engineResult)
-            ShowDiagnosticMessage(L"Wrap with abbreviation failed", OLEMSGICON_WARNING);
-    }
-
+    CPromptDlg dlg(hwndOwner);
+    char* szAbbreviation = dlg.Prompt();
     spUiShell->EnableModeless(TRUE);
-
-    *szAbbreviation = 0;
-    nchAbbreviation = 0;
+    
+    if (szAbbreviation > 0)
+    {
+        EmmetResult result = m_engine->WrapWithAbbreviation(szAbbreviation, strlen(szAbbreviation));
+        if (EmmetResult_OK != result)
+            ShowDiagnosticMessage(L"Wrap with abbreviation failed", result);
+    }
 }
 
 void OnToggleCommentCommand(CommandHandler* /*pSender*/, DWORD /*flags*/, VARIANT* /*pIn*/, VARIANT* /*pOut*/)
 {
-    if (NULL == m_pEngine)
-        InitializeEngine();
-
-    if (EmmetResult_OK != m_pEngine->ToggleComment())
-        ShowDiagnosticMessage(L"Toggle comment failed", OLEMSGICON_WARNING);
+    EmmetResult result = m_engine->ToggleComment();
+    if (EmmetResult_OK != result)
+        ShowDiagnosticMessage(L"Toggle comment failed", result);
 }
 
 void OnRemoveTagCommand(CommandHandler* /*pSender*/, DWORD /*flags*/, VARIANT* /*pIn*/, VARIANT* /*pOut*/)
 {
-    if (NULL == m_pEngine)
-        InitializeEngine();
-
-    if (EmmetResult_OK != m_pEngine->RemoveTag())
-        ShowDiagnosticMessage(L"Remove tag failed", OLEMSGICON_WARNING);
+    EmmetResult result = m_engine->RemoveTag();
+    if (EmmetResult_OK != result)
+        ShowDiagnosticMessage(L"Remove tag failed", result);
 }
 
 void OnMergeLinesCommand(CommandHandler* /*pSender*/, DWORD /*flags*/, VARIANT* /*pIn*/, VARIANT* /*pOut*/)
 {
-    if (NULL == m_pEngine)
-        InitializeEngine();
-
-    if (EmmetResult_OK != m_pEngine->MergeLines())
-        ShowDiagnosticMessage(L"Merge lines failed", OLEMSGICON_WARNING);
+    EmmetResult result = m_engine->MergeLines();
+    if (EmmetResult_OK != result)
+        ShowDiagnosticMessage(L"Merge lines failed", result);
 }
 
 void OnUpdateImageSizeCommand(CommandHandler* /*pSender*/, DWORD /*flags*/, VARIANT* /*pIn*/, VARIANT* /*pOut*/)
 {
-    if (NULL == m_pEngine)
-        InitializeEngine();
-
-    if (EmmetResult_OK != m_pEngine->UpdateImageSize())
-        ShowDiagnosticMessage(L"Update image size failed", OLEMSGICON_WARNING);
+    EmmetResult result = m_engine->UpdateImageSize();
+    if (EmmetResult_OK != result)
+        ShowDiagnosticMessage(L"Update image size failed", result);
 }
 
 private:
     VOID InitializeEngine()
     {
+        if (m_initialized)
+            return;
+
         // Get path to the engine.js file. It should be placed in the same folder with extension DLL.
         HMODULE hEmmetDll = GetModuleHandle(L"Emmet.dll");
         WCHAR szFilePath[MAX_PATH] = {0};
@@ -263,21 +188,74 @@ private:
         PWSTR szLastSlash = szFilePath + dwPathLen;
 
         while (*(--szLastSlash) != L'\\');
+#ifdef DEBUG
         StringCchCopy(szLastSlash + 1, MAX_PATH - dwPathLen, L"engine.js");
+#else
+        StringCchCopy(szLastSlash + 1, MAX_PATH - dwPathLen, L"engine.min.js");
+#endif
 
         // Get DTE interface for the engine
         _DTE* pDTE;
         if (FAILED(GetVsSiteCache().QueryService(SID_SDTE, &pDTE)) || !pDTE)
             return;
 
-        m_pEngine = new CEmmetEngine();
+        m_engine.Attach(new CEmmetEngine());
 
-        m_pEngine->Initialize(pDTE, szFilePath);
+        EmmetResult result = m_engine->Initialize(pDTE, szFilePath);
+        if (EmmetResult_OK != result)
+        {
+            ShowDiagnosticMessage(L"Engine initialization failure", result);
+        }
+        else
+            m_initialized = TRUE;
+    }
+
+    void ShowDiagnosticMessage(PWSTR szMessageTitle, EmmetResult result)
+    {
+        // Get the string for the title of the message box from the resource dll.
+	    CComBSTR bstrTitle;
+        CComBSTR bstrMessage;
+	    VSL_CHECKBOOL_GLE(bstrTitle.LoadStringW(_AtlBaseModule.GetResourceInstance(), IDS_PROJNAME));
+        bstrTitle.Append(L" - ");
+        bstrTitle.Append(szMessageTitle);
+
+        if (EmmetResult_DocumentFormatNotSupported == result)
+            bstrMessage = L"Document format is not supported.";
+        else if (EmmetResult_NoActiveDocument == result)
+            bstrMessage = L"No active document found.";
+        else if (EmmetResult_UnexpectedError == result)
+            bstrMessage = m_engine->GetLastError();
+        else
+            bstrMessage = L"No error information available.";
+
+	    // Get a pointer to the UI Shell service to show the message box.
+        CComPtr<IVsUIShell> spUiShell = this->GetVsSiteCache().GetCachedService<IVsUIShell, SID_SVsUIShell>();
+	    LONG lResult;
+	    HRESULT hr = spUiShell->ShowMessageBox(
+	                                 0,
+	                                 CLSID_NULL,
+	                                 bstrTitle,
+	                                 bstrMessage,
+	                                 NULL,
+	                                 0,
+	                                 OLEMSGBUTTON_OK,
+	                                 OLEMSGDEFBUTTON_FIRST,
+	                                 OLEMSGICON_WARNING,
+	                                 0,
+	                                 &lResult);
+	    VSL_CHECKHRESULT(hr);
+    }
+
+    void WriteToOutputWindow(PWSTR szMessage)
+    {
+        m_outputWindow.OutputMessage(szMessage);
+        m_outputWindow.OutputMessage(L"\n");
     }
 
 private:
-    CEmmetEngine* m_pEngine;
-    VsOutputWindowUtilities<> m_OutputWindow;
+    CAutoPtr<CEmmetEngine> m_engine;
+    BOOL m_initialized;
+    VsOutputWindowUtilities<> m_outputWindow;
 };
 
 // This exposes CEmmetPackage for instantiation via DllGetClassObject; however, an instance

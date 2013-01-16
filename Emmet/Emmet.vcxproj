@@ -170,6 +170,7 @@
       </PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Module.cpp" />
+    <ClCompile Include="PromptDlg.cpp" />
     <ClCompile Include="StdAfx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
@@ -185,6 +186,7 @@
     <ClInclude Include="FileProxy.h" />
     <ClInclude Include="Guids.h" />
     <ClInclude Include="Package.h" />
+    <ClInclude Include="PromptDlg.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="StdAfx.h" />
   </ItemGroup>

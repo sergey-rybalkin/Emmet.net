@@ -4,140 +4,38 @@
 
 using namespace v8;
 
-Handle<String> ReadFile(PCWSTR name) {
-  FILE* file;
-  _wfopen_s(&file, name, L"rb");
-  if (file == NULL)
-      return v8::Handle<v8::String>();
-
-  fseek(file, 0, SEEK_END);
-  int size = ftell(file);
-  rewind(file);
-
-  char* chars = new char[size + 1];
-  chars[size] = '\0';
-  for (int i = 0; i < size;) {
-    int read = static_cast<int>(fread(&chars[i], 1, size - i, file));
-    i += read;
-  }
-  fclose(file);
-  v8::Handle<v8::String> result = v8::String::New(chars, size);
-  delete[] chars;
-
-  return result;
-}
-
-const PWSTR ToCString(const v8::String::Utf8Value& value)
-{
-    char* retVal = *value ? *value : "<string conversion failed>";
-    int nBuf = value.length() + 1;
-    TCHAR* buf = (PWSTR)HeapAlloc(GetProcessHeap(), 0, nBuf * sizeof(TCHAR));
-    
-    MultiByteToWideChar(CP_ACP, 0, *value, value.length() + 1, buf, nBuf);
-
-    return buf;
-}
-
-void ReportException(TryCatch* try_catch)
-{
-    HandleScope handle_scope;
-    String::Utf8Value exception(try_catch->Exception());
-    PWSTR exception_string = ToCString(exception);
-    Handle<Message> message = try_catch->Message();
-    if (message.IsEmpty())
-    {
-        // V8 didn't provide any extra information about this error; just
-        // print the exception.
-        MessageBox(NULL, exception_string, L"Emmet JavaScript Error", MB_OK | MB_ICONERROR);
-    }
-    else
-    {
-        const int nBuf = 2048;
-        TCHAR buf[nBuf];
-
-        // Print (filename):(line number): (message).
-        // (line of source code)
-        // (stack trace)
-        String::Utf8Value filename(message->GetScriptResourceName());
-        PWSTR filename_string = ToCString(filename);
-        int linenum = message->GetLineNumber();
-        String::Utf8Value sourceline(message->GetSourceLine());
-        PWSTR sourceline_string = ToCString(sourceline);
-
-        StringCchPrintf(buf, nBuf, L"%s:%i: %s\n%s\n",
-                                   filename_string,
-                                   linenum,
-                                   exception_string,
-                                   sourceline_string);
-
-        HeapFree(GetProcessHeap(), 0, filename_string);
-        HeapFree(GetProcessHeap(), 0, sourceline_string);
-
-        MessageBox(NULL, buf, L"Emmet JavaScript Error", MB_OK | MB_ICONERROR);
-    }
-
-    HeapFree(GetProcessHeap(), 0, exception_string);
-}
-
 CEmmetEngine::CEmmetEngine()
 {
 }
 
-EmmetResult CEmmetEngine::Initialize(_DTE* pDTE, PCWSTR szEngineScript)
+EmmetResult CEmmetEngine::Initialize(_DTE* pDTE, PCWSTR szEngineScriptPath)
 {
-    m_pDTE = pDTE;
+    m_DTE.Attach(pDTE);
 
     Handle<ObjectTemplate> global = ObjectTemplate::New();
-    m_pEditorProxy = new CEditorProxy();
-    m_pFileProxy = new CFileProxy();
-    m_pEditorProxy->Register(global);
-    m_pFileProxy->Register(global);
+
+    m_editorProxy.Attach(new CEditorProxy());
+    m_fileProxy.Attach(new CFileProxy());
+
+    m_editorProxy->Register(global);
+    m_fileProxy->Register(global);
 
     m_Context = Context::New(NULL, global);
     m_Context->Enter();
-    m_pEditorProxy->SetContext(m_Context);
+    m_editorProxy->SetContext(m_Context);
 
-    TryCatch try_catch;
-    Handle<String> scriptSource = ReadFile(szEngineScript);
-    Handle<Script> script = Script::Compile(scriptSource);
-
-    if (script.IsEmpty())
-    {
-        return EmmetResult_CompilationFailed;
-    }
-    else
-    {
-        Handle<Value> result = script->Run();
-        if (result.IsEmpty())
-        {
-            // Print errors that happened during execution.
-            ReportException(&try_catch);
-
-            return EmmetResult_UnexpectedError;
-        }
-    }
-
-    return EmmetResult_OK;
+    return ReadAndCompileEngineScript(szEngineScriptPath);
 }
 
 CEmmetEngine::~CEmmetEngine(void)
 {
-    if (NULL != m_pDTE)
-    {
-        m_pDTE->Release();
-        m_pDTE = NULL;
-    }
-
-    delete m_pEditorProxy;
-    delete m_pFileProxy;
-
     m_Context->Exit();
     m_Context.Dispose();
 }
 
 EmmetResult CEmmetEngine::ExpandAbbreviation()
 {
-    RunInternal("actionExpandAbbreviation()", EmmetAction_ExpandAbbreviation);
+    RunAction("actionExpandAbbreviation()", EmmetAction_ExpandAbbreviation);
 
     return EmmetResult_OK;
 }
@@ -150,7 +48,7 @@ EmmetResult CEmmetEngine::WrapWithAbbreviation(const char* szAbbreviation, UINT 
 
     StringCchPrintfA(szCmd, bufSize, "actionWrapWithAbbreviation('%s')", szAbbreviation);
 
-    RunInternal(szCmd, EmmetAction_WrapWithAbbreviation);
+    RunAction(szCmd, EmmetAction_WrapWithAbbreviation);
 
     HeapFree(GetProcessHeap(), 0, szCmd);
 
@@ -159,46 +57,47 @@ EmmetResult CEmmetEngine::WrapWithAbbreviation(const char* szAbbreviation, UINT 
 
 EmmetResult CEmmetEngine::ToggleComment()
 {
-    RunInternal("actionToggleComment()", EmmetAction_ToggleComment);
+    RunAction("actionToggleComment()", EmmetAction_ToggleComment);
 
     return EmmetResult_OK;
 }
 
 EmmetResult CEmmetEngine::RemoveTag()
 {
-    RunInternal("actionRemoveTag()", EmmetAction_RemoveTag);
+    RunAction("actionRemoveTag()", EmmetAction_RemoveTag);
 
     return EmmetResult_OK;
 }
 
 EmmetResult CEmmetEngine::MergeLines()
 {
-    return RunInternal("actionMergeLines()", EmmetAction_MergeLines);
+    return RunAction("actionMergeLines()", EmmetAction_MergeLines);
 }
 
 EmmetResult CEmmetEngine::UpdateImageSize()
 {
-    return RunInternal("actionUpdateImageSize()", EmmetAction_UpdateImageSize);
+    return RunAction("actionUpdateImageSize()", EmmetAction_UpdateImageSize);
 }
 
-EmmetResult CEmmetEngine::RunInternal(const char* action, EmmetAction actionCode)
+EmmetResult CEmmetEngine::RunAction(const char* action, EmmetAction actionCode)
 {
     CComPtr<Document> pActiveDoc;
     CComPtr<IDispatch> pDisp;
     CComPtr<TextDocument> pTextDoc;
     CComPtr<TextSelection> pSelection;
 
-    m_pDTE->get_ActiveDocument(&pActiveDoc);
+    m_DTE->get_ActiveDocument(&pActiveDoc);
     if (NULL == pActiveDoc)
         return EmmetResult_NoActiveDocument;
     pActiveDoc->Object(CComBSTR("TextDocument"), &pDisp);
     pDisp->QueryInterface(__uuidof(TextDocument), (LPVOID*)&pTextDoc);
     pTextDoc->get_Selection(&pSelection);
 
-    if (!m_pEditorProxy->Initialize(pActiveDoc, pTextDoc, pSelection, actionCode))
+    if (!m_editorProxy->Initialize(pActiveDoc, pTextDoc, pSelection, actionCode))
         return EmmetResult_DocumentFormatNotSupported;
 
     TryCatch try_catch;
+    HandleScope handleScope;
 
     // Create a string containing the JavaScript source code.
     Handle<String> source = String::New(action);
@@ -206,14 +105,20 @@ EmmetResult CEmmetEngine::RunInternal(const char* action, EmmetAction actionCode
     // Compile the source code.
     Handle<Script> script = Script::Compile(source);
   
+    // All content manipulations will be run in a single undo context so that they can be reverted all at once
+    CComPtr<UndoContext> undoContext;
+    m_DTE->get_UndoContext(&undoContext);
+    undoContext->Open(CComBSTR("Emmet"));
+
     // Run the script to get the result.
     Handle<Value> result = script->Run();
+    undoContext->Close();
 
     if (result.IsEmpty())
     {
-        ReportException(&try_catch);
+        FormatExceptionMessage(&try_catch);
 
-        return EmmetResult_OK;
+        return EmmetResult_UnexpectedError;
     }
 
     if (result->IsBoolean() || result->IsBooleanObject())
@@ -221,14 +126,113 @@ EmmetResult CEmmetEngine::RunInternal(const char* action, EmmetAction actionCode
         bool bResult = result->BooleanValue();
         if (!bResult)
         {
-            MessageBox(NULL,
-                       L"Emmet engine was not able to execute an action",
-                       L"Action execution failed",
-                       MB_OK | MB_ICONWARNING);
+            m_lastError.Append(L"Engine reported an error while trying to execute an action.");
 
             return EmmetResult_UnexpectedError;
         }
     }
 
     return EmmetResult_OK;
+}
+
+CComBSTR CEmmetEngine::GetLastError()
+{
+    CComBSTR retVal;
+    m_lastError.CopyTo(&retVal);
+    m_lastError.Empty();
+
+    return retVal;
+}
+
+EmmetResult CEmmetEngine::ReadAndCompileEngineScript(PCWSTR szEngineScriptPath)
+{
+    TryCatch try_catch;
+    CAtlFile scriptFile;
+    HRESULT hr = scriptFile.Create(szEngineScriptPath,
+                                   GENERIC_READ,
+                                   FILE_SHARE_READ,
+                                   OPEN_EXISTING,
+                                   FILE_FLAG_SEQUENTIAL_SCAN);
+    if (FAILED(hr))
+    {
+        // cannot open engine.js - update last error message and exit
+        m_lastError.Append(L"Cannot read engine script");
+
+        LPTSTR errorText = NULL;
+        FormatMessage(
+            FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS,
+            NULL,
+            hr,
+            MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+            (LPTSTR)&errorText,
+            0,
+            NULL);
+
+        if ( NULL != errorText )
+        {
+            m_lastError.Append(L" - ");
+            m_lastError.Append(errorText);
+            LocalFree(errorText);
+            errorText = NULL;
+        }
+
+        return EmmetResult_UnexpectedError;
+    }
+
+    ULONGLONG len;
+    scriptFile.GetSize(len);
+    CAutoPtr<char> fileContent(new char[(DWORD)len + 1]);
+    scriptFile.Read(fileContent.m_p, (int)len);
+    fileContent.m_p[len] = '\0';
+
+    Handle<Script> script = Script::Compile(String::New(fileContent));
+
+    if (script.IsEmpty())
+    {
+        m_lastError.Append(L"Script compilation failed.");
+        return EmmetResult_UnexpectedError;
+    }
+    else
+    {
+        Handle<Value> result = script->Run();
+        if (result.IsEmpty())
+        {
+            // Remember errors that happened during execution.
+            FormatExceptionMessage(&try_catch);
+
+            return EmmetResult_UnexpectedError;
+        }
+    }
+
+    return EmmetResult_OK;
+}
+
+VOID CEmmetEngine::FormatExceptionMessage(TryCatch* exceptionInfo)
+{
+    m_lastError.Append(L"Emmet JavaScript error: \n");
+
+    HandleScope handle_scope;
+    String::Utf8Value exception(exceptionInfo->Exception());
+    Handle<Message> message = exceptionInfo->Message();
+    if (message.IsEmpty())
+    {
+        // V8 didn't provide any extra information about this error; just
+        // print the exception.
+        m_lastError.Append(*exception);
+    }
+    else
+    {
+        CAtlStringA buf;
+
+        // Print (filename):(line number): (message).
+        // (line of source code)
+        // (stack trace)
+        String::Utf8Value filename(message->GetScriptResourceName());
+        int linenum = message->GetLineNumber();
+        String::Utf8Value sourceline(message->GetSourceLine());
+
+        buf.Format("%s:%i: %s\n%s\n", *filename, linenum, *exception, *sourceline);
+
+        m_lastError.Append(buf.GetBuffer());
+    }
 }

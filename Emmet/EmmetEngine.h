@@ -13,11 +13,7 @@ enum EmmetResult
 
     EmmetResult_DocumentFormatNotSupported,
 
-    EmmetResult_UnexpectedError,
-
-    EmmetResult_CompilationFailed,
-
-    EmmetResult_NotInitialized
+    EmmetResult_UnexpectedError
 };
 
 class CEmmetEngine
@@ -26,20 +22,28 @@ public:
     CEmmetEngine();
     ~CEmmetEngine(void);
 
-    EmmetResult Initialize(_DTE* pDTE, PCWSTR szEngineScript);
+    EmmetResult Initialize(_DTE* pDTE, PCWSTR szEngineScriptPath);
     EmmetResult ExpandAbbreviation();
     EmmetResult WrapWithAbbreviation(const char* szAbbreviation, UINT nchAbbreviation);
     EmmetResult ToggleComment();
     EmmetResult RemoveTag();
     EmmetResult MergeLines();
     EmmetResult UpdateImageSize();
+
+    CComBSTR GetLastError();
+
 private:
+    EmmetResult ReadAndCompileEngineScript(PCWSTR szEngineScriptPath);
+    EmmetResult RunAction(const char* action, EmmetAction actionCode);
+    VOID FormatExceptionMessage(TryCatch* exceptionInfo);
 
-    EmmetResult RunInternal(const char* action, EmmetAction actionCode);
+private:
+    CAutoPtr<CEditorProxy> m_editorProxy;
+    CAutoPtr<CFileProxy> m_fileProxy;
 
-    CEditorProxy* m_pEditorProxy;
-    CFileProxy* m_pFileProxy;
-    HandleScope m_handleScope;
     Persistent<v8::Context> m_Context;
-    _DTE* m_pDTE;
+    HandleScope m_handleScope;
+    CComPtr<_DTE> m_DTE;
+
+    CComBSTR m_lastError;
 };

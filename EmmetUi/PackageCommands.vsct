@@ -38,8 +38,8 @@
         <Strings>
           <ButtonText>Expand Abbreviation</ButtonText>
           <CommandName>Emmet - Expand Abbreviation</CommandName>
-          <CanonicalName>Emmet.ExpandWithAbbreviation</CanonicalName>
-          <LocCanonicalName>Emmet.ExpandWithAbbreviation</LocCanonicalName>
+          <CanonicalName>Emmet.ExpandAbbreviation</CanonicalName>
+          <LocCanonicalName>Emmet.ExpandAbbreviation</LocCanonicalName>
         </Strings>
       </Button>
 
@@ -103,8 +103,8 @@
         <Strings>
           <ButtonText>Expand Abbreviation</ButtonText>
           <CommandName>Emmet - Expand Abbreviation</CommandName>
-          <CanonicalName>Emmet.ExpandWithAbbreviation</CanonicalName>
-          <LocCanonicalName>Emmet.ExpandWithAbbreviation</LocCanonicalName>
+          <CanonicalName>Emmet.ExpandAbbreviationInternal</CanonicalName>
+          <LocCanonicalName>Emmet.ExpandAbbreviationInternal</LocCanonicalName>
         </Strings>
       </Button>
 

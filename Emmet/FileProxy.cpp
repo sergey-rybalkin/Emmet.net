@@ -20,16 +20,10 @@ Handle<Value> FileReadFile(const Arguments& args)
     if (INVALID_HANDLE_VALUE == hFile)
         return Undefined();
 
-    LARGE_INTEGER liFileSize;
-    if (!GetFileSizeEx(hFile, &liFileSize))
-    {
-        CloseHandle(hFile);
-        return Undefined();
-    }
-
-    PVOID buf = HeapAlloc(GetProcessHeap(), 0, liFileSize.LowPart);
+    char buf[200]; // Full content is not required, first 200 bytes should be enough
     DWORD dwBytesRead;
-    ReadFile(hFile, buf, liFileSize.LowPart, &dwBytesRead, NULL);
+    ReadFile(hFile, buf, 200, &dwBytesRead, NULL);
+    CloseHandle(hFile);
 
     Handle<Array> retVal = Array::New();
 
@@ -37,9 +31,6 @@ Handle<Value> FileReadFile(const Arguments& args)
     {
         retVal->Set(i, Int32::New((unsigned char)((unsigned char*)buf)[i]));
     }
-
-    HeapFree(GetProcessHeap(), 0, buf);
-    CloseHandle(hFile);
 
     return retVal;
 }
