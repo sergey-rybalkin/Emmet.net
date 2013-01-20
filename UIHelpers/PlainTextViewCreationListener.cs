@@ -11,7 +11,7 @@ namespace UIHelpers
 {
     /// <summary>
     /// Listener responsible for injection of our command filters into every newly created editor window. This
-    /// class is required to support non-native for visual studio syntaxes like SASS.
+    /// class is required to support non-native for visual studio syntaxes like SASS and LESS.
     /// </summary>
     [TextViewRole("DOCUMENT"), ContentType("Plain Text"), Export(typeof(IVsTextViewCreationListener))]
     public class PlainTextViewCreationListener : ViewCreationListenerBase, IVsTextViewCreationListener
@@ -40,7 +40,8 @@ namespace UIHelpers
             DTE dte = (DTE)Package.GetGlobalService(typeof(DTE));
             string docName = dte.ActiveDocument.Name;
 
-            if (docName.ToLower().EndsWith(".scss"))
+            string normalizedName = docName.ToLower();
+            if (normalizedName.EndsWith(".scss") || normalizedName.EndsWith(".less"))
                 base.VsTextViewCreated(textViewAdapter);
         }
     }

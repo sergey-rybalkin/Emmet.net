@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Windows.Threading;
 using Microsoft.VisualStudio.Text;
@@ -12,10 +13,13 @@ namespace UIHelpers
     internal class TabSpanManager
     {
         private static readonly Regex _placeholders =
-            new Regex("(\\$\\{[^\\}]*\\})", RegexOptions.IgnoreCase);
+            new Regex(@"(\${\d*(?::([^}]+))?})", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
         private readonly IWpfTextView _view;
-        private ITrackingSpan _trackingSpan;
+        private LinkedList<ITrackingSpan> _tabSpans;
+
+        // Last span that we have selected as a response to TAB or BACKTAB
+        private LinkedListNode<ITrackingSpan> _lastNavigatedSpan;
 
         internal TabSpanManager(IWpfTextView view)
         {
@@ -30,22 +34,23 @@ namespace UIHelpers
         /// </param>
         internal void PostProcessSelection(int originalPosition)
         {
+            _tabSpans = null;
+            _lastNavigatedSpan = null;
             ITextSelection selection = _view.Selection;
             if (selection.SelectedSpans.Count == 0)
-            {
-                _trackingSpan = null;
                 return;
-            }
 
             SnapshotSpan selectionSpan = selection.SelectedSpans[0];
-            Span insertedText = new Span(originalPosition, selectionSpan.Length);
-            _trackingSpan = _view.TextBuffer.CurrentSnapshot.CreateTrackingSpan(
-                insertedText, SpanTrackingMode.EdgeExclusive);
-
+            Span targetSpan = new Span(originalPosition, selectionSpan.Length);
+            string insertedText = _view.TextBuffer.CurrentSnapshot.GetText(targetSpan);
             selection.Clear();
+
+            if (!FindTabSpans(insertedText, targetSpan))
+                return;
+
             Dispatcher.CurrentDispatcher.BeginInvoke(
                 DispatcherPriority.Normal,
-                new Action(() => SetCaret(insertedText, false)));
+                new Action(() => MoveToNextEmptySlot()));
         }
 
         /// <summary>
@@ -53,19 +58,32 @@ namespace UIHelpers
         /// </summary>
         internal bool MoveToNextEmptySlot()
         {
-            if (_trackingSpan == null)
+            if (_tabSpans == null || (_tabSpans.Count == 0))
                 return false;
 
-            int position = _view.Caret.Position.BufferPosition.Position + 1;
-            Span span = _trackingSpan.GetSpan(_view.TextBuffer.CurrentSnapshot);
-            if (span.Contains(position))
+            LinkedListNode<ITrackingSpan> node;
+            if (null == _lastNavigatedSpan)
             {
-                Span zenSpan = new Span(position, span.End - position);
-                SetCaret(zenSpan, false);
-                return true;
+                node = _tabSpans.First;
+                _lastNavigatedSpan = node;
+            }
+            else if (null != _lastNavigatedSpan.Next)
+            {
+                node = _lastNavigatedSpan.Next;
+                _lastNavigatedSpan = node;
+            }
+            else
+            {
+                _tabSpans = null;
+                _lastNavigatedSpan = null;
+
+                return false;
             }
 
-            return false;
+            Span span = node.Value.GetSpan(_view.TextBuffer.CurrentSnapshot);
+            MoveTab(span);
+
+            return true;
         }
 
         /// <summary>
@@ -73,68 +91,73 @@ namespace UIHelpers
         /// </summary>
         internal bool MoveToPreviousEmptySlot()
         {
-            if (_trackingSpan != null)
+            if (_tabSpans == null || (_tabSpans.Count == 0))
+                return false;
+
+            if (null == _lastNavigatedSpan)
+                return false;
+
+            LinkedListNode<ITrackingSpan> node;
+            if (null != _lastNavigatedSpan.Previous)
             {
-                int position = _view.Caret.Position.BufferPosition.Position;
-                if (position > 0)
-                {
-                    Span span = _trackingSpan.GetSpan(_view.TextBuffer.CurrentSnapshot);
-                    if (span.Contains(position - 1))
-                    {
-                        Span zenSpan = new Span(span.Start, (position - span.Start) - 1);
-                        SetCaret(zenSpan, true);
-                        return true;
-                    }
-                }
-            }
-
-            return false;
-        }
-
-        private bool SetCaret(Span zenSpan, bool isReverse)
-        {
-            string text = _view.TextBuffer.CurrentSnapshot.GetText();
-            Span placeholders = FindTabSpan(zenSpan, isReverse, text, _placeholders);
-
-            if (zenSpan.Contains(placeholders.Start))
-            {
-                MoveTab(placeholders);
-                return true;
-            }
-
-            // Move caret to the last position in the inserted text if no more tab stops found
-            if (!isReverse)
-            {
-                MoveTab(new Span(zenSpan.End, 0));
-                return true;
-            }
-
-            return false;
-        }
-
-        private Span FindTabSpan(Span zenSpan, bool isReverse, string text, Regex regex)
-        {
-            MatchCollection matchs = regex.Matches(text);
-            if (!isReverse)
-            {
-                foreach (Match match in matchs)
-                {
-                    Group group = match.Groups[1];
-                    if (group.Index >= zenSpan.Start)
-                        return new Span(group.Index, group.Length);
-                }
+                node = _lastNavigatedSpan.Previous;
+                _lastNavigatedSpan = node;
             }
             else
             {
-                for (int i = matchs.Count - 1; i >= 0; i--)
-                {
-                    Group group = matchs[i].Groups[1];
-                    if (group.Index < zenSpan.End)
-                        return new Span(group.Index, group.Length);
-                }
+                _tabSpans = null;
+                _lastNavigatedSpan = null;
+
+                return false;
             }
 
-            return new Span();
+            Span span = node.Value.GetSpan(_view.TextBuffer.CurrentSnapshot);
+            MoveTab(span);
+
+            return true;
+        }
+
+        /// <summary>
+        /// Searches through the specified content for tab span markers and cleans up content.
+        /// </summary>
+        /// <param name="insertedText">Text to search through.</param>
+        /// <param name="targetSpan">Span that contains the specified text.</param>
+        /// <returns>
+        /// <code>true</code> if text contains tab span markers, <code>false</code> otherwise.
+        /// </returns>
+        private bool FindTabSpans(string insertedText, Span targetSpan)
+        {
+            ITextEdit edit = _view.TextBuffer.CreateEdit();
+
+            MatchCollection matches = _placeholders.Matches(insertedText);
+            if (matches.Count == 0)
+                return false;
+
+            _tabSpans = new LinkedList<ITrackingSpan>();
+            ITextSnapshot currentSnapshot = _view.TextBuffer.CurrentSnapshot;
+            foreach (Match match in matches)
+            {
+                string defaultContent = match.Groups[2].Value;
+                int tabSpanPosition = targetSpan.Start + match.Groups[1].Index;
+                int tabSpanLen = string.IsNullOrEmpty(defaultContent) ? 0 : defaultContent.Length;
+                ITrackingSpan span = currentSnapshot.CreateTrackingSpan(
+                    new Span(tabSpanPosition, tabSpanLen), SpanTrackingMode.EdgeInclusive);
+                _tabSpans.AddLast(span);
+
+                edit.Delete(tabSpanPosition, match.Groups[1].Value.Length);
+                if (!string.IsNullOrEmpty(defaultContent))
+                    edit.Insert(tabSpanPosition, defaultContent);
+            }
+
+            // As a last tab span we add last position in the inserted text
+            ITrackingSpan lastSpan = currentSnapshot.CreateTrackingSpan(
+                new Span(targetSpan.Start + targetSpan.Length, 0), SpanTrackingMode.EdgeExclusive);
+            _tabSpans.AddLast(lastSpan);
+
+            edit.Apply();
+            edit.Dispose();
+
+            return true;
         }
 
         private void MoveTab(Span quote)

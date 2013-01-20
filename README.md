@@ -22,3 +22,9 @@ Below is the list of actions that are currently implemented in this extension. T
 ## Binaries
 
 Precompiled version can be downloaded here - http://dl.dropbox.com/u/38120966/Emmet.vsix
+
+### Version history
+
+1. v1.2 - Now using custom emmet build without actions that are irrelevant for visual studio, fixed tab stops bug when placeholders where not removed.
+2. v1.1 - Minor performance improvements and bug fixes.
+3. v1.0 - Initial release.

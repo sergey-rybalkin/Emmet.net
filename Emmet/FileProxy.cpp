@@ -18,7 +18,11 @@ Handle<Value> FileReadFile(const Arguments& args)
                               NULL);
 
     if (INVALID_HANDLE_VALUE == hFile)
-        return Undefined();
+    {
+        CString msg(L"Specified file not found: ");
+        msg.Append(szPath);
+        return ThrowException(String::New(msg));
+    }
 
     char buf[200]; // Full content is not required, first 200 bytes should be enough
     DWORD dwBytesRead;

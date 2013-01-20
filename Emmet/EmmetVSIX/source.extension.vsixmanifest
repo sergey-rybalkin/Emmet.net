@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
   <Metadata>
-    <Identity Id="b2589ca0-f4ca-4daf-be44-878922a24715" Version="1.1" Language="en-US" Publisher="Sergey Rybalkin" />
+    <Identity Id="b2589ca0-f4ca-4daf-be44-878922a24715" Version="1.2" Language="en-US" Publisher="Sergey Rybalkin" />
     <DisplayName>Emmet.net</DisplayName>
     <Description xml:space="preserve">Visual Studio port of the https://github.com/emmetio/emmet project by Sergey Chikuyonok</Description>
     <MoreInfo>http://docs.emmet.io/</MoreInfo>
