@@ -1125,6 +1125,10 @@ exports = module.exports = emmet;
 }
 exports.emmet = emmet;
 }
+// export as Require.js module
+if (typeof define !== 'undefined') {
+define(emmet);
+}
 /**
 * Emmet abbreviation parser.
 * Takes string abbreviation and recursively parses it into a tree. The parsed
@@ -1147,7 +1151,7 @@ exports.emmet = emmet;
 */
 emmet.define('abbreviationParser', function(require, _) {
 var reValidName = /^[\w\-\$\:@\!%]+\+?$/i;
-var reWord = /[\w\-:\$]/;
+var reWord = /[\w\-:\$@]/;
 var pairs = {
 '[': ']',
 '(': ')',
@@ -1256,6 +1260,7 @@ this[name] = value;
 _.each(this.children, function(child) {
 child.updateProperty(name, value);
 });
+return this;
 },
 /**
 * Finds first child node that matches truth test for passed
@@ -1767,15 +1772,17 @@ stream.next();
 * @returns {AbbreviationNode}
 */
 function unroll(node) {
-for (var i = node.children.length - 1, j, child; i >= 0; i--) {
+for (var i = node.children.length - 1, j, child, maxCount; i >= 0; i--) {
 child = node.children[i];
 if (child.isRepeating()) {
-j = child.repeatCount;
+maxCount = j = child.repeatCount;
 child.repeatCount = 1;
 child.updateProperty('counter', 1);
+child.updateProperty('maxCount', maxCount);
 while (--j > 0) {
 child.parent.addChild(child.clone(), i + 1)
-.updateProperty('counter', j + 1);
+.updateProperty('counter', j + 1)
+.updateProperty('maxCount', maxCount);
 }
 }
 }
@@ -1812,7 +1819,7 @@ return (charCode > 64 && charCode < 91)       // uppercase letter
 }
 // XXX add counter replacer function as output processor
 outputProcessors.push(function(text, node) {
-return require('utils').replaceCounter(text, node.counter);
+return require('utils').replaceCounter(text, node.counter, node.maxCount);
 });
 return {
 /**
@@ -3069,6 +3076,21 @@ result.push(str);
 return result.join('');
 },
 /**
+* Returns list of paddings that should be used to align passed string
+* @param {Array} strings
+* @returns {Array}
+*/
+getStringsPads: function(strings) {
+var lengths = _.map(strings, function(s) {
+return _.isString(s) ? s.length : +s;
+});
+var max = _.max(lengths);
+return _.map(lengths, function(l) {
+var pad = max - l;
+return pad ? this.repeatString(' ', pad) : '';
+}, this);
+},
+/**
 * Indents text with padding
 * @param {String} text Text to indent
 * @param {String} pad Padding size (number) or padding itself (string)
@@ -3186,15 +3208,18 @@ return newValue;
 },
 /**
 * Replaces '$' character in string assuming it might be escaped with '\'
-* @param {String} str String where caracter should be replaced
-* @param {String} value Replace value. Might be a <code>Function</code>
+* @param {String} str String where character should be replaced
+* @param {String} value New value
 * @return {String}
 */
-replaceCounter: function(str, value) {
+replaceCounter: function(str, value, total) {
 var symbol = '$';
 // in case we received strings from Java, convert the to native strings
 str = String(str);
 value = String(value);
+if (/^\-?\d+$/.test(value)) {
+value = +value;
+}
 var that = this;
 return this.replaceUnescapedSymbol(str, symbol, function(str, symbol, pos, matchNum){
 if (str.charAt(pos + 1) == '{' || that.isNumeric(str.charAt(pos + 1)) ) {
@@ -3204,7 +3229,21 @@ return false;
 // replace sequense of $ symbols with padded number
 var j = pos + 1;
 while(str.charAt(j) == '$' && str.charAt(j + 1) != '{') j++;
-return [str.substring(pos, j), that.zeroPadString(value, j - pos)];
+var pad = j - pos;
+// get counter base
+var base = 0, decrement = false, m;
+if (m = str.substr(j).match(/^@(\-?)(\d*)/)) {
+j += m[0].length;
+if (m[1]) {
+decrement = true;
+}
+base = parseInt(m[2] || 1) - 1;
+}
+if (decrement && total && _.isNumber(value)) {
+value = total - value + 1;
+}
+value += base;
+return [str.substring(pos, j), that.zeroPadString(value + '', pad)];
 });
 },
 /**
@@ -5267,9 +5306,13 @@ var open = null, close = null;
 for (var i = pos; i >= 0; i--) {
 if (open = matcher.open(i)) {
 // found opening tag
-if (open.selfClose && open.range.cmp(pos, 'lt', 'gt')) {
-// inside self-closing tag
+if (open.selfClose) {
+if (open.range.cmp(pos, 'lt', 'gt')) {
+// inside self-closing tag, found match
 break;
+}
+// outside self-closing tag, continue
+continue;
 }
 close = findClosingPair(open, matcher);
 if (close) {
@@ -7669,18 +7712,18 @@ var offset = editor.getCaretPos();
 var info = require('editorUtils').outputInfo(editor);
 var xmlElem = require('xmlEditTree').parseFromPosition(info.content, offset, true);
 if (xmlElem && (xmlElem.name() || '').toLowerCase() == 'img') {
-var size = getImageSizeForSource(editor, xmlElem.value('src'));
+getImageSizeForSource(editor, xmlElem.value('src'), function(size) {
 if (size) {
 var compoundData = xmlElem.range(true);
 xmlElem.value('width', size.width);
 xmlElem.value('height', size.height, xmlElem.indexOf('width') + 1);
-return _.extend(compoundData, {
+require('actionUtils').compoundUpdate(editor, _.extend(compoundData, {
 data: xmlElem.toString(),
 caret: offset
+}));
+}
 });
 }
-}
-return null;
 }
 /**
 * Updates image size of CSS property
@@ -7695,52 +7738,57 @@ if (cssRule) {
 // check if there is property with image under caret
 var prop = cssRule.itemFromPosition(offset, true), m;
 if (prop && (m = /url\((["']?)(.+?)\1\)/i.exec(prop.value() || ''))) {
-var size = getImageSizeForSource(editor, m[2]);
+getImageSizeForSource(editor, m[2], function(size) {
 if (size) {
 var compoundData = cssRule.range(true);
 cssRule.value('width', size.width + 'px');
 cssRule.value('height', size.height + 'px', cssRule.indexOf('width') + 1);
-return _.extend(compoundData, {
+require('actionUtils').compoundUpdate(editor, _.extend(compoundData, {
 data: cssRule.toString(),
 caret: offset
+}));
+}
 });
 }
 }
-}
-return null;
 }
 /**
 * Returns image dimensions for source
 * @param {IEmmetEditor} editor
 * @param {String} src Image source (path or data:url)
 */
-function getImageSizeForSource(editor, src) {
+function getImageSizeForSource(editor, src, callback) {
 var fileContent;
+var au = require('actionUtils');
 if (src) {
 // check if it is data:url
 if (/^data:/.test(src)) {
 fileContent = require('base64').decode( src.replace(/^data\:.+?;.+?,/, '') );
-} else {
+return callback(au.getImageSize(fileContent));
+}
 var file = require('file');
 var absPath = file.locateFile(editor.getFilePath(), src);
 if (absPath === null) {
 throw "Can't find " + src + ' file';
 }
-fileContent = String(file.read(absPath));
+file.read(absPath, 500, function(err, content) {
+if (err) {
+throw 'Unable to read ' + absPath + ': ' + err;
 }
-return require('actionUtils').getImageSize(fileContent);
+content = String(content);
+callback(au.getImageSize(content));
+});
 }
 }
 require('actions').add('update_image_size', function(editor) {
-var result;
 // this action will definitely won’t work in SASS dialect,
 // but may work in SCSS or LESS
 if (_.include(['css', 'less', 'scss'], String(editor.getSyntax()))) {
-result = updateImageSizeCSS(editor);
+updateImageSizeCSS(editor);
 } else {
-result = updateImageSizeHTML(editor);
+updateImageSizeHTML(editor);
 }
-return require('actionUtils').compoundUpdate(editor, result);
+return true;
 });
 });
 /**
@@ -7910,6 +7958,9 @@ prefs.define('css.fuzzySearchMinScore', 0.3,
 'The minium score (from 0 to 1) that fuzzy-matched abbreviation should '
 + 'achive. Lower values may produce many false-positive matches, '
 + 'higher values may reduce possible matches.');
+prefs.define('css.alignVendor', false,
+'If set to <code>true</code>, all generated vendor-prefixed properties '
++ 'will be aligned by real property name.');
 function isNumeric(ch) {
 var code = ch && ch.charCodeAt(0);
 return (ch && ch == '.' || (code > 47 && code < 58));
@@ -7944,7 +7995,7 @@ return snippet.split(':').length == 2;
 * @returns {String}
 */
 function normalizeValue(value) {
-if (value.charAt(0) == '-' && !/^\-[\.\d]/) {
+if (value.charAt(0) == '-' && !/^\-[\.\d]/.test(value)) {
 value = value.replace(/^\-+/, '');
 }
 if (value.charAt(0) == '#') {
@@ -8003,27 +8054,6 @@ return name in aliases ? aliases[name] : name;
 }
 function isValidKeyword(keyword) {
 return _.include(prefs.getArray('css.keywords'), getKeyword(keyword));
-}
-/**
-* Split snippet into a CSS property-value pair
-* @param {String} snippet
-*/
-function splitSnippet(snippet) {
-var utils = require('utils');
-snippet = utils.trim(snippet);
-if (snippet.indexOf(':') == -1) {
-return {
-name: snippet,
-value: defaultValue
-};
-}
-var pair = snippet.split(':');
-return {
-name: utils.trim(pair.shift()),
-// replace ${0} tabstop to produce valid vendor-prefixed values
-// where possible
-value: utils.trim(pair.join(':')).replace(/^(\$\{0\}|\$0)(\s*;?)$/, '${1}$2')
-};
 }
 /**
 * Check if passed CSS property support specified vendor prefix
@@ -8406,14 +8436,11 @@ return transformSnippet(snippet, isImportant, syntax);
 var prefixData = this.extractPrefixes(abbr);
 var valuesData = this.extractValues(prefixData.property);
 var abbrData = _.extend(prefixData, valuesData);
+if (!snippet) {
 snippet = resources.findSnippet(syntax, abbrData.property);
-// fallback to some old snippets like m:a
-//			if (!snippet && ~abbrData.property.indexOf(':')) {
-//				var parts = abbrData.property.split(':');
-//				var propertyName = parts.shift();
-//				snippet = resources.findSnippet(syntax, propertyName) || propertyName;
-//				abbrData.values = this.parseValues(parts.join(':'));
-//			}
+} else {
+abbrData.values = null;
+}
 if (!snippet && prefs.get('css.fuzzySearch')) {
 // let’s try fuzzy search
 snippet = resources.fuzzyFindSnippet(syntax, abbrData.property, parseFloat(prefs.get('css.fuzzySearchMinScore')));
@@ -8426,7 +8453,7 @@ snippet = snippet.data;
 if (!isSingleProperty(snippet)) {
 return snippet;
 }
-var snippetObj = splitSnippet(snippet);
+var snippetObj = this.splitSnippet(snippet);
 var result = [];
 if (!value && abbrData.values) {
 value = _.map(abbrData.values, function(val) {
@@ -8437,16 +8464,24 @@ snippetObj.value = value || snippetObj.value;
 var prefixes = abbrData.prefixes == 'all' || (!abbrData.prefixes && autoInsertPrefixes)
 ? findPrefixes(snippetObj.name, autoInsertPrefixes && abbrData.prefixes != 'all')
 : abbrData.prefixes;
+var names = [], propName;
 _.each(prefixes, function(p) {
 if (p in vendorPrefixes) {
-result.push(transformSnippet(
-vendorPrefixes[p].transformName(snippetObj.name)
-+ ':' + snippetObj.value,
+propName = vendorPrefixes[p].transformName(snippetObj.name);
+names.push(propName);
+result.push(transformSnippet(propName + ':' + snippetObj.value,
 isImportant, syntax));
 }
 });
 // put the original property
 result.push(transformSnippet(snippetObj.name + ':' + snippetObj.value, isImportant, syntax));
+names.push(snippetObj.name);
+if (prefs.get('css.alignVendor')) {
+var pads = require('utils').getStringsPads(names);
+result = _.map(result, function(prop, i) {
+return pads[i] + prop;
+});
+}
 return result;
 },
 /**
@@ -8464,6 +8499,27 @@ return snippet.join('\n');
 if (!_.isString(snippet))
 return snippet.data;
 return String(snippet);
+},
+/**
+* Split snippet into a CSS property-value pair
+* @param {String} snippet
+*/
+splitSnippet: function(snippet) {
+var utils = require('utils');
+snippet = utils.trim(snippet);
+if (snippet.indexOf(':') == -1) {
+return {
+name: snippet,
+value: defaultValue
+};
+}
+var pair = snippet.split(':');
+return {
+name: utils.trim(pair.shift()),
+// replace ${0} tabstop to produce valid vendor-prefixed values
+// where possible
+value: utils.trim(pair.join(':')).replace(/^(\$\{0\}|\$0)(\s*;?)$/, '${1}$2')
+};
 },
 getSyntaxPreference: getSyntaxPreference,
 transformSnippet: transformSnippet
@@ -8578,6 +8634,25 @@ result.unit = unit;
 return result;
 }
 /**
+* Resolves property name (abbreviation): searches for snippet definition in
+* 'resources' and returns new name of matched property
+*/
+function resolvePropertyName(name, syntax) {
+var res = require('resources');
+var prefs = require('preferences');
+var snippet = res.findSnippet(syntax, name);
+if (!snippet && prefs.get('css.fuzzySearch')) {
+snippet = res.fuzzyFindSnippet(syntax, name,
+parseFloat(prefs.get('css.fuzzySearchMinScore')));
+}
+if (snippet) {
+if (!_.isString(snippet)) {
+snippet = snippet.data;
+}
+return require('cssResolver').splitSnippet(snippet).name;
+}
+}
+/**
 * Fills-out implied positions in color-stops. This function is useful for
 * old Webkit gradient definitions
 */
@@ -8683,13 +8758,37 @@ return b.name.length - a.name.length;
 function pasteGradient(property, gradient, valueRange) {
 var rule = property.parent;
 var utils = require('utils');
+var alignVendor = require('preferences').get('css.alignVendor');
+// we may have aligned gradient definitions: find the smallest value
+// separator
+var sep = property.styleSeparator;
+var before = property.styleBefore;
 // first, remove all properties within CSS rule with the same name and
 // gradient definition
 _.each(rule.getAll(getPrefixedNames(property.name())), function(item) {
 if (item != property && /gradient/i.test(item.value())) {
+if (item.styleSeparator.length < sep.length) {
+sep = item.styleSeparator;
+}
+if (item.styleBefore.length < before.length) {
+before = item.styleBefore;
+}
 rule.remove(item);
 }
 });
+if (alignVendor) {
+// update prefix
+if (before != property.styleBefore) {
+var fullRange = property.fullRange();
+rule._updateSource(before, fullRange.start, fullRange.start + property.styleBefore.length);
+property.styleBefore = before;
+}
+// update separator value
+if (sep != property.styleSeparator) {
+rule._updateSource(sep, property.nameRange().end, property.valueRange().start);
+property.styleSeparator = sep;
+}
+}
 var value = property.value();
 if (!valueRange)
 valueRange = require('range').create(0, property.value());
@@ -8700,6 +8799,23 @@ return utils.replaceSubstring(value, v, valueRange);
 property.value(val(module.toString(gradient)) + '${2}');
 // create list of properties to insert
 var propsToInsert = getPropertiesForGradient(gradient, property.name());
+// align prefixed values
+if (alignVendor) {
+var values = _.pluck(propsToInsert, 'value');
+var names = _.pluck(propsToInsert, 'name');
+values.push(property.value());
+names.push(property.name());
+var valuePads = utils.getStringsPads(_.map(values, function(v) {
+return v.substring(0, v.indexOf('('));
+}));
+var namePads = utils.getStringsPads(names);
+property.name(_.last(namePads) + property.name());
+_.each(propsToInsert, function(prop, i) {
+prop.name = namePads[i] + prop.name;
+prop.value = valuePads[i] + prop.value;
+});
+property.value(_.last(valuePads) + property.value());
+}
 // put vendor-prefixed definitions before current rule
 _.each(propsToInsert, function(prop) {
 rule.add(prop.name, prop.value, rule.indexOf(property));
@@ -8756,6 +8872,14 @@ value: module.toString(gradient) + '${2}'
 });
 var sep = css.getSyntaxPreference('valueSeparator', syntax);
 var end = css.getSyntaxPreference('propertyEnd', syntax);
+if (require('preferences').get('css.alignVendor')) {
+var pads = require('utils').getStringsPads(_.map(props, function(prop) {
+return prop.value.substring(0, prop.value.indexOf('('));
+}));
+_.each(props, function(prop, i) {
+prop.value = pads[i] + prop.value;
+});
+}
 props = _.map(props, function(item) {
 return item.name + sep + item.value + end;
 });
@@ -8827,6 +8951,11 @@ css = newCss;
 }
 // make sure current property has terminating semicolon
 css.property.end(';');
+// resolve CSS property name
+var resolvedName = resolvePropertyName(css.property.name(), syntax);
+if (resolvedName) {
+css.property.name(resolvedName);
+}
 pasteGradient(css.property, g.gradient, g.valueRange);
 editor.replaceContent(css.rule.toString(), ruleStart, ruleEnd, true);
 return true;
@@ -9781,6 +9910,11 @@ emmet.exec(function(require, _){require('resources').setVocabulary({
 "mah:n": "max-height:none;",
 "miw": "min-width:|;",
 "mih": "min-height:|;",
+"mar": "max-resolution:${1:res};",
+"mir": "min-resolution:${1:res};",
+"ori": "orientation:|;",
+"ori:l": "orientation:landscape;",
+"ori:p": "orientation:portrait;",
 "o": "outline:|;",
 "o:n": "outline:none;",
 "oo": "outline-offset:|;",
@@ -9797,6 +9931,7 @@ emmet.exec(function(require, _){require('resources').setVocabulary({
 "bdcl:c": "border-collapse:collapse;",
 "bdcl:s": "border-collapse:separate;",
 "bdc": "border-color:#${1:000};",
+"bdc:t": "border-color:transparent;",
 "bdi": "border-image:url(|);",
 "bdi:n": "border-image:none;",
 "bdti": "border-top-image:url(|);",
@@ -9856,6 +9991,7 @@ emmet.exec(function(require, _){require('resources').setVocabulary({
 "bdts": "border-top-style:|;",
 "bdts:n": "border-top-style:none;",
 "bdtc": "border-top-color:#${1:000};",
+"bdtc:t": "border-top-color:transparent;",
 "bdr": "border-right:|;",
 "br": "border-right:|;",
 "bdr+": "border-right:${1:1px} ${2:solid} ${3:#000};",
@@ -9864,6 +10000,7 @@ emmet.exec(function(require, _){require('resources').setVocabulary({
 "bdrs": "border-right-style:|;",
 "bdrs:n": "border-right-style:none;",
 "bdrc": "border-right-color:#${1:000};",
+"bdrc:t": "border-right-color:transparent;",
 "bdb": "border-bottom:|;",
 "bb": "border-bottom:|;",
 "bdb+": "border-bottom:${1:1px} ${2:solid} ${3:#000};",
@@ -9872,6 +10009,7 @@ emmet.exec(function(require, _){require('resources').setVocabulary({
 "bdbs": "border-bottom-style:|;",
 "bdbs:n": "border-bottom-style:none;",
 "bdbc": "border-bottom-color:#${1:000};",
+"bdbc:t": "border-bottom-color:transparent;",
 "bdl": "border-left:|;",
 "bl": "border-left:|;",
 "bdl+": "border-left:${1:1px} ${2:solid} ${3:#000};",
@@ -9880,6 +10018,7 @@ emmet.exec(function(require, _){require('resources').setVocabulary({
 "bdls": "border-left-style:|;",
 "bdls:n": "border-left-style:none;",
 "bdlc": "border-left-color:#${1:000};",
+"bdlc:t": "border-left-color:transparent;",
 "bdrs": "border-radius:|;",
 "bdtrrs": "border-top-right-radius:|;",
 "bdtlrs": "border-top-left-radius:|;",
@@ -9890,6 +10029,7 @@ emmet.exec(function(require, _){require('resources').setVocabulary({
 "bg:n": "background:none;",
 "bg:ie": "filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src='${1:x}.png',sizingMethod='${2:crop}');",
 "bgc": "background-color:#${1:fff};",
+"bgc:t": "background-color:transparent;",
 "bgi": "background-image:url(|);",
 "bgi:n": "background-image:none;",
 "bgr": "background-repeat:|;",
@@ -9975,6 +10115,7 @@ emmet.exec(function(require, _){require('resources').setVocabulary({
 "ta:l": "text-align:left;",
 "ta:c": "text-align:center;",
 "ta:r": "text-align:right;",
+"ta:j": "text-align:justify;",
 "tal": "text-align-last:|;",
 "tal:a": "text-align-last:auto;",
 "tal:l": "text-align-last:left;",

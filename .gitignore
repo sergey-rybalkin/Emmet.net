@@ -9,6 +9,7 @@
 *.log
 *.ncb
 *.obj
+*.opensdf
 *.pch
 *.pdb
 *.sbr

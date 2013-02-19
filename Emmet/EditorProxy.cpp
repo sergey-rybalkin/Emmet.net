@@ -311,19 +311,9 @@ BOOL CEditorProxy::Initialize(Document* pDoc, TextDocument* pTextDoc, TextSelect
     pDoc->get_Language(&bstrLang);
     pDoc->get_Name(&bstrName);
 
-    bool isSass = false;
-    if (bstrName.Length() > 5)
-    {
-        CComBSTR bstrExtension(((LPOLESTR)bstrName) + bstrName.Length() - 5);
-        isSass = bstrExtension == L".scss";
-    }
-
-    if (bstrLang == L"CSS" || isSass)
-        g_isHtml = false;
-    else if (bstrLang == "HTML")
-        g_isHtml = true;
-    else
-        return FALSE;
+    // We need to distinguish HTML and CSS syntaxes only, it doesn't really matter whether CSS is actually
+    // LESS or SASS document
+    g_isHtml = bstrLang == "HTML";
 
     return TRUE;
 }

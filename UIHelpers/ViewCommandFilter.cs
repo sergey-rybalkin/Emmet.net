@@ -112,28 +112,18 @@ namespace UIHelpers
 
         private bool RunEmmetAction(uint nCmdId)
         {
-            int position;
-
             if (ExpandCmdId == nCmdId)
             {
                 Span zenExpression = GetText();
                 if ((zenExpression.Length == 0) || !IsValidTextBuffer())
                     return false;
-
-                position = zenExpression.Start;
             }
-            else if (_view.Selection.SelectedSpans.Count > 0)
-            {
-                position = _view.Selection.SelectedSpans[0].Span.Start;
-            }
-            else
-                position = _view.Caret.Position.BufferPosition.Position;
 
             DTE dte = (DTE)Package.GetGlobalService(typeof(DTE));
             int translatedCmdId = _commandsRequirePostTranslation[nCmdId];
             dte.Commands.Raise(_emmetCommandsGuid.ToString("p"), translatedCmdId, null, null);
 
-            _tabSpans.PostProcessSelection(position);
+            _tabSpans.PostProcessSelection();
 
             return true;
         }

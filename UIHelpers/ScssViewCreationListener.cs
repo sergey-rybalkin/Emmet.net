@@ -10,11 +10,13 @@ using Microsoft.VisualStudio.Utilities;
 namespace UIHelpers
 {
     /// <summary>
-    /// Listener responsible for injection of our command filters into every newly created editor window. This
-    /// class is required to support non-native for visual studio syntaxes like SASS and LESS.
+    /// Listener responsible for injection of our command filters into every newly created SASS editor window.
     /// </summary>
-    [TextViewRole("DOCUMENT"), ContentType("Plain Text"), Export(typeof(IVsTextViewCreationListener))]
-    public class PlainTextViewCreationListener : ViewCreationListenerBase, IVsTextViewCreationListener
+    /// <remarks>
+    /// Using content type of plain text as currently visual studio does not support SASS files natively.
+    /// </remarks>
+    [TextViewRole("DOCUMENT"), ContentType("plaintext"), Export(typeof(IVsTextViewCreationListener))]
+    public class ScssViewCreationListener : ViewCreationListenerBase, IVsTextViewCreationListener
     {
         [Import]
         internal override ICompletionBroker CompletionBroker { get; set; }
@@ -41,7 +43,7 @@ namespace UIHelpers
             string docName = dte.ActiveDocument.Name;
 
             string normalizedName = docName.ToLower();
-            if (normalizedName.EndsWith(".scss") || normalizedName.EndsWith(".less"))
+            if (normalizedName.EndsWith(".scss"))
                 base.VsTextViewCreated(textViewAdapter);
         }
     }
