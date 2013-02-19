@@ -25,6 +25,7 @@ Precompiled version can be downloaded here - http://dl.dropbox.com/u/38120966/Em
 
 ### Version history
 
-1. v1.2 - Now using custom emmet build without actions that are irrelevant for visual studio, fixed tab stops bug when placeholders where not removed.
+1. v1.3 - New Emmet engine version, fixed compatibility issues for Visual Studio Web Tools update 2012.2
+2. v1.2 - Now using custom emmet build without actions that are irrelevant for visual studio, fixed tab stops bug when placeholders where not removed.
 2. v1.1 - Minor performance improvements and bug fixes.
 3. v1.0 - Initial release.
