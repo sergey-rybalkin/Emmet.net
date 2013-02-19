@@ -156,7 +156,8 @@ Handle<Value> EditorReplaceContent(const Arguments& args)
         EmmetAction_RemoveTag == g_CurAction)
     {
         g_pSelection->MoveToAbsoluteOffset(start + 1, TRUE);
-        g_pSelection->SmartFormat();
+        if (g_isHtml)
+            g_pSelection->SmartFormat();
     }
 
     return Undefined();
@@ -178,7 +179,7 @@ Handle<Value> EditorGetContent(const Arguments& args)
     startEditPoint->GetText(CComVariant(endEditPoint), &buf);
 
     int nChars = buf.Length();
-    PSTR asciiBuf = (PSTR)HeapAlloc(GetProcessHeap(), 0, nChars + 1);
+    CAutoPtr<char> asciiBuf(new char[nChars + 1]);
 
     WideCharToMultiByte(CP_ACP, 0, buf, nChars + 1, asciiBuf, nChars + 1, NULL, NULL);
 
@@ -196,8 +197,6 @@ Handle<Value> EditorGetContent(const Arguments& args)
 
     Handle<String> retVal = String::New(asciiBuf, destIndex - 1);
 
-    HeapFree(GetProcessHeap(), 0, asciiBuf);
-
     return retVal;
 }
 
@@ -212,7 +211,7 @@ Handle<Value> EditorGetSelection(const Arguments& args)
     if (0 == retValLen)
         return String::New("");
 
-    PSTR asciiBuf = (PSTR)HeapAlloc(GetProcessHeap(), 0, retValLen + 1);
+    CAutoPtr<char> asciiBuf(new char[retValLen + 1]);
 
     WideCharToMultiByte(CP_ACP, 0, buf, retValLen + 1, asciiBuf, retValLen + 1, NULL, NULL);
     asciiBuf[retValLen] = '\0';
@@ -229,8 +228,6 @@ Handle<Value> EditorGetSelection(const Arguments& args)
     asciiBuf[destIndex] = '\0';
 
     Handle<String> retVal = String::New(asciiBuf, destIndex);
-
-    HeapFree(GetProcessHeap(), 0, asciiBuf);
 
     return retVal;
 }

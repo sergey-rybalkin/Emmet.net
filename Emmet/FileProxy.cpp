@@ -6,6 +6,11 @@ using namespace v8;
 Handle<Value> FileReadFile(const Arguments& args)
 {
     String::AsciiValue path(args[0]);
+    DWORD nBufSize = (DWORD)args[1].As<Integer>()->Value();
+
+    if (nBufSize < 1)
+        return ThrowException(String::New("Invalid buffer length"));
+
     WCHAR szPath[MAX_PATH] = {0};
     MultiByteToWideChar(CP_ACP, 0, *path, path.length(), szPath, MAX_PATH);
 
@@ -24,17 +29,15 @@ Handle<Value> FileReadFile(const Arguments& args)
         return ThrowException(String::New(msg));
     }
 
-    char buf[200]; // Full content is not required, first 200 bytes should be enough
+    CAutoPtr<unsigned char> buf(new unsigned char[nBufSize]);
     DWORD dwBytesRead;
-    ReadFile(hFile, buf, 200, &dwBytesRead, NULL);
+    ReadFile(hFile, buf, nBufSize, &dwBytesRead, NULL);
     CloseHandle(hFile);
 
     Handle<Array> retVal = Array::New();
 
     for (DWORD i=0 ; i<dwBytesRead ; i++)
-    {
         retVal->Set(i, Int32::New((unsigned char)((unsigned char*)buf)[i]));
-    }
 
     return retVal;
 }

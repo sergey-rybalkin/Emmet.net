@@ -5652,8 +5652,9 @@ return str;
 if (varName == 'cursor')
 return require('utils').getCaretPlaceholder();
 var attr = node.attribute(varName);
-if (!_.isUndefined(attr))
+if (!_.isUndefined(attr) && attr !== str) {
 return attr;
+}
 var varValue = res.getVariable(varName);
 if (varValue)
 return varValue;
@@ -5662,10 +5663,6 @@ if (!placeholderMemo[varName])
 placeholderMemo[varName] = startPlaceholderNum++;
 return '${' + placeholderMemo[varName] + ':' + varName + '}';
 };
-},
-resetPlaceholderCounter: function() {
-console.log('deprecated');
-startPlaceholderNum = 100;
 },
 /**
 * Resets global tabstop index. When parsed tree is converted to output
@@ -7771,7 +7768,7 @@ var absPath = file.locateFile(editor.getFilePath(), src);
 if (absPath === null) {
 throw "Can't find " + src + ' file';
 }
-file.read(absPath, 500, function(err, content) {
+file.read(absPath, function(err, content) {
 if (err) {
 throw 'Unable to read ' + absPath + ': ' + err;
 }
@@ -7933,7 +7930,7 @@ prefs.define('css.intUnit', 'px', 'Default unit for integer values');
 prefs.define('css.floatUnit', 'em', 'Default unit for float values');
 prefs.define('css.keywords', 'auto, inherit',
 'A comma-separated list of valid keywords that can be used in CSS abbreviations.');
-prefs.define('css.keywordAliases', 'a:auto, i:inherit, s:solid, da:dashed, do:dotted',
+prefs.define('css.keywordAliases', 'a:auto, i:inherit, s:solid, da:dashed, do:dotted, t:transparent',
 'A comma-separated list of keyword aliases, used in CSS abbreviation. '
 + 'Each alias should be defined as <code>alias:keyword_name</code>.');
 prefs.define('css.unitAliases', 'e:em, p:%, x:ex, r:rem',
@@ -8005,6 +8002,9 @@ return getKeyword(value);
 }
 function normalizeHexColor(value) {
 var hex = value.replace(/^#+/, '') || '0';
+if (hex.toLowerCase() == 't') {
+return 'transparent';
+}
 var repeat = require('utils').repeatString;
 var color = null;
 switch (hex.length) {
@@ -8355,7 +8355,7 @@ var values = [];
 var ch = null;
 while (ch = stream.next()) {
 if (ch == '#') {
-stream.match(/^[0-9a-f]+/, true);
+stream.match(/^t|[0-9a-f]+/i, true);
 values.push(stream.current());
 } else if (ch == '-') {
 if (isValidKeyword(_.last(values)) ||
@@ -9372,7 +9372,21 @@ return tree;
 */
 emmet.exec(function(require, _){
 var placeholder = '%s';
-function getIndentation() {
+/** @type preferences */
+var prefs = require('preferences');
+prefs.define('format.noIndentTags', 'html',
+'A comma-separated list of tag names that should not get inner indentation.');
+prefs.define('format.forceIndentationForTags', 'body',
+'A comma-separated list of tag names that should <em>always</em> get inner indentation.');
+/**
+* Get indentation for given node
+* @param {AbbreviationNode} node
+* @returns {String}
+*/
+function getIndentation(node) {
+if (_.include(prefs.getArray('format.noIndentTags') || [], node.name())) {
+return '';
+}
 return require('resources').getVariable('indentation');
 }
 /**
@@ -9476,9 +9490,13 @@ var utils = require('utils');
 var abbrUtils = require('abbreviationUtils');
 var isUnary = abbrUtils.isUnary(item);
 var nl = utils.getNewline();
+var indent = getIndentation(item);
 // formatting output
 if (profile.tag_nl !== false) {
 var forceNl = profile.tag_nl === true && (profile.tag_nl_leaf || item.children.length);
+if (!forceNl) {
+forceNl = _.include(prefs.getArray('format.forceIndentationForTags') || [], item.name());
+}
 // formatting block-level elements
 if (!item.isTextNode()) {
 if (shouldAddLineBreak(item, profile)) {
@@ -9489,13 +9507,13 @@ item.start = nl + item.start;
 if (abbrUtils.hasBlockChildren(item) || shouldBreakChild(item, profile) || (forceNl && !isUnary))
 item.end = nl + item.end;
 if (abbrUtils.hasTagsInContent(item) || (forceNl && !item.children.length && !isUnary))
-item.start += nl + getIndentation();
+item.start += nl + indent;
 } else if (abbrUtils.isInline(item) && hasBlockSibling(item) && !isVeryFirstChild(item)) {
 item.start = nl + item.start;
 } else if (abbrUtils.isInline(item) && shouldBreakInsideInline(item, profile)) {
 item.end = nl + item.end;
 }
-item.padding = getIndentation() ;
+item.padding = indent;
 }
 }
 return item;
@@ -9575,8 +9593,15 @@ var placeholder = '%s';
 // we're using RegExp literal.
 item.start = utils.replaceSubstring(item.start, start, item.start.indexOf(placeholder), placeholder);
 item.end = utils.replaceSubstring(item.end, end, item.end.indexOf(placeholder), placeholder);
-if (!item.children.length && !isUnary && item.content.indexOf(cursor) == -1)
+// should we put caret placeholder after opening tag?
+if (
+!item.children.length
+&& !isUnary
+&& !~item.content.indexOf(cursor)
+&& !require('tabStops').extract(item.content).tabstops.length
+) {
 item.start += cursor;
+}
 return item;
 }
 /**
@@ -9800,11 +9825,42 @@ emmet.exec(function(require, _){require('resources').setVocabulary({
 "filters": "html",
 "snippets": {
 "@i": "@import url(|);",
-"@m": "@media print {\n\t|\n}",
+"@import": "@import url(|);",
+"@m": "@media ${1:screen} {\n\t|\n}",
+"@media": "@media ${1:screen} {\n\t|\n}",
 "@f": "@font-face {\n\tfont-family:|;\n\tsrc:url(|);\n}",
 "@f+": "@font-face {\n\tfont-family: '${1:FontName}';\n\tsrc: url('${2:FileName}.eot');\n\tsrc: url('${2:FileName}.eot?#iefix') format('embedded-opentype'),\n\t\t url('${2:FileName}.woff') format('woff'),\n\t\t url('${2:FileName}.ttf') format('truetype'),\n\t\t url('${2:FileName}.svg#${1:FontName}') format('svg');\n\tfont-style: ${3:normal};\n\tfont-weight: ${4:normal};\n}",
+"@kf": "@-webkit-keyframes ${1:identifier} {\n\t${2:from} { ${3} }${6}\n\t${4:to} { ${5} }\n}\n@-o-keyframes ${1:identifier} {\n\t${2:from} { ${3} }${6}\n\t${4:to} { ${5} }\n}\n@-moz-keyframes ${1:identifier} {\n\t${2:from} { ${3} }${6}\n\t${4:to} { ${5} }\n}\n@keyframes ${1:identifier} {\n\t${2:from} { ${3} }${6}\n\t${4:to} { ${5} }\n}",
+"anim": "animation:|;",
+"anim-": "animation:${1:name} ${2:duration} ${3:timing-function} ${4:delay} ${5:iteration-count} ${6:direction} ${7:fill-mode};",
+"animdel": "animation-delay:${1:time};",
+"animdir": "animation-direction:${1:normal};",
+"animdir:n": "animation-direction:normal;",
+"animdir:r": "animation-direction:reverse;",
+"animdir:a": "animation-direction:alternate;",
+"animdir:ar": "animation-direction:alternate-reverse;",
+"animdur": "animation-duration:${1:0}s;",
+"animfm": "animation-fill-mode:${1:both};",
+"animfm:f": "animation-fill-mode:forwards;",
+"animfm:b": "animation-fill-mode:backwards;",
+"animfm:bt": "animation-fill-mode:both;",
+"animfm:bh": "animation-fill-mode:both;",
+"animic": "animation-iteration-count:${1:1};",
+"animic:i": "animation-iteration-count:infinite;",
+"animn": "animation-name:${1:none};",
+"animps": "animation-play-state:${1:running};",
+"animps:p": "animation-play-state:paused;",
+"animps:r": "animation-play-state:running;",
+"animtf": "animation-timing-function:${1:linear};",
+"animtf:e": "animation-timing-function:ease;",
+"animtf:ei": "animation-timing-function:ease-in;",
+"animtf:eo": "animation-timing-function:ease-out;",
+"animtf:eio": "animation-timing-function:ease-in-out;",
+"animtf:l": "animation-timing-function:linear;",
+"animtf:cb": "animation-timing-function:cubic-bezier(${1:0.1}, ${2:0.7}, ${3:1.0}, ${3:0.1});",
+"ap": "appearance:${none}",
 "!": "!important",
-"pos": "position:|;",
+"pos": "position:${1:relative};",
 "pos:s": "position:static;",
 "pos:a": "position:absolute;",
 "pos:r": "position:relative;",
@@ -9819,16 +9875,26 @@ emmet.exec(function(require, _){require('resources').setVocabulary({
 "l:a": "left:auto;",
 "z": "z-index:|;",
 "z:a": "z-index:auto;",
-"fl": "float:|;",
+"fl": "float:${1:left};",
 "fl:n": "float:none;",
 "fl:l": "float:left;",
 "fl:r": "float:right;",
-"cl": "clear:|;",
+"cl": "clear:${1:both};",
 "cl:n": "clear:none;",
 "cl:l": "clear:left;",
 "cl:r": "clear:right;",
 "cl:b": "clear:both;",
-"d": "display:|;",
+"colm": "columns:|;",
+"colmc": "column-count:|;",
+"colmf": "column-fill:|;",
+"colmg": "column-gap:|;",
+"colmr": "column-rule:|;",
+"colmrc": "column-rule-color:|;",
+"colmrs": "column-rule-style:|;",
+"colmrw": "column-rule-width:|;",
+"colms": "column-span:|;",
+"colmw": "column-width:|;",
+"d": "display:${1:block};",
 "d:n": "display:none;",
 "d:b": "display:block;",
 "d:i": "display:inline;",
@@ -9851,39 +9917,42 @@ emmet.exec(function(require, _){require('resources').setVocabulary({
 "d:rbbg": "display:ruby-base-group;",
 "d:rbt": "display:ruby-text;",
 "d:rbtg": "display:ruby-text-group;",
-"v": "visibility:|;",
+"v": "visibility:${1:hidden};",
 "v:v": "visibility:visible;",
 "v:h": "visibility:hidden;",
 "v:c": "visibility:collapse;",
-"ov": "overflow:|;",
+"ov": "overflow:${1:hidden};",
 "ov:v": "overflow:visible;",
 "ov:h": "overflow:hidden;",
 "ov:s": "overflow:scroll;",
 "ov:a": "overflow:auto;",
-"ovx": "overflow-x:|;",
+"ovx": "overflow-x:${1:hidden};",
 "ovx:v": "overflow-x:visible;",
 "ovx:h": "overflow-x:hidden;",
 "ovx:s": "overflow-x:scroll;",
 "ovx:a": "overflow-x:auto;",
-"ovy": "overflow-y:|;",
+"ovy": "overflow-y:${1:hidden};",
 "ovy:v": "overflow-y:visible;",
 "ovy:h": "overflow-y:hidden;",
 "ovy:s": "overflow-y:scroll;",
 "ovy:a": "overflow-y:auto;",
-"ovs": "overflow-style:|;",
+"ovs": "overflow-style:${1:scrollbar};",
 "ovs:a": "overflow-style:auto;",
 "ovs:s": "overflow-style:scrollbar;",
 "ovs:p": "overflow-style:panner;",
 "ovs:m": "overflow-style:move;",
 "ovs:mq": "overflow-style:marquee;",
 "zoo": "zoom:1;",
+"zm": "zoom:1;",
 "cp": "clip:|;",
 "cp:a": "clip:auto;",
-"cp:r": "clip:rect(|);",
-"bxz": "box-sizing:|;",
+"cp:r": "clip:rect(${1:top} ${2:right} ${3:bottom} ${4:left});",
+"bxz": "box-sizing:${1:border-box};",
 "bxz:cb": "box-sizing:content-box;",
 "bxz:bb": "box-sizing:border-box;",
-"bxsh": "box-shadow:${1:hoff} ${2:voff} ${3:radius} ${4:color};",
+"bxsh": "box-shadow:${1:inset }${2:hoff} ${3:voff} ${4:blur} ${5:color};",
+"bxsh:r": "box-shadow:${1:inset }${2:hoff} ${3:voff} ${4:blur} ${5:spread }rgb(${6:0}, ${7:0}, ${8:0});",
+"bxsh:ra": "box-shadow:${1:inset }${2:h} ${3:v} ${4:blur} ${5:spread }rgba(${6:0}, ${7:0}, ${8:0}, .${9:5});",
 "bxsh:n": "box-shadow:none;",
 "m": "margin:|;",
 "m:a": "margin:auto;",
@@ -9915,17 +9984,17 @@ emmet.exec(function(require, _){require('resources').setVocabulary({
 "ori": "orientation:|;",
 "ori:l": "orientation:landscape;",
 "ori:p": "orientation:portrait;",
-"o": "outline:|;",
-"o:n": "outline:none;",
-"oo": "outline-offset:|;",
-"ow": "outline-width:|;",
-"os": "outline-style:|;",
-"oc": "outline-color:#${1:000};",
-"oc:i": "outline-color:invert;",
+"ol": "outline:|;",
+"ol:n": "outline:none;",
+"olo": "outline-offset:|;",
+"olw": "outline-width:|;",
+"ols": "outline-style:|;",
+"olc": "outline-color:#${1:000};",
+"olc:i": "outline-color:invert;",
 "bd": "border:|;",
 "bd+": "border:${1:1px} ${2:solid} ${3:#000};",
 "bd:n": "border:none;",
-"bdbk": "border-break:|;",
+"bdbk": "border-break:${1:close};",
 "bdbk:c": "border-break:close;",
 "bdcl": "border-collapse:|;",
 "bdcl:c": "border-collapse:collapse;",
@@ -9957,7 +10026,7 @@ emmet.exec(function(require, _){require('resources').setVocabulary({
 "bdbli": "border-bottom-left-image:url(|);",
 "bdbli:n": "border-bottom-left-image:none;",
 "bdbli:c": "border-bottom-left-image:continue;",
-"bdf": "border-fit:|;",
+"bdf": "border-fit:${1:repeat};",
 "bdf:c": "border-fit:clip;",
 "bdf:r": "border-fit:repeat;",
 "bdf:sc": "border-fit:scale;",
@@ -9965,8 +10034,8 @@ emmet.exec(function(require, _){require('resources').setVocabulary({
 "bdf:ow": "border-fit:overwrite;",
 "bdf:of": "border-fit:overflow;",
 "bdf:sp": "border-fit:space;",
-"bdl": "border-length:|;",
-"bdl:a": "border-length:auto;",
+"bdlen": "border-length:|;",
+"bdlen:a": "border-length:auto;",
 "bdsp": "border-spacing:|;",
 "bds": "border-style:|;",
 "bds:n": "border-style:none;",
@@ -9983,11 +10052,14 @@ emmet.exec(function(require, _){require('resources').setVocabulary({
 "bds:i": "border-style:inset;",
 "bds:o": "border-style:outset;",
 "bdw": "border-width:|;",
+"bdtw": "border-top-width:|;",
+"bdrw": "border-right-width:|;",
+"bdbw": "border-bottom-width:|;",
+"bdlw": "border-left-width:|;",
 "bdt": "border-top:|;",
 "bt": "border-top:|;",
 "bdt+": "border-top:${1:1px} ${2:solid} ${3:#000};",
 "bdt:n": "border-top:none;",
-"bdtw": "border-top-width:|;",
 "bdts": "border-top-style:|;",
 "bdts:n": "border-top-style:none;",
 "bdtc": "border-top-color:#${1:000};",
@@ -9996,16 +10068,14 @@ emmet.exec(function(require, _){require('resources').setVocabulary({
 "br": "border-right:|;",
 "bdr+": "border-right:${1:1px} ${2:solid} ${3:#000};",
 "bdr:n": "border-right:none;",
-"bdrw": "border-right-width:|;",
-"bdrs": "border-right-style:|;",
-"bdrs:n": "border-right-style:none;",
+"bdrst": "border-right-style:|;",
+"bdrst:n": "border-right-style:none;",
 "bdrc": "border-right-color:#${1:000};",
 "bdrc:t": "border-right-color:transparent;",
 "bdb": "border-bottom:|;",
 "bb": "border-bottom:|;",
 "bdb+": "border-bottom:${1:1px} ${2:solid} ${3:#000};",
 "bdb:n": "border-bottom:none;",
-"bdbw": "border-bottom-width:|;",
 "bdbs": "border-bottom-style:|;",
 "bdbs:n": "border-bottom-style:none;",
 "bdbc": "border-bottom-color:#${1:000};",
@@ -10014,7 +10084,6 @@ emmet.exec(function(require, _){require('resources').setVocabulary({
 "bl": "border-left:|;",
 "bdl+": "border-left:${1:1px} ${2:solid} ${3:#000};",
 "bdl:n": "border-left:none;",
-"bdlw": "border-left-width:|;",
 "bdls": "border-left-style:|;",
 "bdls:n": "border-left-style:none;",
 "bdlc": "border-left-color:#${1:000};",
@@ -10036,6 +10105,8 @@ emmet.exec(function(require, _){require('resources').setVocabulary({
 "bgr:n": "background-repeat:no-repeat;",
 "bgr:x": "background-repeat:repeat-x;",
 "bgr:y": "background-repeat:repeat-y;",
+"bgr:sp": "background-repeat:space;",
+"bgr:rd": "background-repeat:round;",
 "bga": "background-attachment:|;",
 "bga:f": "background-attachment:fixed;",
 "bga:s": "background-attachment:scroll;",
@@ -10046,7 +10117,7 @@ emmet.exec(function(require, _){require('resources').setVocabulary({
 "bgbk:bb": "background-break:bounding-box;",
 "bgbk:eb": "background-break:each-box;",
 "bgbk:c": "background-break:continuous;",
-"bgcp": "background-clip:|;",
+"bgcp": "background-clip:${1:padding-box};",
 "bgcp:bb": "background-clip:border-box;",
 "bgcp:pb": "background-clip:padding-box;",
 "bgcp:cb": "background-clip:content-box;",
@@ -10055,13 +10126,23 @@ emmet.exec(function(require, _){require('resources').setVocabulary({
 "bgo:pb": "background-origin:padding-box;",
 "bgo:bb": "background-origin:border-box;",
 "bgo:cb": "background-origin:content-box;",
-"bgz": "background-size:|;",
-"bgz:a": "background-size:auto;",
-"bgz:ct": "background-size:contain;",
-"bgz:cv": "background-size:cover;",
+"bgsz": "background-size:|;",
+"bgsz:a": "background-size:auto;",
+"bgsz:ct": "background-size:contain;",
+"bgsz:cv": "background-size:cover;",
 "c": "color:#${1:000};",
+"c:r": "color:rgb(${1:0}, ${2:0}, ${3:0});",
+"c:ra": "color:rgba(${1:0}, ${2:0}, ${3:0}, .${4:5});",
 "cm": "/* |${child} */",
-"cn": "content:|;",
+"cnt": "content:'|';",
+"cnt:n": "content:normal;",
+"cnt:oq": "content:open-quote;",
+"cnt:noq": "content:no-open-quote;",
+"cnt:cq": "content:close-quote;",
+"cnt:ncq": "content:no-close-quote;",
+"cnt:a": "content:attr(|);",
+"cnt:c": "content:counter(|);",
+"cnt:cs": "content:counters(|);",
 "tbl": "table-layout:|;",
 "tbl:a": "table-layout:auto;",
 "tbl:f": "table-layout:fixed;",
@@ -10102,7 +10183,7 @@ emmet.exec(function(require, _){require('resources').setVocabulary({
 "ct:cs": "content:counters(|);",
 "coi": "counter-increment:|;",
 "cor": "counter-reset:|;",
-"va": "vertical-align:|;",
+"va": "vertical-align:${1:top};",
 "va:sup": "vertical-align:super;",
 "va:t": "vertical-align:top;",
 "va:tt": "vertical-align:text-top;",
@@ -10111,17 +10192,17 @@ emmet.exec(function(require, _){require('resources').setVocabulary({
 "va:b": "vertical-align:bottom;",
 "va:tb": "vertical-align:text-bottom;",
 "va:sub": "vertical-align:sub;",
-"ta": "text-align:|;",
+"ta": "text-align:${1:left};",
 "ta:l": "text-align:left;",
 "ta:c": "text-align:center;",
 "ta:r": "text-align:right;",
 "ta:j": "text-align:justify;",
-"tal": "text-align-last:|;",
+"ta-lst": "text-align-last:|;",
 "tal:a": "text-align-last:auto;",
 "tal:l": "text-align-last:left;",
 "tal:c": "text-align-last:center;",
 "tal:r": "text-align-last:right;",
-"td": "text-decoration:|;",
+"td": "text-decoration:${1:none};",
 "td:n": "text-decoration:none;",
 "td:u": "text-decoration:underline;",
 "td:o": "text-decoration:overline;",
@@ -10149,12 +10230,15 @@ emmet.exec(function(require, _){require('resources').setVocabulary({
 "tj:d": "text-justify:distribute;",
 "tj:k": "text-justify:kashida;",
 "tj:t": "text-justify:tibetan;",
+"tov": "text-overflow:${ellipsis};",
+"tov:e": "text-overflow:ellipsis;",
+"tov:c": "text-overflow:clip;",
 "to": "text-outline:|;",
 "to+": "text-outline:${1:0} ${2:0} ${3:#000};",
 "to:n": "text-outline:none;",
 "tr": "text-replace:|;",
 "tr:n": "text-replace:none;",
-"tt": "text-transform:|;",
+"tt": "text-transform:${1:uppercase};",
 "tt:n": "text-transform:none;",
 "tt:c": "text-transform:capitalize;",
 "tt:u": "text-transform:uppercase;",
@@ -10165,6 +10249,8 @@ emmet.exec(function(require, _){require('resources').setVocabulary({
 "tw:u": "text-wrap:unrestricted;",
 "tw:s": "text-wrap:suppress;",
 "tsh": "text-shadow:${1:hoff} ${2:voff} ${3:blur} ${4:#000};",
+"tsh:r": "text-shadow:${1:h} ${2:v} ${3:blur} rgb(${4:0}, ${5:0}, ${6:0});",
+"tsh:ra": "text-shadow:${1:h} ${2:v} ${3:blur} rgba(${4:0}, ${5:0}, ${6:0}, .${7:5});",
 "tsh+": "text-shadow:${1:0} ${2:0} ${3:0} ${4:#000};",
 "tsh:n": "text-shadow:none;",
 "trf": "transform:|;",
@@ -10177,6 +10263,8 @@ emmet.exec(function(require, _){require('resources').setVocabulary({
 "trf:t": "transform: translate(${1:x}, ${2:y});",
 "trf:tx": "transform: translateX(${1:x});",
 "trf:ty": "transform: translateY(${1:y});",
+"trfo": "transform-origin:|;",
+"trfs": "transform-style:${1:preserve-3d};",
 "trs": "transition:${1:prop} ${2:time};",
 "trsde": "transition-delay:${1:time};",
 "trsdu": "transition-duration:${1:time};",
@@ -10215,7 +10303,7 @@ emmet.exec(function(require, _){require('resources').setVocabulary({
 "fw:b": "font-weight:bold;",
 "fw:br": "font-weight:bolder;",
 "fw:lr": "font-weight:lighter;",
-"fs": "font-style:|;",
+"fs": "font-style:${italic};",
 "fs:n": "font-style:normal;",
 "fs:i": "font-style:italic;",
 "fs:o": "font-style:oblique;",
@@ -10263,12 +10351,12 @@ emmet.exec(function(require, _){require('resources').setVocabulary({
 "op": "opacity:|;",
 "op:ie": "filter:progid:DXImageTransform.Microsoft.Alpha(Opacity=100);",
 "op:ms": "-ms-filter:'progid:DXImageTransform.Microsoft.Alpha(Opacity=100)';",
-"rz": "resize:|;",
-"rz:n": "resize:none;",
-"rz:b": "resize:both;",
-"rz:h": "resize:horizontal;",
-"rz:v": "resize:vertical;",
-"cur": "cursor:|;",
+"rsz": "resize:|;",
+"rsz:n": "resize:none;",
+"rsz:b": "resize:both;",
+"rsz:h": "resize:horizontal;",
+"rsz:v": "resize:vertical;",
+"cur": "cursor:${pointer};",
 "cur:a": "cursor:auto;",
 "cur:d": "cursor:default;",
 "cur:c": "cursor:crosshair;",
@@ -10291,23 +10379,29 @@ emmet.exec(function(require, _){require('resources').setVocabulary({
 "pgba:l": "page-break-after:left;",
 "pgba:r": "page-break-after:right;",
 "orp": "orphans:|;",
-"wid": "widows:|;"
+"us": "user-select:${none};",
+"wid": "widows:|;",
+"wfsm": "-webkit-font-smoothing:${antialiased};",
+"wfsm:a": "-webkit-font-smoothing:antialiased;",
+"wfsm:s": "-webkit-font-smoothing:subpixel-antialiased;",
+"wfsm:sa": "-webkit-font-smoothing:subpixel-antialiased;",
+"wfsm:n": "-webkit-font-smoothing:none;"
 }
 },
 "html": {
 "filters": "html",
 "profile": "html",
 "snippets": {
+"!!!":    "<!doctype html>",
+"!!!4t":  "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">",
+"!!!4s":  "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\">",
+"!!!xt":  "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">",
+"!!!xs":  "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">",
+"!!!xxs": "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">",
 "c": "<!-- |${child} -->",
 "cc:ie6": "<!--[if lte IE 6]>\n\t${child}|\n<![endif]-->",
 "cc:ie": "<!--[if IE]>\n\t${child}|\n<![endif]-->",
-"cc:noie": "<!--[if !IE]><!-->\n\t${child}|\n<!--<![endif]-->",
-"html:4t": "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">\n<html lang=\"${lang}\">\n<head>\n\t<meta http-equiv=\"Content-Type\" content=\"text/html;charset=${charset}\">\n\t<title>${1:Document}</title>\n</head>\n<body>\n\t${child}${2}\n</body>\n</html>",
-"html:4s": "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\">\n<html lang=\"${lang}\">\n<head>\n\t<meta http-equiv=\"Content-Type\" content=\"text/html;charset=${charset}\">\n\t<title>${1:Document}</title>\n</head>\n<body>\n\t${child}${2}\n</body>\n</html>",
-"html:xt": "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"${lang}\">\n<head>\n\t<meta http-equiv=\"Content-Type\" content=\"text/html;charset=${charset}\" />\n\t<title></title>\n</head>\n<body>\n\t${child}${2}\n</body>\n</html>",
-"html:xs": "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"${lang}\">\n<head>\n\t<meta http-equiv=\"Content-Type\" content=\"text/html;charset=${charset}\" />\n\t<title>${1:Document}</title>\n</head>\n<body>\n\t${child}${2}\n</body>\n</html>",
-"html:xxs": "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">\n<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"${lang}\">\n<head>\n\t<meta http-equiv=\"Content-Type\" content=\"text/html;charset=${charset}\" />\n\t<title>${1:Document}</title>\n</head>\n<body>\n\t${child}${2}\n</body>\n</html>",
-"html:5": "<!doctype html>\n<html lang=\"${lang}\">\n<head>\n\t<meta charset=\"${charset}\">\n\t<title>${1:Document}</title>\n</head>\n<body>\n\t${child}${2}\n</body>\n</html>"
+"cc:noie": "<!--[if !IE]><!-->\n\t${child}|\n<!--<![endif]-->"
 },
 "abbreviations": {
 "!": "html:5",
@@ -10329,6 +10423,7 @@ emmet.exec(function(require, _){require('resources').setVocabulary({
 "link:atom": "<link rel=\"alternate\" type=\"application/atom+xml\" title=\"Atom\" href=\"${1:atom.xml}\" />",
 "meta:utf": "<meta http-equiv=\"Content-Type\" content=\"text/html;charset=UTF-8\" />",
 "meta:win": "<meta http-equiv=\"Content-Type\" content=\"text/html;charset=windows-1251\" />",
+"meta:vp": "<meta name=\"viewport\" content=\"width=${1:device-width}, user-scalable=${2:no}, initial-scale=${3:1.0}, maximum-scale=${4:1.0}, minimum-scale=${5:1.0}\" />",
 "meta:compat": "<meta http-equiv=\"X-UA-Compatible\" content=\"${1:IE=7}\" />",
 "style": "<style>",
 "script": "<script>",
@@ -10348,45 +10443,46 @@ emmet.exec(function(require, _){require('resources').setVocabulary({
 "form:get": "<form action=\"\" method=\"get\">",
 "form:post": "<form action=\"\" method=\"post\">",
 "label": "<label for=\"\">",
-"input": "<input type=\"\" />",
-"input:hidden": "<input type=\"hidden\" name=\"\" />",
-"input:h": "<input type=\"hidden\" name=\"\" />",
-"input:text": "<input type=\"text\" name=\"\" id=\"\" />",
-"input:t": "<input type=\"text\" name=\"\" id=\"\" />",
-"input:search": "<input type=\"search\" name=\"\" id=\"\" />",
-"input:email": "<input type=\"email\" name=\"\" id=\"\" />",
-"input:url": "<input type=\"url\" name=\"\" id=\"\" />",
-"input:password": "<input type=\"password\" name=\"\" id=\"\" />",
-"input:p": "<input type=\"password\" name=\"\" id=\"\" />",
-"input:datetime": "<input type=\"datetime\" name=\"\" id=\"\" />",
-"input:date": "<input type=\"date\" name=\"\" id=\"\" />",
-"input:datetime-local": "<input type=\"datetime-local\" name=\"\" id=\"\" />",
-"input:month": "<input type=\"month\" name=\"\" id=\"\" />",
-"input:week": "<input type=\"week\" name=\"\" id=\"\" />",
-"input:time": "<input type=\"time\" name=\"\" id=\"\" />",
-"input:number": "<input type=\"number\" name=\"\" id=\"\" />",
-"input:color": "<input type=\"color\" name=\"\" id=\"\" />",
-"input:checkbox": "<input type=\"checkbox\" name=\"\" id=\"\" />",
-"input:c": "<input type=\"checkbox\" name=\"\" id=\"\" />",
-"input:radio": "<input type=\"radio\" name=\"\" id=\"\" />",
-"input:r": "<input type=\"radio\" name=\"\" id=\"\" />",
-"input:range": "<input type=\"range\" name=\"\" id=\"\" />",
-"input:file": "<input type=\"file\" name=\"\" id=\"\" />",
-"input:f": "<input type=\"file\" name=\"\" id=\"\" />",
+"input": "<input type=\"${1:text}\" />",
+"inp": "<input type=\"${1:text}\" name=\"\" id=\"\" />",
+"input:hidden": "input[type=hidden name] />",
+"input:h": "input:hidden",
+"input:text": "inp",
+"input:t": "inp",
+"input:search": "inp[type=search]",
+"input:email": "inp[type=email]",
+"input:url": "inp[type=url]",
+"input:password": "inp[type=password]",
+"input:p": "input:password",
+"input:datetime": "inp[type=datetime]",
+"input:date": "inp[type=date]",
+"input:datetime-local": "inp[type=datetime-local]",
+"input:month": "inp[type=month]",
+"input:week": "inp[type=week]",
+"input:time": "inp[type=time]",
+"input:number": "inp[type=number]",
+"input:color": "inp[type=color]",
+"input:checkbox": "inp[type=checkbox]",
+"input:c": "input:checkbox",
+"input:radio": "inp[type=radio]",
+"input:r": "input:radio",
+"input:range": "inp[type=range]",
+"input:file": "inp[type=file]",
+"input:f": "input:file",
 "input:submit": "<input type=\"submit\" value=\"\" />",
-"input:s": "<input type=\"submit\" value=\"\" />",
+"input:s": "input:submit",
 "input:image": "<input type=\"image\" src=\"\" alt=\"\" />",
-"input:i": "<input type=\"image\" src=\"\" alt=\"\" />",
-"input:reset": "<input type=\"reset\" value=\"\" />",
+"input:i": "input:i",
 "input:button": "<input type=\"button\" value=\"\" />",
-"input:b": "<input type=\"button\" value=\"\" />",
-"select": "<select name=\"\" id=\"\"></select>",
-"option": "<option value=\"\"></option>",
+"input:b": "input:button",
+"input:reset": "input:button[type=reset]",
+"select": "<select name=\"\" id=\"\">",
+"option": "<option value=\"\">",
 "textarea": "<textarea name=\"\" id=\"\" cols=\"${1:30}\" rows=\"${2:10}\">",
-"menu:context": "<menu type=\"context\">",
-"menu:c": "<menu type=\"context\">",
-"menu:toolbar": "<menu type=\"toolbar\">",
-"menu:t": "<menu type=\"toolbar\">",
+"menu:context": "menu[type=context]>",
+"menu:c": "menu:context",
+"menu:toolbar": "menu[type=toolbar]>",
+"menu:t": "menu:toolbar",
 "video": "<video src=\"\">",
 "audio": "<audio src=\"\">",
 "html:xml": "<html xmlns=\"http://www.w3.org/1999/xhtml\">",
@@ -10421,6 +10517,14 @@ emmet.exec(function(require, _){require('resources').setVocabulary({
 "out": "output",
 "det": "details",
 "cmd": "command",
+"doc": "html>(head>meta[charset=UTF-8]+title{${1:Document}})+body>{\n|}",
+"doc4": "html>(head>meta[http-equiv=\"Content-Type\" content=\"text/html;charset=${charset}\"]+title{${1:Document}})+body>{\n|}",
+"html:4t":  "!!!4t+doc4[lang=${lang}]",
+"html:4s":  "!!!4s+doc4[lang=${lang}]",
+"html:xt":  "!!!xt+doc4[xmlns=http://www.w3.org/1999/xhtml xml:lang=${lang}]",
+"html:xs":  "!!!xs+doc4[xmlns=http://www.w3.org/1999/xhtml xml:lang=${lang}]",
+"html:xxs": "!!!xxs+doc4[xmlns=http://www.w3.org/1999/xhtml xml:lang=${lang}]",
+"html:5":   "!!!+doc[lang=${lang}]",
 "ol+": "ol>li",
 "ul+": "ul>li",
 "dl+": "dl>dt+dd",
@@ -10482,7 +10586,11 @@ emmet.exec(function(require, _){require('resources').setVocabulary({
 "strip": "<xsl:strip-space elements=\"\"/>",
 "proc": "<xsl:processing-instruction name=\"\">",
 "sort": "<xsl:sort select=\"\" order=\"\"/>",
-"choose+": "xsl:choose>xsl:when+xsl:otherwise"
+"choose+": "xsl:choose>xsl:when+xsl:otherwise",
+"xsl": "!!!+xsl:stylesheet[version=1.0 xmlns:xsl=http://www.w3.org/1999/XSL/Transform]>{\n|}"
+},
+"snippets": {
+"!!!": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
 }
 },
 "haml": {
@@ -10505,15 +10613,21 @@ emmet.exec(function(require, _){require('resources').setVocabulary({
 }, 'system');});
 emmet.define('file', function (require, _) {
 return {
-read: function(path) {
-var content = File_ReadFile(path);
+read: function(path, size, callback) {
+// Has size been specified?
+if (!callback){
+callback = size;
+size = 150;
+}
+var content = File_ReadFile(path, size);
 // encode result
 var encArray = [];
 for (var i = 0, sL = content.length; i < sL; i++) {
 var cc = content[i];
 encArray.push(String.fromCharCode(cc));
 }
-return encArray.join('') || '';
+var retVal = encArray.join('') || '';
+callback(undefined, retVal);
 },
 locateFile: function(editorFile, fileName) {
 return File_LocateFile(editorFile, fileName);

@@ -5,7 +5,6 @@
 *.exe
 *.ilk
 *.lib
-*.lib
 *.log
 *.ncb
 *.obj

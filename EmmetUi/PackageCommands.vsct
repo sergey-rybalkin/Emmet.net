@@ -29,7 +29,7 @@
       </Group>
 
     </Groups>
-    
+
     <Buttons>
 
       <Button guid="guidEmmetCmdSet" id="cmdidExpandAbbreviation" priority="0x0100" type="Button">
@@ -53,7 +53,7 @@
           <LocCanonicalName>Emmet.WrapWithAbbreviation</LocCanonicalName>
         </Strings>
       </Button>
-      
+
       <Button guid="guidEmmetCmdSet" id="cmdidToggleComment" priority="0x0100" type="Button">
         <Parent guid="guidEmmetCmdSet" id="EmmetSubMenuGroup" />
         <Icon guid="guidImages" id="bmpPic1" />
@@ -64,7 +64,7 @@
           <LocCanonicalName>Emmet.ToggleComment</LocCanonicalName>
         </Strings>
       </Button>
-  
+
       <Button guid="guidEmmetCmdSet" id="cmdidRemoveTag" priority="0x0100" type="Button">
         <Parent guid="guidEmmetCmdSet" id="EmmetSubMenuGroup" />
         <Icon guid="guidImages" id="bmpPic1" />
@@ -118,8 +118,18 @@
         </Strings>
       </Button>
 
+      <Button guid="guidEmmetCmdSet" id="cmdidRemoveTagInternal" priority="0x0100" type="Button">
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <Strings>
+          <ButtonText>Remove Tag</ButtonText>
+          <CommandName>Emmet - Remove Tag</CommandName>
+          <CanonicalName>Emmet.RemoveTagInternal</CanonicalName>
+          <LocCanonicalName>Emmet.RemoveTagInternal</LocCanonicalName>
+        </Strings>
+      </Button>
+
     </Buttons>
-   
+      
     <Bitmaps>
       <Bitmap guid="guidImages" href="Images.png" usedList="bmpPic1, bmpPic2, bmpPicSearch, bmpPicX, bmpPicArrows"/>
     </Bitmaps>

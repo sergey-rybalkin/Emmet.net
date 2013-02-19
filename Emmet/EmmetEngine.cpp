@@ -43,14 +43,11 @@ EmmetResult CEmmetEngine::ExpandAbbreviation()
 EmmetResult CEmmetEngine::WrapWithAbbreviation(const char* szAbbreviation, UINT nchAbbreviation)
 {
     UINT bufSize = nchAbbreviation + 32;
-
-    char* szCmd = (char*)HeapAlloc(GetProcessHeap(), 0, bufSize);
+    CAutoPtr<char> szCmd(new char[bufSize]);
 
     StringCchPrintfA(szCmd, bufSize, "actionWrapWithAbbreviation('%s')", szAbbreviation);
 
     RunAction(szCmd, EmmetAction_WrapWithAbbreviation);
-
-    HeapFree(GetProcessHeap(), 0, szCmd);
 
     return EmmetResult_OK;
 }

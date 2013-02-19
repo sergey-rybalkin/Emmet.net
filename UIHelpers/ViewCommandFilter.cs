@@ -25,7 +25,8 @@ namespace UIHelpers
             new Dictionary<uint, int>
                 {
                     { 0x100, 0x110 },
-                    { 0x101, 0x111 }
+                    { 0x101, 0x111 },
+                    { 0x103, 0x113 }
                 };
 
         private readonly Guid _emmetCommandsGuid = Guid.Parse("{bea64453-e066-4057-b565-0a36bddd0852}");

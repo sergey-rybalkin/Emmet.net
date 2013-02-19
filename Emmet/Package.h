@@ -112,6 +112,11 @@ VSL_BEGIN_COMMAND_MAP()
                           CommandHandler::ExecHandler(&OnRemoveTagCommand))
 
     VSL_COMMAND_MAP_ENTRY(CLSID_EmmetCmdSet,
+                          cmdidRemoveTagInternal,
+                          NULL,
+                          CommandHandler::ExecHandler(&OnRemoveTagCommand))
+
+    VSL_COMMAND_MAP_ENTRY(CLSID_EmmetCmdSet,
                           cmdidMergeLines,
                           NULL,
                           CommandHandler::ExecHandler(&OnMergeLinesCommand))

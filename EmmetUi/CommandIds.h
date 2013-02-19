@@ -29,6 +29,7 @@
 
 #define cmdidExpandAbbreviationInternal   0x110
 #define cmdidWrapWithAbbreviationInternal 0x111
+#define cmdidRemoveTagInternal 0x113
 
 
 ///////////////////////////////////////////////////////////////////////////////
