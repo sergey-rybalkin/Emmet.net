@@ -6,7 +6,7 @@ This project is a MS Visual Studio 2012 port of the emmet editor extensions by S
 
 As emmet is originally created using JavaScript and Visual Studio cannot run it natively this project is using V8 JavaScript engine. In order to build this project you need to place V8 *.lib files (preparser_lib.lib v8_base.lib v8_nosnapshot.lib v8_snapshot.lib) to Emmet/lib/Debug|Release folder. See https://developers.google.com/v8/embed for details.
 
-Visual Studio 2012 is required to build the project.
+Visual Studio 2012 and Visual Studio SDK are required to build the project.
 
 ## Ported actions
 
