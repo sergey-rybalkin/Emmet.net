@@ -23,14 +23,10 @@
 #define cmdidExpandAbbreviation   0x100
 #define cmdidWrapWithAbbreviation 0x101
 #define cmdidToggleComment        0x102
-#define cmdidRemoveTag            0x103
 #define cmdidMergeLines           0x104
-#define cmdidUpdateImageSize      0x105
 
 #define cmdidExpandAbbreviationInternal   0x110
 #define cmdidWrapWithAbbreviationInternal 0x111
-#define cmdidRemoveTagInternal 0x113
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // Bitmap IDs

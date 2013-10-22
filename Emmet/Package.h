@@ -107,24 +107,9 @@ VSL_BEGIN_COMMAND_MAP()
                           CommandHandler::ExecHandler(&OnToggleCommentCommand))
 
     VSL_COMMAND_MAP_ENTRY(CLSID_EmmetCmdSet,
-                          cmdidRemoveTag,
-                          NULL,
-                          CommandHandler::ExecHandler(&OnRemoveTagCommand))
-
-    VSL_COMMAND_MAP_ENTRY(CLSID_EmmetCmdSet,
-                          cmdidRemoveTagInternal,
-                          NULL,
-                          CommandHandler::ExecHandler(&OnRemoveTagCommand))
-
-    VSL_COMMAND_MAP_ENTRY(CLSID_EmmetCmdSet,
                           cmdidMergeLines,
                           NULL,
                           CommandHandler::ExecHandler(&OnMergeLinesCommand))
-
-    VSL_COMMAND_MAP_ENTRY(CLSID_EmmetCmdSet,
-                          cmdidUpdateImageSize,
-                          NULL,
-                          CommandHandler::ExecHandler(&OnUpdateImageSizeCommand))
 VSL_END_VSCOMMAND_MAP()
 
 void OnExpandAbbreviationCommand(CommandHandler* /*pSender*/, DWORD /*flags*/, VARIANT* /*pIn*/, VARIANT* /*pOut*/)
@@ -136,13 +121,9 @@ void OnExpandAbbreviationCommand(CommandHandler* /*pSender*/, DWORD /*flags*/, V
 
 void OnWrapWithAbbreviationCommand(CommandHandler* /*pSender*/, DWORD /*flags*/, VARIANT* /*pIn*/, VARIANT* /*pOut*/)
 {
-    CComPtr<IVsUIShell> spUiShell = this->GetVsSiteCache().GetCachedService<IVsUIShell, SID_SVsUIShell>();
-    HWND hwndOwner;
-    spUiShell->GetDialogOwnerHwnd(&hwndOwner);
-    spUiShell->EnableModeless(FALSE);
+    HWND hwndOwner = NULL;
     CPromptDlg dlg(hwndOwner);
     char* szAbbreviation = dlg.Prompt();
-    spUiShell->EnableModeless(TRUE);
     
     if (szAbbreviation > 0)
     {
@@ -159,25 +140,11 @@ void OnToggleCommentCommand(CommandHandler* /*pSender*/, DWORD /*flags*/, VARIAN
         ShowDiagnosticMessage(L"Toggle comment failed", result);
 }
 
-void OnRemoveTagCommand(CommandHandler* /*pSender*/, DWORD /*flags*/, VARIANT* /*pIn*/, VARIANT* /*pOut*/)
-{
-    EmmetResult result = m_engine->RemoveTag();
-    if (EmmetResult_OK != result)
-        ShowDiagnosticMessage(L"Remove tag failed", result);
-}
-
 void OnMergeLinesCommand(CommandHandler* /*pSender*/, DWORD /*flags*/, VARIANT* /*pIn*/, VARIANT* /*pOut*/)
 {
     EmmetResult result = m_engine->MergeLines();
     if (EmmetResult_OK != result)
         ShowDiagnosticMessage(L"Merge lines failed", result);
-}
-
-void OnUpdateImageSizeCommand(CommandHandler* /*pSender*/, DWORD /*flags*/, VARIANT* /*pIn*/, VARIANT* /*pOut*/)
-{
-    EmmetResult result = m_engine->UpdateImageSize();
-    if (EmmetResult_OK != result)
-        ShowDiagnosticMessage(L"Update image size failed", result);
 }
 
 private:

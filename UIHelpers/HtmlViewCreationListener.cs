@@ -9,7 +9,10 @@ namespace UIHelpers
     /// <summary>
     /// Listener responsible for injection of our command filters into every newly created HTML editor window.
     /// </summary>
-    [TextViewRole("DOCUMENT"), ContentType("HTML"), Export(typeof(IVsTextViewCreationListener))]
+    [TextViewRole(PredefinedTextViewRoles.Document),
+     ContentType("HTML"),
+     ContentType("HTMLX"),
+     Export(typeof(IVsTextViewCreationListener))]
     public class HtmlViewCreationListener : ViewCreationListenerBase, IVsTextViewCreationListener
     {
         [Import]

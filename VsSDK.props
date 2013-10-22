@@ -1,6 +1,6 @@
 ﻿<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Label="UserMacros">
-    <VSIntegrationRoot>C:\Program Files (x86)\Microsoft Visual Studio 11.0\VSSDK\VisualStudioIntegration</VSIntegrationRoot>
+    <VSIntegrationRoot>C:\Program Files (x86)\Microsoft Visual Studio 12.0\VSSDK\VisualStudioIntegration</VSIntegrationRoot>
   </PropertyGroup>
   <PropertyGroup Label="UserMacros">
     <VSIntegrationCommon>$(VSIntegrationRoot)\common</VSIntegrationCommon>

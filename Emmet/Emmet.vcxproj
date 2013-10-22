@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -13,31 +13,32 @@
   <PropertyGroup Label="Globals">
     <TargetName>Emmet</TargetName>
     <ProjectGUID>{92f2f292-282d-461f-80c5-d1198ebeba31}</ProjectGUID>
-    <PlatformToolset>v110</PlatformToolset>
-    <VCTargetsPath Condition="'$(VCTargetsPath11)' != '' and '$(VSVersion)' == ''">$(VCTargetsPath11)</VCTargetsPath>
-    <MinimumVisualStudioVersion>11.0</MinimumVisualStudioVersion>
+    <PlatformToolset>v120</PlatformToolset>
+    <MinimumVisualStudioVersion>12.0</MinimumVisualStudioVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v120</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v120</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <Import Project="$(LocalAppData)\Microsoft\VisualStudio\11.0\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(LocalAppData)\Microsoft\VisualStudio\11.0\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(LocalAppData)\Microsoft\VisualStudio\12.0\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(LocalAppData)\Microsoft\VisualStudio\12.0\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets">
     <Import Project="..\VsSDK.props" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32' and (exists('..\VsSDK.props'))" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <Import Project="$(LocalAppData)\Microsoft\VisualStudio\11.0\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(LocalAppData)\Microsoft\VisualStudio\11.0\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(LocalAppData)\Microsoft\VisualStudio\12.0\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(LocalAppData)\Microsoft\VisualStudio\12.0\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets">
     <Import Project="..\VsSDK.props" Condition="'$(Configuration)|$(Platform)'=='Release|Win32' and (exists('..\VsSDK.props'))" />
@@ -45,9 +46,13 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(ProjectDir)bin\$(Configuration)\</OutDir>
+    <IntDir>$(ProjectDir)obj\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(ProjectDir)bin\$(Configuration)\</OutDir>
+    <IntDir>$(ProjectDir)obj\$(Configuration)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Midl>
@@ -89,7 +94,7 @@
     <Link>
       <RegisterOutput>false</RegisterOutput>
       <AdditionalOptions>/MACHINE:I386</AdditionalOptions>
-      <AdditionalDependencies>WINMM.LIB;ws2_32.lib;v8_base.lib;v8_snapshot.lib;vsguids.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>WINMM.LIB;ws2_32.lib;v8_base.ia32.lib;icui18n.lib;icuuc.lib;v8_snapshot.lib;v8_nosnapshot.ia32.lib;vsguids.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <ModuleDefinitionFile>.\Emmet.def</ModuleDefinitionFile>
       <SubSystem>Windows</SubSystem>
@@ -145,7 +150,7 @@
     <Link>
       <RegisterOutput>false</RegisterOutput>
       <AdditionalOptions>/MACHINE:I386</AdditionalOptions>
-      <AdditionalDependencies>WINMM.LIB;ws2_32.lib;v8_base.lib;v8_snapshot.lib;vsguids.lib;msvcrt.lib;libcmt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>WINMM.LIB;ws2_32.lib;v8_base.ia32.lib;icui18n.lib;icuuc.lib;v8_snapshot.lib;v8_nosnapshot.ia32.lib;vsguids.lib;msvcrt.lib;libcmt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <ModuleDefinitionFile>.\Emmet.def</ModuleDefinitionFile>
       <SubSystem>Windows</SubSystem>
@@ -160,9 +165,9 @@
     <Midl Include="Emmet.idl" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="EditorCallbacks.cpp" />
     <ClCompile Include="EditorProxy.cpp" />
     <ClCompile Include="EmmetEngine.cpp" />
-    <ClCompile Include="FileProxy.cpp" />
     <ClCompile Include="Guids.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
       </PrecompiledHeader>
@@ -181,9 +186,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CommonIncludes.h" />
+    <ClInclude Include="EditorCallbacks.h" />
     <ClInclude Include="EditorProxy.h" />
     <ClInclude Include="EmmetEngine.h" />
-    <ClInclude Include="FileProxy.h" />
     <ClInclude Include="Guids.h" />
     <ClInclude Include="Package.h" />
     <ClInclude Include="PromptDlg.h" />
@@ -196,9 +201,9 @@
   <ItemGroup>
     <PkgdefFile Include="Emmet.pkgdef" />
   </ItemGroup>
-  <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v11.0\VSSDK\Microsoft.VsSDK.Cpp.targets" />
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v12.0\VSSDK\Microsoft.VsSDK.Cpp.targets" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v11.0\VSSDK\Microsoft.VsSDK.Cpp.Overrides.targets" />
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v12.0\VSSDK\Microsoft.VsSDK.Cpp.Overrides.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
 </Project>

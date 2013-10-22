@@ -3,13 +3,16 @@ using Microsoft.VisualStudio.Editor;
 using Microsoft.VisualStudio.Language.Intellisense;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Utilities;
+using Microsoft.Web.Editor;
 
 namespace UIHelpers
 {
     /// <summary>
     /// Listener responsible for injection of our command filters into every newly created CSS editor window.
     /// </summary>
-    [TextViewRole("DOCUMENT"), ContentType("CSS"), Export(typeof(IVsTextViewCreationListener))]
+    [Export(typeof(IVsTextViewCreationListener))]
+    [ContentType(CssContentTypeDefinition.CssContentType)]
+    [TextViewRole(PredefinedTextViewRoles.Document)]
     public class CssViewCreationListener : ViewCreationListenerBase, IVsTextViewCreationListener
     {
         [Import]

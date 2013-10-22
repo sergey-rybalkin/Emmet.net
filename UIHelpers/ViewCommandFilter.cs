@@ -25,8 +25,7 @@ namespace UIHelpers
             new Dictionary<uint, int>
                 {
                     { 0x100, 0x110 },
-                    { 0x101, 0x111 },
-                    { 0x103, 0x113 }
+                    { 0x101, 0x111 }
                 };
 
         private readonly Guid _emmetCommandsGuid = Guid.Parse("{bea64453-e066-4057-b565-0a36bddd0852}");
@@ -36,7 +35,7 @@ namespace UIHelpers
         private readonly ICompletionBroker _completionBroker;
         private readonly EmmetSyntax _syntax;
         private readonly IWpfTextView _view;
-        private TabSpanManager _tabSpans;
+        private readonly TabSpanManager _tabSpans;
 
         internal ViewCommandFilter(
             IWpfTextView view, IVsTextView adapter, ICompletionBroker completionBroker, EmmetSyntax syntax)
@@ -67,6 +66,18 @@ namespace UIHelpers
         /// </returns>
         public int QueryStatus(ref Guid pguidCmdGroup, uint cCmds, OLECMD[] prgCmds, IntPtr pCmdText)
         {
+            if (pguidCmdGroup == _emmetCommandsGuid)
+            {
+                for (int i = 0; i < cCmds; i++)
+                {
+                    if (_commandsRequirePostTranslation.ContainsKey(prgCmds[i].cmdID))
+                    {
+                        prgCmds[i].cmdf = (uint)(OLECMDF.OLECMDF_ENABLED | OLECMDF.OLECMDF_SUPPORTED);
+                        return VSConstants.S_OK;
+                    }
+                }
+            }
+
             return _nextTarget.QueryStatus(ref pguidCmdGroup, cCmds, prgCmds, pCmdText);
         }
 
@@ -86,14 +97,18 @@ namespace UIHelpers
             // Handle TAB and BACKTAB events
             if (_filteredGuid == pguidCmdGroup)
             {
-                if (nCmdId == TabCmdId &&
-                    !_completionBroker.IsCompletionActive(_view) &&
-                    (RunEmmetAction(ExpandCmdId) || _tabSpans.MoveToNextEmptySlot()))
-                    return 0;
-                if (nCmdId == BackTabCmdId &&
-                    !_completionBroker.IsCompletionActive(_view) &&
-                    _tabSpans.MoveToPreviousEmptySlot())
-                    return 0;
+                if (nCmdId == TabCmdId && !_completionBroker.IsCompletionActive(_view))
+                {
+                    if (EmmetSyntax.Css == _syntax && RunEmmetAction(ExpandCmdId))
+                        return VSConstants.S_OK;
+                    if (_tabSpans.MoveToNextEmptySlot())
+                        return VSConstants.S_OK;
+                }
+                else if (nCmdId == BackTabCmdId && !_completionBroker.IsCompletionActive(_view))
+                {
+                    if (_tabSpans.MoveToPreviousEmptySlot())
+                        return VSConstants.S_OK;
+                }
 
                 return _nextTarget.Exec(pguidCmdGroup, nCmdId, nCmdexecopt, pvaIn, pvaOut);
             }
@@ -105,7 +120,7 @@ namespace UIHelpers
             {
                 RunEmmetAction(nCmdId);
 
-                return 0;
+                return VSConstants.S_OK;
             }
 
             return _nextTarget.Exec(pguidCmdGroup, nCmdId, nCmdexecopt, pvaIn, pvaOut);
@@ -159,24 +174,29 @@ namespace UIHelpers
 
         private bool IsValidTextBuffer()
         {
-            IProjectionBuffer textBuffer = _view.TextBuffer as IProjectionBuffer;
-            if (textBuffer != null)
+            var projection = _view.TextBuffer as IProjectionBuffer;
+
+            if (projection != null)
             {
-                SnapshotPoint bufferPosition = _view.Caret.Position.BufferPosition;
-                var buffers = from s in textBuffer.SourceBuffers
-                              where
-                                  (((!s.ContentType.IsOfType("html") && !s.ContentType.IsOfType("inert")) &&
-                                    (!s.ContentType.IsOfType("CSharp") &&
-                                     !s.ContentType.IsOfType("VisualBasic"))) &&
-                                   !s.ContentType.IsOfType("RoslynCSharp")) &&
-                                  !s.ContentType.IsOfType("RoslynVisualBasic")
-                              select s;
-                foreach (ITextBuffer buffer2 in buffers)
+                var snapshotPoint = _view.Caret.Position.BufferPosition;
+
+                var buffers = projection.SourceBuffers.Where(
+                    s =>
+                        !s.ContentType.IsOfType("html")
+                        && !s.ContentType.IsOfType("htmlx")
+                        && !s.ContentType.IsOfType("inert")
+                        && !s.ContentType.IsOfType("CSharp")
+                        && !s.ContentType.IsOfType("VisualBasic")
+                        && !s.ContentType.IsOfType("RoslynCSharp")
+                        && !s.ContentType.IsOfType("RoslynVisualBasic"));
+
+
+                foreach (ITextBuffer buffer in buffers)
                 {
-                    if (_view.BufferGraph.MapDownToBuffer(bufferPosition,
-                                                          PointTrackingMode.Negative,
-                                                          buffer2,
-                                                          PositionAffinity.Predecessor).HasValue)
+                    SnapshotPoint? point = _view.BufferGraph.MapDownToBuffer(
+                        snapshotPoint, PointTrackingMode.Negative, buffer, PositionAffinity.Predecessor);
+
+                    if (point.HasValue)
                     {
                         return false;
                     }

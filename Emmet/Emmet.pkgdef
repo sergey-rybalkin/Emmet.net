@@ -1,9 +1,9 @@
 ﻿[$RootKey$\Packages\{b2589ca0-f4ca-4daf-be44-878922a24715}]
 @="Emmet Package"
 "InprocServer32"="$PackageFolder$\Emmet.dll"
-"CompanyName"="iTransition"
-"ProductName"="Emmet"
-"ProductVersion"="1.0"
+"CompanyName"="Sergey Rybalkin"
+"ProductName"="Emmet.net"
+"ProductVersion"="2.0"
 
 [$RootKey$\Packages\{b2589ca0-f4ca-4daf-be44-878922a24715}\SatelliteDll]
 "DllName"="EmmetUI.dll"

@@ -1,5 +1,4 @@
 #include "EditorProxy.h"
-#include "FileProxy.h"
 
 #pragma once
 
@@ -28,22 +27,26 @@ public:
     EmmetResult ToggleComment();
     EmmetResult RemoveTag();
     EmmetResult MergeLines();
-    EmmetResult UpdateImageSize();
 
     CComBSTR GetLastError();
 
 private:
     EmmetResult ReadAndCompileEngineScript(PCWSTR szEngineScriptPath);
-    EmmetResult RunAction(const char* action, EmmetAction actionCode);
+	EmmetResult RunAction(Persistent<Function>* func, EmmetAction actionCode, const char* param = NULL);
     VOID FormatExceptionMessage(TryCatch* exceptionInfo);
 
 private:
     CAutoPtr<CEditorProxy> m_editorProxy;
-    CAutoPtr<CFileProxy> m_fileProxy;
 
-    Persistent<v8::Context> m_Context;
-    HandleScope m_handleScope;
-    CComPtr<_DTE> m_DTE;
+	Isolate* m_isolate;
+    Persistent<Context> m_context;
+
+	Persistent<Function> m_expandAbbreviationFunc;
+	Persistent<Function> m_wrapWithAbbreviationFunc;
+	Persistent<Function> m_toggleCommentFunc;
+	Persistent<Function> m_mergeLinesFunc;
+    
+	CComPtr<_DTE> m_DTE;
 
     CComBSTR m_lastError;
 };

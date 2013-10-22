@@ -1,4 +1,4 @@
-// Copyright 2012 the V8 project authors. All rights reserved.
+// Copyright 2013 the V8 project authors. All rights reserved.
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
 // met:
@@ -25,32 +25,30 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// Load definitions of standard types.
+#ifndef V8_V8_DEFAULTS_H_
+#define V8_V8_DEFAULTS_H_
 
-#ifndef V8STDINT_H_
-#define V8STDINT_H_
+#include "v8.h"
 
-#include <stddef.h>
-#include <stdio.h>
+/**
+ * Default configuration support for the V8 JavaScript engine.
+ */
+namespace v8 {
 
-#include "v8config.h"
+/**
+ * Configures the constraints with reasonable default values based on the
+ * capabilities of the current device the VM is running on.
+ */
+bool V8_EXPORT ConfigureResourceConstraintsForCurrentPlatform(
+    ResourceConstraints* constraints);
 
-#if V8_OS_WIN && !V8_CC_MINGW
 
-typedef signed char int8_t;
-typedef unsigned char uint8_t;
-typedef short int16_t;  // NOLINT
-typedef unsigned short uint16_t;  // NOLINT
-typedef int int32_t;
-typedef unsigned int uint32_t;
-typedef __int64 int64_t;
-typedef unsigned __int64 uint64_t;
-// intptr_t and friends are defined in crtdefs.h through stdio.h.
+/**
+ * Convience function which performs SetResourceConstraints with the settings
+ * returned by ConfigureResourceConstraintsForCurrentPlatform.
+ */
+bool V8_EXPORT SetDefaultResourceConstraintsForCurrentPlatform();
 
-#else
+}  // namespace v8
 
-#include <stdint.h>  // NOLINT
-
-#endif
-
-#endif  // V8STDINT_H_
+#endif  // V8_V8_DEFAULTS_H_

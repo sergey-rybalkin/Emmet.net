@@ -65,17 +65,6 @@
         </Strings>
       </Button>
 
-      <Button guid="guidEmmetCmdSet" id="cmdidRemoveTag" priority="0x0100" type="Button">
-        <Parent guid="guidEmmetCmdSet" id="EmmetSubMenuGroup" />
-        <Icon guid="guidImages" id="bmpPic1" />
-        <Strings>
-          <ButtonText>Remove Tag</ButtonText>
-          <CommandName>Emmet - Remove Tag</CommandName>
-          <CanonicalName>Emmet.RemoveTag</CanonicalName>
-          <LocCanonicalName>Emmet.RemoveTag</LocCanonicalName>
-        </Strings>
-      </Button>
-
       <Button guid="guidEmmetCmdSet" id="cmdidMergeLines" priority="0x0100" type="Button">
         <Parent guid="guidEmmetCmdSet" id="EmmetSubMenuGroup" />
         <Icon guid="guidImages" id="bmpPic1" />
@@ -84,17 +73,6 @@
           <CommandName>Emmet - Merge Lines</CommandName>
           <CanonicalName>Emmet.MergeLines</CanonicalName>
           <LocCanonicalName>Emmet.MergeLines</LocCanonicalName>
-        </Strings>
-      </Button>
-
-      <Button guid="guidEmmetCmdSet" id="cmdidUpdateImageSize" priority="0x0100" type="Button">
-        <Parent guid="guidEmmetCmdSet" id="EmmetSubMenuGroup" />
-        <Icon guid="guidImages" id="bmpPic1" />
-        <Strings>
-          <ButtonText>Update Image Size</ButtonText>
-          <CommandName>Emmet - Update Image Size</CommandName>
-          <CanonicalName>Emmet.UpdateImageSize</CanonicalName>
-          <LocCanonicalName>Emmet.UpdateImageSize</LocCanonicalName>
         </Strings>
       </Button>
 
@@ -113,18 +91,8 @@
         <Strings>
           <ButtonText>Wrap with Abbreviation</ButtonText>
           <CommandName>Emmet - Expand Abbreviation</CommandName>
-          <CanonicalName>Emmet.WrapWithAbbreviation</CanonicalName>
-          <LocCanonicalName>Emmet.WrapWithAbbreviation</LocCanonicalName>
-        </Strings>
-      </Button>
-
-      <Button guid="guidEmmetCmdSet" id="cmdidRemoveTagInternal" priority="0x0100" type="Button">
-        <CommandFlag>DefaultInvisible</CommandFlag>
-        <Strings>
-          <ButtonText>Remove Tag</ButtonText>
-          <CommandName>Emmet - Remove Tag</CommandName>
-          <CanonicalName>Emmet.RemoveTagInternal</CanonicalName>
-          <LocCanonicalName>Emmet.RemoveTagInternal</LocCanonicalName>
+          <CanonicalName>Emmet.WrapWithAbbreviationInternal</CanonicalName>
+          <LocCanonicalName>Emmet.WrapWithAbbreviationInternal</LocCanonicalName>
         </Strings>
       </Button>
 
@@ -137,25 +105,10 @@
   </Commands>
 
   <KeyBindings>
-    <KeyBinding guid="guidEmmetCmdSet" id="cmdidExpandAbbreviation" editor="guidHtmlEditor" key1="X" mod1="Control Shift Alt"/>
-    <KeyBinding guid="guidEmmetCmdSet" id="cmdidExpandAbbreviation" editor="guidCssEditor" key1="X" mod1="Control Shift Alt"/>
-  
-    <KeyBinding guid="guidEmmetCmdSet" id="cmdidWrapWithAbbreviation" editor="guidHtmlEditor" key1="W" mod1="Control Alt"/>
-  
-    <KeyBinding guid="guidEmmetCmdSet" id="cmdidToggleComment" editor="guidHtmlEditor" key1="VK_DIVIDE" mod1="Control Alt"/>
-    <KeyBinding guid="guidEmmetCmdSet" id="cmdidToggleComment" editor="guidCssEditor" key1="VK_DIVIDE" mod1="Control Alt"/>
-  
-    <KeyBinding guid="guidEmmetCmdSet" id="cmdidRemoveTag" editor="guidHtmlEditor" key1="R" mod1="Control Shift Alt"/>
-  
-    <KeyBinding guid="guidEmmetCmdSet" id="cmdidMergeLines" editor="guidHtmlEditor" key1="M" mod1="Control Shift Alt"/>
-  
-    <KeyBinding guid="guidEmmetCmdSet" id="cmdidUpdateImageSize" editor="guidHtmlEditor" key1="U" mod1="Control Shift Alt"/>
-    <KeyBinding guid="guidEmmetCmdSet" id="cmdidUpdateImageSize" editor="guidCssEditor" key1="U" mod1="Control Shift Alt"/>
+    <KeyBinding guid="guidEmmetCmdSet" id="cmdidExpandAbbreviation" editor="guidVSStd97" key1="X" mod1="Control Shift Alt"/>
+    <KeyBinding guid="guidEmmetCmdSet" id="cmdidWrapWithAbbreviation" editor="guidVSStd97" key1="W" mod1="Shift Alt"/>
+    <KeyBinding guid="guidEmmetCmdSet" id="cmdidToggleComment" editor="guidVSStd97" key1="VK_DIVIDE" mod1="Control Alt"/>
+    <KeyBinding guid="guidEmmetCmdSet" id="cmdidMergeLines" editor="guidVSStd97" key1="M" mod1="Shift Alt"/>
   </KeyBindings>
-  
-  <Symbols>
-    <GuidSymbol name="guidCssEditor" value="{A764E89A-518D-11D2-9A89-00C04F79EFC3}"></GuidSymbol>
-    <GuidSymbol name="guidHtmlEditor" value="{CB3FCFEB-03DF-11D1-81D2-00A0C91BBEE3}"></GuidSymbol>
-  </Symbols>
 
 </CommandTable>

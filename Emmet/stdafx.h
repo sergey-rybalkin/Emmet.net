@@ -28,9 +28,6 @@
 #include <tchar.h>
 #include <strsafe.h>
 
-#include "v8.h"
-
-
 // Visual Studio Platform headers
 #include <dte.h> // for extensibility
 #include <objext.h> // for ILocalRegistry
@@ -63,3 +60,4 @@
 
 using namespace VSL;
 
+#include "v8.h"

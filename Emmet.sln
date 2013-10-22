@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 2013
+VisualStudioVersion = 12.0.21005.1
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Emmet", "Emmet\Emmet.vcxproj", "{92F2F292-282D-461F-80C5-D1198EBEBA31}"
 	ProjectSection(ProjectDependencies) = postProject
 		{06513D5B-0536-434B-A833-BE42B76EDE1F} = {06513D5B-0536-434B-A833-BE42B76EDE1F}

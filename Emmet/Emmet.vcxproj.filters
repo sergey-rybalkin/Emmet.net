@@ -30,10 +30,10 @@
     <ClCompile Include="EmmetEngine.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="FileProxy.cpp">
+    <ClCompile Include="PromptDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="PromptDlg.cpp">
+    <ClCompile Include="EditorCallbacks.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -59,10 +59,10 @@
     <ClInclude Include="EmmetEngine.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="FileProxy.h">
+    <ClInclude Include="PromptDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="PromptDlg.h">
+    <ClInclude Include="EditorCallbacks.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

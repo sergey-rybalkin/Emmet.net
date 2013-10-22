@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "EmmetEngine.h"
-#include "FileProxy.h"
 
 using namespace v8;
 
@@ -11,72 +10,93 @@ CEmmetEngine::CEmmetEngine()
 EmmetResult CEmmetEngine::Initialize(_DTE* pDTE, PCWSTR szEngineScriptPath)
 {
     m_DTE.Attach(pDTE);
+	m_editorProxy.Attach(new CEditorProxy());
 
+	m_isolate = Isolate::GetCurrent();
+	HandleScope scope(m_isolate);
+
+	// Global object that will store editor interface implementation
     Handle<ObjectTemplate> global = ObjectTemplate::New();
+	Handle<ObjectTemplate> editor = m_editorProxy->GetEditorInterfaceImplementation();
+	global->Set(String::New("editorProxy"), editor);
 
-    m_editorProxy.Attach(new CEditorProxy());
-    m_fileProxy.Attach(new CFileProxy());
+	// Context::New returns a persistent handle which is what we need for the reference to remain after we
+	// return from this method. That persistent handle has to be disposed in the destructor.
+    Handle<Context> context = Context::New(m_isolate, NULL, global);
+	m_context.Reset(m_isolate, context);
 
-    m_editorProxy->Register(global);
-    m_fileProxy->Register(global);
+	// Enter the new context so all the following operations take place within it.
+	Context::Scope context_scope(context);
 
-    m_Context = Context::New(NULL, global);
-    m_Context->Enter();
-    m_editorProxy->SetContext(m_Context);
+	EmmetResult result = ReadAndCompileEngineScript(szEngineScriptPath);
+	if (EmmetResult_OK == result)
+	{
+		Handle<String> actionName = String::New("actionExpandAbbreviation");
+		Handle<Value> func = context->Global()->Get(actionName);
+		if (!func->IsFunction())
+			return EmmetResult_UnexpectedError;
+		Handle<Function> funcHandle = Handle<Function>::Cast(func);
+		m_expandAbbreviationFunc.Reset(m_isolate, funcHandle);
 
-    return ReadAndCompileEngineScript(szEngineScriptPath);
+		actionName = String::New("actionWrapWithAbbreviation");
+		func = context->Global()->Get(actionName);
+		if (!func->IsFunction())
+			return EmmetResult_UnexpectedError;
+		funcHandle = Handle<Function>::Cast(func);
+		m_wrapWithAbbreviationFunc.Reset(m_isolate, funcHandle);
+
+		actionName = String::New("actionToggleComment");
+		func = context->Global()->Get(actionName);
+		if (!func->IsFunction())
+			return EmmetResult_UnexpectedError;
+		funcHandle = Handle<Function>::Cast(func);
+		m_toggleCommentFunc.Reset(m_isolate, funcHandle);
+
+		actionName = String::New("actionMergeLines");
+		func = context->Global()->Get(actionName);
+		if (!func->IsFunction())
+			return EmmetResult_UnexpectedError;
+		funcHandle = Handle<Function>::Cast(func);
+		m_mergeLinesFunc.Reset(m_isolate, funcHandle);
+	}
+
+	return result;
 }
 
 CEmmetEngine::~CEmmetEngine(void)
 {
-    m_Context->Exit();
-    m_Context.Dispose();
+    m_context.Dispose();
 }
 
 EmmetResult CEmmetEngine::ExpandAbbreviation()
 {
-    RunAction("actionExpandAbbreviation()", EmmetAction_ExpandAbbreviation);
+    RunAction(&m_expandAbbreviationFunc, EmmetAction_ExpandAbbreviation);
 
     return EmmetResult_OK;
 }
 
 EmmetResult CEmmetEngine::WrapWithAbbreviation(const char* szAbbreviation, UINT nchAbbreviation)
 {
-    UINT bufSize = nchAbbreviation + 32;
-    CAutoPtr<char> szCmd(new char[bufSize]);
-
-    StringCchPrintfA(szCmd, bufSize, "actionWrapWithAbbreviation('%s')", szAbbreviation);
-
-    RunAction(szCmd, EmmetAction_WrapWithAbbreviation);
+    RunAction(&m_wrapWithAbbreviationFunc, EmmetAction_WrapWithAbbreviation, szAbbreviation);
 
     return EmmetResult_OK;
 }
 
 EmmetResult CEmmetEngine::ToggleComment()
 {
-    RunAction("actionToggleComment()", EmmetAction_ToggleComment);
-
-    return EmmetResult_OK;
-}
-
-EmmetResult CEmmetEngine::RemoveTag()
-{
-    RunAction("actionRemoveTag()", EmmetAction_RemoveTag);
+    RunAction(&m_toggleCommentFunc, EmmetAction_ToggleComment);
 
     return EmmetResult_OK;
 }
 
 EmmetResult CEmmetEngine::MergeLines()
 {
-    return RunAction("actionMergeLines()", EmmetAction_MergeLines);
+    return RunAction(&m_mergeLinesFunc, EmmetAction_MergeLines);
 }
 
-EmmetResult CEmmetEngine::UpdateImageSize()
-{
-    return RunAction("actionUpdateImageSize()", EmmetAction_UpdateImageSize);
-}
-
-EmmetResult CEmmetEngine::RunAction(const char* action, EmmetAction actionCode)
+EmmetResult CEmmetEngine::RunAction(Persistent<Function>* func,
+	                                EmmetAction actionCode,
+									const char* param)
 {
     CComPtr<Document> pActiveDoc;
     CComPtr<IDispatch> pDisp;
@@ -93,22 +113,29 @@ EmmetResult CEmmetEngine::RunAction(const char* action, EmmetAction actionCode)
     if (!m_editorProxy->Initialize(pActiveDoc, pTextDoc, pSelection, actionCode))
         return EmmetResult_DocumentFormatNotSupported;
 
-    TryCatch try_catch;
-    HandleScope handleScope;
+	HandleScope handleScope(m_isolate);
+	Local<Context> context = Local<Context>::New(m_isolate, m_context);
+	Context::Scope contextScope(context);
+    
+	TryCatch try_catch;
+	Local<Function> action = Local<Function>::New(m_isolate, *func);
 
-    // Create a string containing the JavaScript source code.
-    Handle<String> source = String::New(action);
 
-    // Compile the source code.
-    Handle<Script> script = Script::Compile(source);
-  
     // All content manipulations will be run in a single undo context so that they can be reverted all at once
     CComPtr<UndoContext> undoContext;
     m_DTE->get_UndoContext(&undoContext);
     undoContext->Open(CComBSTR("Emmet"));
 
-    // Run the script to get the result.
-    Handle<Value> result = script->Run();
+    // Run the script wrapped with a single undo context.
+	Handle<Value> result;
+	if (param == NULL)
+		result = action->Call(context->Global(), 0, NULL);
+	else
+	{
+		Handle<String> arg = String::New(param);
+		Handle<Value> argv[1] = { arg };
+		result = action->Call(context->Global(), 1, argv);
+	}
     undoContext->Close();
 
     if (result.IsEmpty())
@@ -143,6 +170,8 @@ CComBSTR CEmmetEngine::GetLastError()
 
 EmmetResult CEmmetEngine::ReadAndCompileEngineScript(PCWSTR szEngineScriptPath)
 {
+	// Enter the new context so all the following operations take place within it.
+	HandleScope scope(m_isolate);
     TryCatch try_catch;
     CAtlFile scriptFile;
     HRESULT hr = scriptFile.Create(szEngineScriptPath,
@@ -186,19 +215,15 @@ EmmetResult CEmmetEngine::ReadAndCompileEngineScript(PCWSTR szEngineScriptPath)
 
     if (script.IsEmpty())
     {
-        m_lastError.Append(L"Script compilation failed.");
+		FormatExceptionMessage(&try_catch);
         return EmmetResult_UnexpectedError;
     }
-    else
-    {
-        Handle<Value> result = script->Run();
-        if (result.IsEmpty())
-        {
-            // Remember errors that happened during execution.
-            FormatExceptionMessage(&try_catch);
 
-            return EmmetResult_UnexpectedError;
-        }
+    Handle<Value> result = script->Run();
+    if (result.IsEmpty())
+    {
+        FormatExceptionMessage(&try_catch);
+        return EmmetResult_UnexpectedError;
     }
 
     return EmmetResult_OK;
@@ -206,9 +231,10 @@ EmmetResult CEmmetEngine::ReadAndCompileEngineScript(PCWSTR szEngineScriptPath)
 
 VOID CEmmetEngine::FormatExceptionMessage(TryCatch* exceptionInfo)
 {
-    m_lastError.Append(L"Emmet JavaScript error: \n");
+	HandleScope handle_scope(m_isolate);
 
-    HandleScope handle_scope;
+    m_lastError.Append(L"Emmet JavaScript error: \n");
+    
     String::Utf8Value exception(exceptionInfo->Exception());
     Handle<Message> message = exceptionInfo->Message();
     if (message.IsEmpty())
