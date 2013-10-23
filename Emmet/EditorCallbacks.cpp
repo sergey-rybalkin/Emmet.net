@@ -3,6 +3,28 @@
 
 CallbackOptions g_Options;
 
+// Visual Studio API returns offsets without considering \r symbol, however Emmet engine does consider it. In 
+// order to unify offsets generation we'll have to remove all \r symbols using this function from strings that
+// we are returning to the Emmet engine.
+void StripCarriageReturns(BSTR str, BSTR* pOut)
+{
+    CComBSTR source;
+    source.Attach(str);
+    int len = source.Length();
+    CAutoPtr<WCHAR> destination(new WCHAR[len + 1]);
+
+    int destIndex = 0;
+    for (int srcIndex = 0; srcIndex < len; srcIndex++)
+    {
+        WCHAR ch = source[srcIndex];
+        if (ch != L'\r')
+            destination[destIndex++] = ch;
+    }
+    destination[destIndex] = 0;
+
+    *pOut = SysAllocString(destination);
+}
+
 void EditorUpdateExecutionOptions(CallbackOptions options)
 {
 	g_Options = options;
@@ -30,8 +52,8 @@ void EditorGetSelectionRange(const FunctionCallbackInfo<Value>& args)
 	end--;
 
 	Handle<Object> retVal = Object::New();
-	retVal->Set(String::New("start"), Int32::New(start));
-	retVal->Set(String::New("end"), Int32::New(end));
+	retVal->Set(String::New(L"start"), Int32::New(start));
+	retVal->Set(String::New(L"end"), Int32::New(end));
 
 	args.GetReturnValue().Set(retVal);
 }
@@ -63,7 +85,7 @@ void EditorGetCurrentLineRange(const FunctionCallbackInfo<Value>& args)
 
 	Local<Context> context = Isolate::GetCurrent()->GetCurrentContext();
 	Handle<Function> fCreateRange =
-		Handle<Function>::Cast(context->Global()->Get(String::New("createRange")));
+		Handle<Function>::Cast(context->Global()->Get(String::New(L"createRange")));
 
 	Handle<Value> argv[] = { Int32::New(lineOffset), Int32::New(lineOffset + lineLen) };
 
@@ -94,7 +116,8 @@ void EditorGetCurrentLine(const FunctionCallbackInfo<Value>& args)
 	CComPtr<EditPoint> editPoint;
 
 	long lineLen;
-	CComBSTR currentLine;
+	BSTR currentLine;
+    BSTR retVal;
 
 	g_Options.m_selection->get_ActivePoint(&virtualPoint);
 	virtualPoint->CreateEditPoint(&editPoint);
@@ -102,12 +125,11 @@ void EditorGetCurrentLine(const FunctionCallbackInfo<Value>& args)
 	editPoint->get_LineLength(&lineLen);
 	editPoint->GetText(CComVariant(lineLen), &currentLine);
 
-	CHAR asciiBuf[256] = { 0 };
+    StripCarriageReturns(currentLine, &retVal);
 
-	int nChars = currentLine.Length();
-	WideCharToMultiByte(CP_ACP, 0, currentLine, nChars, asciiBuf, 2048, NULL, NULL);
+    args.GetReturnValue().Set(String::New(retVal, SysStringLen(retVal)));
 
-	args.GetReturnValue().Set(String::New(asciiBuf, nChars));
+    SysFreeString(retVal);
 }
 
 void EditorReplaceContent(const FunctionCallbackInfo<Value>& args)
@@ -119,7 +141,13 @@ void EditorReplaceContent(const FunctionCallbackInfo<Value>& args)
 	long start, end = 0;
 
 	g_Options.m_selection->get_ActivePoint(&virtualPoint);
-	String::Utf8Value utfContent(newContent);
+
+	String::Utf8Value utf8Content(newContent);
+
+    // As V8 always returns utf8 string we need to convert it to utf16 before it can be used.
+    int contentLen = MultiByteToWideChar(CP_UTF8, NULL, *utf8Content, -1, NULL, 0);
+    CAutoPtr<WCHAR> content(new WCHAR[contentLen + 1]);
+    MultiByteToWideChar(CP_UTF8, NULL, *utf8Content, -1, content, contentLen + 1);
 
 	if (args.Length() == 0) // no start/end range
 	{
@@ -144,7 +172,10 @@ void EditorReplaceContent(const FunctionCallbackInfo<Value>& args)
 	CComPtr<EditPoint> editPoint;
 	g_Options.m_selection->get_ActivePoint(&activePoint);
 	activePoint->CreateEditPoint(&editPoint);
-    editPoint->Insert(CComBSTR(utfContent.length(), *utfContent));
+
+    BSTR bstrContent = SysAllocString(content);
+    editPoint->Insert(bstrContent);
+    SysFreeString(bstrContent);
 
 	if (EmmetAction_MergeLines != g_Options.m_curAction)
 	{
@@ -160,7 +191,8 @@ void EditorGetContent(const FunctionCallbackInfo<Value>& args)
 	CComPtr<TextPoint> endPoint;
 	CComPtr<EditPoint> startEditPoint;
 	CComPtr<EditPoint> endEditPoint;
-	CComBSTR buf;
+	BSTR buf;
+    BSTR retVal;
 
 	g_Options.m_textDoc->get_StartPoint(&startPoint);
 	g_Options.m_textDoc->get_EndPoint(&endPoint);
@@ -169,68 +201,43 @@ void EditorGetContent(const FunctionCallbackInfo<Value>& args)
 
 	startEditPoint->GetText(CComVariant(endEditPoint), &buf);
 
-	int nChars = buf.Length();
-	CAutoPtr<char> asciiBuf(new char[nChars + 1]);
+    StripCarriageReturns(buf, &retVal);
 
-	WideCharToMultiByte(CP_ACP, 0, buf, nChars + 1, asciiBuf, nChars + 1, NULL, NULL);
+	args.GetReturnValue().Set(String::New(retVal, SysStringLen(retVal)));
 
-	int destIndex = 0;
-	for (int index = 0; index <= nChars; index++)
-	{
-		if (asciiBuf[index] != '\r')
-		{
-			asciiBuf[destIndex] = asciiBuf[index];
-			destIndex++;
-		}
-	}
-	if (destIndex < nChars)
-		asciiBuf[destIndex] = '\0';
-
-    args.GetReturnValue().Set(String::New(asciiBuf, destIndex - 1));
+    SysFreeString(retVal);
 }
 
 void EditorGetSelection(const FunctionCallbackInfo<Value>& args)
 {
 	CComPtr<VirtualPoint> virtualPoint;
-	CComBSTR buf;
+    BSTR buf;
+    BSTR retVal;
 
 	g_Options.m_selection->get_Text(&buf);
 
-	int retValLen = buf.Length();
+	int retValLen = SysStringLen(buf);
     if (0 == retValLen)
     {
-        args.GetReturnValue().Set(String::New(""));
+        args.GetReturnValue().Set(String::New(L""));
+        SysFreeString(buf);
         return;
     }
 
-	CAutoPtr<char> asciiBuf(new char[retValLen + 1]);
+    StripCarriageReturns(buf, &retVal);
 
-	WideCharToMultiByte(CP_ACP, 0, buf, retValLen + 1, asciiBuf, retValLen + 1, NULL, NULL);
-	asciiBuf[retValLen] = '\0';
+    args.GetReturnValue().Set(String::New(retVal, SysStringLen(retVal)));
 
-	int destIndex = 0;
-	for (int index = 0; index <= retValLen; index++)
-	{
-		if (asciiBuf[index] != '\r')
-		{
-			asciiBuf[destIndex] = asciiBuf[index];
-			destIndex++;
-		}
-	}
-	asciiBuf[destIndex] = '\0';
-
-	Handle<String> retVal = String::New(asciiBuf, destIndex);
-
-    return args.GetReturnValue().Set(retVal);
+    SysFreeString(retVal);
 }
 
 void EditorGetSyntax(const FunctionCallbackInfo<Value>& args)
 {
     Handle<String> retVal;
 	if (!g_Options.m_isHtml)
-        retVal = String::New("css");
+        retVal = String::New(L"css");
 	else
-        retVal = String::New("html");
+        retVal = String::New(L"html");
 
     args.GetReturnValue().Set(retVal);
 }
@@ -239,9 +246,9 @@ void EditorGetProfileName(const FunctionCallbackInfo<Value>& args)
 {
     Handle<String> retVal;
     if (!g_Options.m_isHtml)
-        retVal = String::New("css");
+        retVal = String::New(L"css");
     else
-        retVal = String::New("html");
+        retVal = String::New(L"html");
 
     args.GetReturnValue().Set(retVal);
 }
@@ -249,5 +256,5 @@ void EditorGetProfileName(const FunctionCallbackInfo<Value>& args)
 void EditorPrompt(const FunctionCallbackInfo<Value>& args)
 {
 	// Default wrap container, probably makes sense to show a dialog box here as well
-	return args.GetReturnValue().Set(String::New("div"));
+	return args.GetReturnValue().Set(String::New(L"div"));
 }
