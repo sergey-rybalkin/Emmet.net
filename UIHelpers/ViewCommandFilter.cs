@@ -104,11 +104,8 @@ namespace UIHelpers
                     if (_tabSpans.MoveToNextEmptySlot())
                         return VSConstants.S_OK;
                 }
-                else if (nCmdId == BackTabCmdId && !_completionBroker.IsCompletionActive(_view))
-                {
-                    if (_tabSpans.MoveToPreviousEmptySlot())
-                        return VSConstants.S_OK;
-                }
+                else if (nCmdId == BackTabCmdId && _tabSpans.MoveToPreviousEmptySlot())
+                    return VSConstants.S_OK;
 
                 return _nextTarget.Exec(pguidCmdGroup, nCmdId, nCmdexecopt, pvaIn, pvaOut);
             }
