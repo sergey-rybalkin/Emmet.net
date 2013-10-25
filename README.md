@@ -19,7 +19,7 @@ Below is the list of actions that are currently implemented in this extension. T
 
 ## Binaries
 
-Precompiled version can be downloaded here - http://dl.dropbox.com/u/38120966/Emmet.vsix
+Precompiled version can be downloaded here - https://dl.dropboxusercontent.com/u/38120966/Emmet.vsix
 
 ### Version history
 
