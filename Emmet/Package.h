@@ -125,7 +125,7 @@ void OnWrapWithAbbreviationCommand(CommandHandler* /*pSender*/, DWORD /*flags*/,
     CPromptDlg dlg(hwndOwner);
     char* szAbbreviation = dlg.Prompt();
     
-    if (szAbbreviation > 0)
+    if (szAbbreviation)
     {
         EmmetResult result = m_engine->WrapWithAbbreviation(szAbbreviation, strlen(szAbbreviation));
         if (EmmetResult_OK != result)

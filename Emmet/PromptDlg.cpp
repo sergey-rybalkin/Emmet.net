@@ -56,7 +56,7 @@ PSTR CPromptDlg::Prompt()
                                   m_ownerWindow,
                                   PromptDlgProc);
 
-    if (dlgResult && szInput)
+    if ((LOWORD(dlgResult) == IDOK) && szInput)
     {
         m_input.Attach(szInput);
         return m_input;

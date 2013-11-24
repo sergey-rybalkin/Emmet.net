@@ -5,5 +5,5 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyCompany("Sergey Rybalkin")]
 [assembly: AssemblyProduct("Emmet.net")]
 [assembly: ComVisible(false)]
-[assembly: AssemblyVersion("1.3.0.0")]
-[assembly: AssemblyFileVersion("1.3.0.0")]
+[assembly: AssemblyVersion("2.1.0.0")]
+[assembly: AssemblyFileVersion("2.1.0.0")]
