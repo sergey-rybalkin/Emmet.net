@@ -12,6 +12,8 @@ namespace UIHelpers
     /// </summary>
     [Export(typeof(IVsTextViewCreationListener))]
     [ContentType(CssContentTypeDefinition.CssContentType)]
+    [ContentType(LessContentTypeDefinition.LessContentType)]
+    [ContentType("SCSS")]
     [TextViewRole(PredefinedTextViewRoles.Document)]
     public class CssViewCreationListener : ViewCreationListenerBase, IVsTextViewCreationListener
     {
