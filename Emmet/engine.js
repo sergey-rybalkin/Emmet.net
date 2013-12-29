@@ -11317,11 +11317,7 @@ emmet.define('lorem', function(require, _) {
 			"d:tbr": "display:table-row;",
 			"d:tbrg": "display:table-row-group;",
 			"d:tbc": "display:table-cell;",
-			"d:rb": "display:ruby;",
-			"d:rbb": "display:ruby-base;",
-			"d:rbbg": "display:ruby-base-group;",
-			"d:rbt": "display:ruby-text;",
-			"d:rbtg": "display:ruby-text-group;",
+			"d:f": "display: flex;",
 			"v": "visibility:${1:hidden};",
 			"v:v": "visibility:visible;",
 			"v:h": "visibility:hidden;",
@@ -11678,10 +11674,17 @@ emmet.define('lorem', function(require, _) {
 			"trf:sc": "transform: scale(${1:x}, ${2:y});",
 			"trf:scx": "transform: scaleX(${1:x});",
 			"trf:scy": "transform: scaleY(${1:y});",
+			"trf:scz": "transform: scaleZ(${1:z});",
+			"trf:sc3": "transform: scale3d(${1:x}, ${2:y}, ${3:z});",
 			"trf:r": "transform: rotate(${1:angle});",
+			"trf:rx": "transform: rotateX(${1:angle});",
+			"trf:ry": "transform: rotateY(${1:angle});",
+			"trf:rz": "transform: rotateZ(${1:angle});",
 			"trf:t": "transform: translate(${1:x}, ${2:y});",
 			"trf:tx": "transform: translateX(${1:x});",
 			"trf:ty": "transform: translateY(${1:y});",
+			"trf:tz": "transform: translateZ(${1:z});",
+			"trf:t3": "transform: translate3d(${1:tx}, ${2:ty}, ${3:tz});",
 			"trfo": "transform-origin:|;",
 			"trfs": "transform-style:${1:preserve-3d};",
 			"trs": "transition:${1:prop} ${2:time};",
@@ -11713,15 +11716,6 @@ emmet.define('lorem', function(require, _) {
 			"wow:u": "word-wrap:unrestricted;",
 			"wow:s": "word-wrap:suppress;",
 			"wow:b": "word-wrap:break-word;",
-			"wm": "writing-mode:${1:lr-tb};",
-			"wm:lrt": "writing-mode:lr-tb;",
-			"wm:lrb": "writing-mode:lr-bt;",
-			"wm:rlt": "writing-mode:rl-tb;",
-			"wm:rlb": "writing-mode:rl-bt;",
-			"wm:tbr": "writing-mode:tb-rl;",
-			"wm:tbl": "writing-mode:tb-lr;",
-			"wm:btl": "writing-mode:bt-lr;",
-			"wm:btr": "writing-mode:bt-rl;",
 			"lts": "letter-spacing:|;",
 			"lts-n": "letter-spacing:normal;",
 			"f": "font:|;",
@@ -11813,11 +11807,51 @@ emmet.define('lorem', function(require, _) {
 			"orp": "orphans:|;",
 			"us": "user-select:${none};",
 			"wid": "widows:|;",
-			"wfsm": "-webkit-font-smoothing:${antialiased};",
-			"wfsm:a": "-webkit-font-smoothing:antialiased;",
-			"wfsm:s": "-webkit-font-smoothing:subpixel-antialiased;",
-			"wfsm:sa": "-webkit-font-smoothing:subpixel-antialiased;",
-			"wfsm:n": "-webkit-font-smoothing:none;"
+
+			"ac": "align-content:|;",
+			"ac:fs": "align-content:flex-start;",
+			"ac:fe": "align-content:flex-end;",
+			"ac:c": "align-content:center;",
+			"ac:sb": "align-content:space-between;",
+			"ac:sa": "align-content:space-around;",
+			"ac:s": "align-content:stretch;",
+
+			"ai": "align-items:|;",
+			"ai:fs": "align-items:flex-start;",
+			"ai:fe": "align-items:flex-end;",
+			"ai:c": "align-items:center;",
+			"ai:b": "align-items:baseline;",
+			"ai:s": "align-items:stretch;",
+
+			"as": "align-self:|;",
+			"as:fs": "align-self:flex-start;",
+			"as:fe": "align-self:flex-end;",
+			"as:c": "align-self:center;",
+			"as:b": "align-self:baseline;",
+			"as:s": "align-self:stretch;",
+
+			"fb": "flex-basis:|;",
+
+			"fd": "flex-direction:|;",
+			"fd:r": "flex-direction:row;",
+			"fd:rr": "flex-direction:row-reverse;",
+			"fd:c": "flex-direction:column;",
+			"fd:cr": "flex-direction:column-reverse;",
+
+			"ffl": "flex-flow:${1:column} ${2:wrap};",
+			"fg": "flex-grow:|;",
+			"fsh": "flex-shink:|;",
+			"fwr:n": "flex-wrap:nowrap;",
+			"fwr:w": "flex-wrap:wrap;",
+			"fwr:wr": "flex-wrap:wrap-reverse;",
+			"ord": "order:|;",
+
+			"jc": "justify-content:|;",
+			"jc:fs": "justify-content:flex-start;",
+			"jc:fe": "justify-content:flex-end;",
+			"jc:c": "justify-content:center;",
+			"jc:sb": "justify-content:space-between;",
+			"jc:sa": "justify-content:space-around;"
 		}
 	},
 	
@@ -12001,75 +12035,6 @@ emmet.define('lorem', function(require, _) {
 			"optgroup+": "optgroup>option",
 			"optg+": "optgroup>option"
 		}
-	},
-	
-	"xml": {
-		"extends": "html",
-		"profile": "xml",
-		"filters": "html"
-	},
-	
-	"xsl": {
-		"extends": "html",
-		"profile": "xml",
-		"filters": "html, xsl",
-		"abbreviations": {
-			"tm": "<xsl:template match=\"\" mode=\"\">",
-			"tmatch": "tm",
-			"tn": "<xsl:template name=\"\">",
-			"tname": "tn",
-			"call": "<xsl:call-template name=\"\"/>",
-			"ap": "<xsl:apply-templates select=\"\" mode=\"\"/>",
-			"api": "<xsl:apply-imports/>",
-			"imp": "<xsl:import href=\"\"/>",
-			"inc": "<xsl:include href=\"\"/>",
-
-			"ch": "<xsl:choose>",
-			"xsl:when": "<xsl:when test=\"\">",
-			"wh": "xsl:when",
-			"ot": "<xsl:otherwise>",
-			"if": "<xsl:if test=\"\">",
-
-			"par": "<xsl:param name=\"\">",
-			"pare": "<xsl:param name=\"\" select=\"\"/>",
-			"var": "<xsl:variable name=\"\">",
-			"vare": "<xsl:variable name=\"\" select=\"\"/>",
-			"wp": "<xsl:with-param name=\"\" select=\"\"/>",
-			"key": "<xsl:key name=\"\" match=\"\" use=\"\"/>",
-
-			"elem": "<xsl:element name=\"\">",
-			"attr": "<xsl:attribute name=\"\">",
-			"attrs": "<xsl:attribute-set name=\"\">",
-
-			"cp": "<xsl:copy select=\"\"/>",
-			"co": "<xsl:copy-of select=\"\"/>",
-			"val": "<xsl:value-of select=\"\"/>",
-			"each": "<xsl:for-each select=\"\">",
-			"for": "each",
-			"tex": "<xsl:text></xsl:text>",
-
-			"com": "<xsl:comment>",
-			"msg": "<xsl:message terminate=\"no\">",
-			"fall": "<xsl:fallback>",
-			"num": "<xsl:number value=\"\"/>",
-			"nam": "<namespace-alias stylesheet-prefix=\"\" result-prefix=\"\"/>",
-			"pres": "<xsl:preserve-space elements=\"\"/>",
-			"strip": "<xsl:strip-space elements=\"\"/>",
-			"proc": "<xsl:processing-instruction name=\"\">",
-			"sort": "<xsl:sort select=\"\" order=\"\"/>",
-
-			"choose+": "xsl:choose>xsl:when+xsl:otherwise",
-			"xsl": "!!!+xsl:stylesheet[version=1.0 xmlns:xsl=http://www.w3.org/1999/XSL/Transform]>{\n|}"
-		}, 
-		"snippets": {
-			"!!!": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-		}
-	},
-	
-	"haml": {
-		"filters": "haml",
-		"extends": "html",
-		"profile": "xml"
 	},
 	
 	"scss": {

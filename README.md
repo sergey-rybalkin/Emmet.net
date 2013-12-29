@@ -23,6 +23,7 @@ Precompiled version can be downloaded here - https://dl.dropboxusercontent.com/u
 
 ### Version history
 
+* v2.1.2 Added CSS abbreviations for flex box model, removed XSL abbreviations.
 * v2.1.1 Added support for SCSS files
 * v2.1 Bugfixing release
 * v2.0 - Visual Studio 2013 migration completed. Major changes:
