@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using EnvDTE;
 using Microsoft.VisualStudio;
-using Microsoft.VisualStudio.Language.Intellisense;
 using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Text;
@@ -18,8 +17,6 @@ namespace UIHelpers
     /// </summary>
     internal class ViewCommandFilter : IOleCommandTarget
     {
-        private const uint TabCmdId = 4;
-        private const uint BackTabCmdId = 5;
         private const int ExpandCmdId = 0x100;
         private readonly Dictionary<uint, int> _commandsRequirePostTranslation =
             new Dictionary<uint, int>
@@ -29,19 +26,14 @@ namespace UIHelpers
                 };
 
         private readonly Guid _emmetCommandsGuid = Guid.Parse("{bea64453-e066-4057-b565-0a36bddd0852}");
-
-        private readonly Guid _filteredGuid = typeof(VSConstants.VSStd2KCmdID).GUID;
         private readonly IOleCommandTarget _nextTarget;
-        private readonly ICompletionBroker _completionBroker;
         private readonly EmmetSyntax _syntax;
         private readonly IWpfTextView _view;
         private readonly TabSpanManager _tabSpans;
 
-        internal ViewCommandFilter(
-            IWpfTextView view, IVsTextView adapter, ICompletionBroker completionBroker, EmmetSyntax syntax)
+        internal ViewCommandFilter(IWpfTextView view, IVsTextView adapter, EmmetSyntax syntax)
         {
             _view = view;
-            _completionBroker = completionBroker;
             _syntax = syntax;
 
             _tabSpans = new TabSpanManager(view);
@@ -94,21 +86,33 @@ namespace UIHelpers
         /// </returns>
         public int Exec(ref Guid pguidCmdGroup, uint nCmdId, uint nCmdexecopt, IntPtr pvaIn, IntPtr pvaOut)
         {
-            // Handle TAB and BACKTAB events
-            if (_filteredGuid == pguidCmdGroup)
+            if (pguidCmdGroup == VSConstants.VSStd2K)
             {
-                if (nCmdId == TabCmdId && !_completionBroker.IsCompletionActive(_view))
+                switch (nCmdId)
                 {
-                    if (EmmetSyntax.Css == _syntax && RunEmmetAction(ExpandCmdId))
-                        return VSConstants.S_OK;
-                    if (_tabSpans.MoveToNextEmptySlot())
-                        return VSConstants.S_OK;
+                    case (uint)VSConstants.VSStd2KCmdID.TAB:
+                        if (EmmetSyntax.Css == _syntax && RunEmmetAction(ExpandCmdId))
+                            return VSConstants.S_OK;
+                        if (_tabSpans.MoveToNextEmptySlot())
+                            return VSConstants.S_OK;
+                        break;
+                    case (uint)VSConstants.VSStd2KCmdID.BACKTAB:
+                        if (_tabSpans.MoveToPreviousEmptySlot())
+                            return VSConstants.S_OK;
+                        break;
+                    case (uint)VSConstants.VSStd2KCmdID.DOWN:
+                    case (uint)VSConstants.VSStd97CmdID.Escape:
+                    case (uint)VSConstants.VSStd2KCmdID.UP:
+                        _tabSpans.Reset();
+                        break;
                 }
-                else if (nCmdId == BackTabCmdId && _tabSpans.MoveToPreviousEmptySlot())
-                    return VSConstants.S_OK;
 
                 return _nextTarget.Exec(pguidCmdGroup, nCmdId, nCmdexecopt, pvaIn, pvaOut);
             }
+
+            if (pguidCmdGroup == VSConstants.VSStd2K &&
+                nCmdId == (uint)VSConstants.VSStd2KCmdID.ECMD_LEFTCLICK)
+                _tabSpans.Reset();
 
             // Post process result of other emmet actions
             if (_emmetCommandsGuid == pguidCmdGroup &&

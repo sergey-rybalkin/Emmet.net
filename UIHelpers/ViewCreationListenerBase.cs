@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel.Composition;
 using Microsoft.VisualStudio.Editor;
-using Microsoft.VisualStudio.Language.Intellisense;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.TextManager.Interop;
 
@@ -11,9 +10,6 @@ namespace UIHelpers
     /// </summary>
     public abstract class ViewCreationListenerBase
     {
-        [Import]
-        internal abstract ICompletionBroker CompletionBroker { get; set; }
-
         [Import]
         internal abstract IVsEditorAdaptersFactoryService EditorAdaptersFactoryService { get; set; }
 
@@ -31,7 +27,7 @@ namespace UIHelpers
         {
             IWpfTextView textView = EditorAdaptersFactoryService.GetWpfTextView(textViewAdapter);
             textView.Properties.GetOrCreateSingletonProperty(
-                () => new ViewCommandFilter(textView, textViewAdapter, CompletionBroker, Syntax));
+                () => new ViewCommandFilter(textView, textViewAdapter, Syntax));
         }
     }
 }

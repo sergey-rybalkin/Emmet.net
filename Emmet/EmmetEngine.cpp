@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "EmmetEngine.h"
 
+#define USER_VOCABULARY_PATH L"%APPDATA%\\Emmet\\snippets.js"
+
 using namespace v8;
 
 CEmmetEngine::CEmmetEngine()
@@ -170,9 +172,6 @@ CComBSTR CEmmetEngine::GetLastError()
 
 EmmetResult CEmmetEngine::ReadAndCompileEngineScript(PCWSTR szEngineScriptPath)
 {
-	// Enter the new context so all the following operations take place within it.
-	HandleScope scope(m_isolate);
-    TryCatch try_catch;
     CAtlFile scriptFile;
     HRESULT hr = scriptFile.Create(szEngineScriptPath,
                                    GENERIC_READ,
@@ -205,17 +204,47 @@ EmmetResult CEmmetEngine::ReadAndCompileEngineScript(PCWSTR szEngineScriptPath)
         return EmmetResult_UnexpectedError;
     }
 
+    EmmetResult retVal = ExecuteScriptFile(scriptFile);
+
+    if (EmmetResult_OK == retVal)
+        retVal = TryAppendUserVocabulary();
+
+    return retVal;
+}
+
+EmmetResult CEmmetEngine::TryAppendUserVocabulary()
+{
+    DWORD dwRequiredBuf = ExpandEnvironmentStrings(USER_VOCABULARY_PATH, NULL, 0);
+    CAutoPtr<WCHAR> vocabularyFilePath(new WCHAR[dwRequiredBuf]);
+    ExpandEnvironmentStrings(USER_VOCABULARY_PATH, vocabularyFilePath, dwRequiredBuf);
+    CAtlFile scriptFile;
+    HRESULT hr = scriptFile.Create(vocabularyFilePath,
+                                   GENERIC_READ,
+                                   FILE_SHARE_READ,
+                                   OPEN_EXISTING,
+                                   FILE_FLAG_SEQUENTIAL_SCAN);
+    if (FAILED(hr))
+        return EmmetResult_OK; // File is not required so it is OK
+
+    return ExecuteScriptFile(scriptFile);
+}
+
+EmmetResult CEmmetEngine::ExecuteScriptFile(CAtlFile scriptFile)
+{
     ULONGLONG len;
     scriptFile.GetSize(len);
     CAutoPtr<char> fileContent(new char[(DWORD)len + 1]);
     scriptFile.Read(fileContent.m_p, (int)len);
     fileContent.m_p[len] = '\0';
 
+    // Enter the new context so all the following operations take place within it.
+    HandleScope scope(m_isolate);
+    TryCatch try_catch;
     Handle<Script> script = Script::Compile(String::New(fileContent));
 
     if (script.IsEmpty())
     {
-		FormatExceptionMessage(&try_catch);
+        FormatExceptionMessage(&try_catch);
         return EmmetResult_UnexpectedError;
     }
 

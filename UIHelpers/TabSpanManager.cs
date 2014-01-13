@@ -27,6 +27,15 @@ namespace UIHelpers
         }
 
         /// <summary>
+        /// Clears all tab stops tracked by this instance.
+        /// </summary>
+        internal void Reset()
+        {
+            _tabSpans = null;
+            _lastNavigatedSpan = null;
+        }
+
+        /// <summary>
         /// Starts tab stops navigation inside currently selected text.
         /// </summary>
         internal void PostProcessSelection()

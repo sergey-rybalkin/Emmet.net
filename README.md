@@ -23,6 +23,7 @@ Precompiled version can be downloaded here - https://dl.dropboxusercontent.com/u
 
 ### Version history
 
+* v2.1.3 Added support for custom snippets.js file, should be located at the predefined path %APPDATA%\Emmet\snippets.js.
 * v2.1.2 Added CSS abbreviations for flex box model, removed XSL abbreviations.
 * v2.1.1 Added support for SCSS files
 * v2.1 Bugfixing release

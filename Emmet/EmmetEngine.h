@@ -33,6 +33,8 @@ public:
 private:
     EmmetResult ReadAndCompileEngineScript(PCWSTR szEngineScriptPath);
 	EmmetResult RunAction(Persistent<Function>* func, EmmetAction actionCode, const char* param = NULL);
+    EmmetResult TryAppendUserVocabulary();
+    EmmetResult ExecuteScriptFile(CAtlFile scriptFile);
     VOID FormatExceptionMessage(TryCatch* exceptionInfo);
 
 private:

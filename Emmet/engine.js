@@ -8836,7 +8836,7 @@ emmet.define('cssResolver', function(require, _) {
 	prefs.define('css.syntaxes', 'css, less, sass, scss, stylus, styl',
 			'List of syntaxes that should be treated as CSS dialects.');
 	
-	prefs.define('css.autoInsertVendorPrefixes', true,
+	prefs.define('css.autoInsertVendorPrefixes', false,
 			'Automatically generate vendor-prefixed copies of expanded CSS ' 
 			+ 'property. By default, Emmet will generate vendor-prefixed '
 			+ 'properties only when you put dash before abbreviation ' 
@@ -11351,9 +11351,9 @@ emmet.define('lorem', function(require, _) {
 			"bxz": "box-sizing:${1:border-box};",
 			"bxz:cb": "box-sizing:content-box;",
 			"bxz:bb": "box-sizing:border-box;",
-			"bxsh": "box-shadow:${1:inset }${2:hoff} ${3:voff} ${4:blur} ${5:color};",
-			"bxsh:r": "box-shadow:${1:inset }${2:hoff} ${3:voff} ${4:blur} ${5:spread }rgb(${6:0}, ${7:0}, ${8:0});",
-			"bxsh:ra": "box-shadow:${1:inset }${2:h} ${3:v} ${4:blur} ${5:spread }rgba(${6:0}, ${7:0}, ${8:0}, .${9:5});",
+			"bxsh": "box-shadow:${1:inset} ${2:hoff} ${3:voff} ${4:blur} ${5:color};",
+			"bxsh:r": "box-shadow:${1:inset} ${2:hoff} ${3:voff} ${4:blur} ${5:spread }rgb(${6:0}, ${7:0}, ${8:0});",
+			"bxsh:ra": "box-shadow:${1:inset} ${2:h} ${3:v} ${4:blur} ${5:spread }rgba(${6:0}, ${7:0}, ${8:0}, .${9:5});",
 			"bxsh:n": "box-shadow:none;",
 			"m": "margin:|;",
 			"m:a": "margin:auto;",
