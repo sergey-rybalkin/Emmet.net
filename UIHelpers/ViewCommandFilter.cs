@@ -91,9 +91,9 @@ namespace UIHelpers
                 switch (nCmdId)
                 {
                     case (uint)VSConstants.VSStd2KCmdID.TAB:
-                        if (EmmetSyntax.Css == _syntax && RunEmmetAction(ExpandCmdId))
-                            return VSConstants.S_OK;
                         if (_tabSpans.MoveToNextEmptySlot())
+                            return VSConstants.S_OK;
+                        if (EmmetSyntax.Css == _syntax && RunEmmetAction(ExpandCmdId))
                             return VSConstants.S_OK;
                         break;
                     case (uint)VSConstants.VSStd2KCmdID.BACKTAB:
