@@ -11,12 +11,21 @@ enum EmmetAction
 	EmmetAction_MergeLines
 };
 
+enum EmmetSyntax
+{
+    EmmetSyntax_Html,
+
+    EmmetSyntax_Css,
+
+    EmmetSyntax_Scss
+};
+
 struct CallbackOptions
 {
 	Document* m_doc;
 	TextDocument* m_textDoc;
 	TextSelection* m_selection;
-	bool m_isHtml;
+	EmmetSyntax m_syntax;
 	EmmetAction m_curAction;
 };
 

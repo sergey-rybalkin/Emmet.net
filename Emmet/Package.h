@@ -153,18 +153,22 @@ private:
         if (m_initialized)
             return;
 
-        // Get path to the engine.js file. It should be placed in the same folder with extension DLL.
+        // Get path to the core script files. They should be placed in the same folder with extension DLL.
         HMODULE hEmmetDll = GetModuleHandle(L"Emmet.dll");
-        WCHAR szFilePath[MAX_PATH] = {0};
-        DWORD dwPathLen = GetModuleFileName(hEmmetDll, szFilePath, MAX_PATH);
-        PWSTR szLastSlash = szFilePath + dwPathLen;
+        WCHAR szEnginePath[MAX_PATH] = {0};
+        WCHAR szHelpersPath[MAX_PATH] = {0};
+        DWORD dwPathLen = GetModuleFileName(hEmmetDll, szEnginePath, MAX_PATH);
+        GetModuleFileName(hEmmetDll, szHelpersPath, MAX_PATH);
+        DWORD dwOffset = dwPathLen - 1;
 
-        while (*(--szLastSlash) != L'\\');
+        while (szEnginePath[--dwOffset] != L'\\');
+
 #ifdef DEBUG
-        StringCchCopy(szLastSlash + 1, MAX_PATH - dwPathLen, L"engine.js");
+        StringCchCopy(szEnginePath + dwOffset + 1, MAX_PATH - dwPathLen, L"engine.js");
 #else
-        StringCchCopy(szLastSlash + 1, MAX_PATH - dwPathLen, L"engine.min.js");
+        StringCchCopy(szEnginePath + dwOffset + 1, MAX_PATH - dwPathLen, L"engine.min.js");
 #endif
+        StringCchCopy(szHelpersPath + dwOffset + 1, MAX_PATH - dwPathLen, L"visualstudio.helpers.js");
 
         // Get DTE interface for the engine
         _DTE* pDTE;
@@ -173,11 +177,9 @@ private:
 
         m_engine.Attach(new CEmmetEngine());
 
-        EmmetResult result = m_engine->Initialize(pDTE, szFilePath);
+        EmmetResult result = m_engine->Initialize(pDTE, szEnginePath, szHelpersPath);
         if (EmmetResult_OK != result)
-        {
             ShowDiagnosticMessage(L"Engine initialization failure", result);
-        }
         else
             m_initialized = TRUE;
     }

@@ -46,7 +46,13 @@ BOOL CEditorProxy::Initialize(Document* pDoc, TextDocument* pTextDoc, TextSelect
 
 	// We need to distinguish HTML and CSS syntaxes only, it doesn't really matter whether CSS is actually
 	// LESS or SASS document
-	options.m_isHtml = bstrLang == "HTMLX" || bstrLang == "HTML";
+	if (bstrLang == "HTMLX" || bstrLang == "HTML")
+        options.m_syntax = EmmetSyntax_Html;
+    else if (bstrLang == "SCSS")
+        options.m_syntax = EmmetSyntax_Scss;
+    else
+        options.m_syntax = EmmetSyntax_Css;
+
 	options.m_selection = pSelection;
 	options.m_textDoc = pTextDoc;
 

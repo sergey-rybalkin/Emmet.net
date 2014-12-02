@@ -180,7 +180,7 @@ void EditorReplaceContent(const FunctionCallbackInfo<Value>& args)
 	if (EmmetAction_MergeLines != g_Options.m_curAction)
 	{
 		g_Options.m_selection->MoveToAbsoluteOffset(start + 1, TRUE);
-		if (g_Options.m_isHtml)
+		if (g_Options.m_syntax == EmmetSyntax_Html)
 			g_Options.m_selection->SmartFormat();
 	}
 }
@@ -234,21 +234,23 @@ void EditorGetSelection(const FunctionCallbackInfo<Value>& args)
 void EditorGetSyntax(const FunctionCallbackInfo<Value>& args)
 {
     Handle<String> retVal;
-	if (!g_Options.m_isHtml)
-        retVal = String::New(L"css");
-	else
+    if (g_Options.m_syntax == EmmetSyntax_Html)
         retVal = String::New(L"html");
-
+    else if (g_Options.m_syntax == EmmetSyntax_Scss)
+        retVal = String::New(L"scss");
+    else
+        retVal = String::New(L"css");
+    
     args.GetReturnValue().Set(retVal);
 }
 
 void EditorGetProfileName(const FunctionCallbackInfo<Value>& args)
 {
     Handle<String> retVal;
-    if (!g_Options.m_isHtml)
-        retVal = String::New(L"css");
-    else
+    if (g_Options.m_syntax == EmmetSyntax_Html)
         retVal = String::New(L"html");
+    else
+        retVal = String::New(L"css");
 
     args.GetReturnValue().Set(retVal);
 }

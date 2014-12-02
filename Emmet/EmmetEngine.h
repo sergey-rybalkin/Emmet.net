@@ -21,7 +21,7 @@ public:
     CEmmetEngine();
     ~CEmmetEngine(void);
 
-    EmmetResult Initialize(_DTE* pDTE, PCWSTR szEngineScriptPath);
+    EmmetResult Initialize(_DTE* pDTE, PCWSTR szEngineScriptPath, PCWSTR szHelpersScriptPath);
     EmmetResult ExpandAbbreviation();
     EmmetResult WrapWithAbbreviation(const char* szAbbreviation, UINT nchAbbreviation);
     EmmetResult ToggleComment();
@@ -31,9 +31,9 @@ public:
     CComBSTR GetLastError();
 
 private:
-    EmmetResult ReadAndCompileEngineScript(PCWSTR szEngineScriptPath);
+    EmmetResult ReadAndCompileScript(PCWSTR szEngineScriptPath);
 	EmmetResult RunAction(Persistent<Function>* func, EmmetAction actionCode, const char* param = NULL);
-    EmmetResult TryAppendUserVocabulary();
+    EmmetResult LoadUserProfile();
     EmmetResult ExecuteScriptFile(CAtlFile scriptFile);
     VOID FormatExceptionMessage(TryCatch* exceptionInfo);
 
