@@ -1,7 +1,8 @@
 #include "stdafx.h"
 #include "EmmetEngine.h"
 
-#define USER_VOCABULARY_PATH L"%APPDATA%\\Emmet\\snippets.js"
+#define USER_SNIPPETS_PATH L"%APPDATA%\\Emmet\\snippets.js"
+#define USER_PREFERENCES_PATH L"%APPDATA%\\Emmet\\preferences.js"
 
 using namespace v8;
 
@@ -9,7 +10,7 @@ CEmmetEngine::CEmmetEngine()
 {
 }
 
-EmmetResult CEmmetEngine::Initialize(_DTE* pDTE, PCWSTR szEngineScriptPath)
+EmmetResult CEmmetEngine::Initialize(_DTE* pDTE, PCWSTR szEngineScriptPath, PCWSTR szHelpersScriptPath)
 {
     m_DTE.Attach(pDTE);
 	m_editorProxy.Attach(new CEditorProxy());
@@ -30,39 +31,47 @@ EmmetResult CEmmetEngine::Initialize(_DTE* pDTE, PCWSTR szEngineScriptPath)
 	// Enter the new context so all the following operations take place within it.
 	Context::Scope context_scope(context);
 
-	EmmetResult result = ReadAndCompileEngineScript(szEngineScriptPath);
-	if (EmmetResult_OK == result)
-	{
-		Handle<String> actionName = String::New("actionExpandAbbreviation");
-		Handle<Value> func = context->Global()->Get(actionName);
-		if (!func->IsFunction())
-			return EmmetResult_UnexpectedError;
-		Handle<Function> funcHandle = Handle<Function>::Cast(func);
-		m_expandAbbreviationFunc.Reset(m_isolate, funcHandle);
+	EmmetResult result = ReadAndCompileScript(szEngineScriptPath);
+    if (EmmetResult_OK != result)
+        return result;
 
-		actionName = String::New("actionWrapWithAbbreviation");
-		func = context->Global()->Get(actionName);
-		if (!func->IsFunction())
-			return EmmetResult_UnexpectedError;
-		funcHandle = Handle<Function>::Cast(func);
-		m_wrapWithAbbreviationFunc.Reset(m_isolate, funcHandle);
+    result = LoadUserProfile();
+    if (EmmetResult_OK != result)
+        return result;
 
-		actionName = String::New("actionToggleComment");
-		func = context->Global()->Get(actionName);
-		if (!func->IsFunction())
-			return EmmetResult_UnexpectedError;
-		funcHandle = Handle<Function>::Cast(func);
-		m_toggleCommentFunc.Reset(m_isolate, funcHandle);
+    result = ReadAndCompileScript(szHelpersScriptPath);
+	if (EmmetResult_OK != result)
+        return result;
+	
+	Handle<String> actionName = String::New("actionExpandAbbreviation");
+	Handle<Value> func = context->Global()->Get(actionName);
+	if (!func->IsFunction())
+		return EmmetResult_UnexpectedError;
+	Handle<Function> funcHandle = Handle<Function>::Cast(func);
+	m_expandAbbreviationFunc.Reset(m_isolate, funcHandle);
 
-		actionName = String::New("actionMergeLines");
-		func = context->Global()->Get(actionName);
-		if (!func->IsFunction())
-			return EmmetResult_UnexpectedError;
-		funcHandle = Handle<Function>::Cast(func);
-		m_mergeLinesFunc.Reset(m_isolate, funcHandle);
-	}
+	actionName = String::New("actionWrapWithAbbreviation");
+	func = context->Global()->Get(actionName);
+	if (!func->IsFunction())
+		return EmmetResult_UnexpectedError;
+	funcHandle = Handle<Function>::Cast(func);
+	m_wrapWithAbbreviationFunc.Reset(m_isolate, funcHandle);
 
-	return result;
+	actionName = String::New("actionToggleComment");
+	func = context->Global()->Get(actionName);
+	if (!func->IsFunction())
+		return EmmetResult_UnexpectedError;
+	funcHandle = Handle<Function>::Cast(func);
+	m_toggleCommentFunc.Reset(m_isolate, funcHandle);
+
+	actionName = String::New("actionMergeLines");
+	func = context->Global()->Get(actionName);
+	if (!func->IsFunction())
+		return EmmetResult_UnexpectedError;
+	funcHandle = Handle<Function>::Cast(func);
+	m_mergeLinesFunc.Reset(m_isolate, funcHandle);
+
+	return EmmetResult_OK;
 }
 
 CEmmetEngine::~CEmmetEngine(void)
@@ -72,23 +81,17 @@ CEmmetEngine::~CEmmetEngine(void)
 
 EmmetResult CEmmetEngine::ExpandAbbreviation()
 {
-    RunAction(&m_expandAbbreviationFunc, EmmetAction_ExpandAbbreviation);
-
-    return EmmetResult_OK;
+    return RunAction(&m_expandAbbreviationFunc, EmmetAction_ExpandAbbreviation);
 }
 
 EmmetResult CEmmetEngine::WrapWithAbbreviation(const char* szAbbreviation, UINT nchAbbreviation)
 {
-    RunAction(&m_wrapWithAbbreviationFunc, EmmetAction_WrapWithAbbreviation, szAbbreviation);
-
-    return EmmetResult_OK;
+    return RunAction(&m_wrapWithAbbreviationFunc, EmmetAction_WrapWithAbbreviation, szAbbreviation);
 }
 
 EmmetResult CEmmetEngine::ToggleComment()
 {
-    RunAction(&m_toggleCommentFunc, EmmetAction_ToggleComment);
-
-    return EmmetResult_OK;
+    return RunAction(&m_toggleCommentFunc, EmmetAction_ToggleComment);
 }
 
 EmmetResult CEmmetEngine::MergeLines()
@@ -170,7 +173,7 @@ CComBSTR CEmmetEngine::GetLastError()
     return retVal;
 }
 
-EmmetResult CEmmetEngine::ReadAndCompileEngineScript(PCWSTR szEngineScriptPath)
+EmmetResult CEmmetEngine::ReadAndCompileScript(PCWSTR szEngineScriptPath)
 {
     CAtlFile scriptFile;
     HRESULT hr = scriptFile.Create(szEngineScriptPath,
@@ -204,29 +207,42 @@ EmmetResult CEmmetEngine::ReadAndCompileEngineScript(PCWSTR szEngineScriptPath)
         return EmmetResult_UnexpectedError;
     }
 
-    EmmetResult retVal = ExecuteScriptFile(scriptFile);
-
-    if (EmmetResult_OK == retVal)
-        retVal = TryAppendUserVocabulary();
-
-    return retVal;
+    return ExecuteScriptFile(scriptFile);
 }
 
-EmmetResult CEmmetEngine::TryAppendUserVocabulary()
+EmmetResult CEmmetEngine::LoadUserProfile()
 {
-    DWORD dwRequiredBuf = ExpandEnvironmentStrings(USER_VOCABULARY_PATH, NULL, 0);
-    CAutoPtr<WCHAR> vocabularyFilePath(new WCHAR[dwRequiredBuf]);
-    ExpandEnvironmentStrings(USER_VOCABULARY_PATH, vocabularyFilePath, dwRequiredBuf);
-    CAtlFile scriptFile;
-    HRESULT hr = scriptFile.Create(vocabularyFilePath,
-                                   GENERIC_READ,
-                                   FILE_SHARE_READ,
-                                   OPEN_EXISTING,
-                                   FILE_FLAG_SEQUENTIAL_SCAN);
-    if (FAILED(hr))
-        return EmmetResult_OK; // File is not required so it is OK
+    EmmetResult result = EmmetResult_OK;
+    DWORD dwRequiredBuf = ExpandEnvironmentStrings(USER_SNIPPETS_PATH, NULL, 0);
+    CAutoPtr<WCHAR> snippetsFilePath(new WCHAR[dwRequiredBuf]);
+    ExpandEnvironmentStrings(USER_SNIPPETS_PATH, snippetsFilePath, dwRequiredBuf);
+    CAtlFile snippetsFile;
+    HRESULT hr = snippetsFile.Create(snippetsFilePath,
+                                     GENERIC_READ,
+                                     FILE_SHARE_READ,
+                                     OPEN_EXISTING,
+                                     FILE_FLAG_SEQUENTIAL_SCAN);
+    if (SUCCEEDED(hr))
+    {
+        result = ExecuteScriptFile(snippetsFile);
+        if (EmmetResult_OK != result)
+            return result;
+    }
 
-    return ExecuteScriptFile(scriptFile);
+    dwRequiredBuf = ExpandEnvironmentStrings(USER_PREFERENCES_PATH, NULL, 0);
+    CAutoPtr<WCHAR> preferencesFilePath(new WCHAR[dwRequiredBuf]);
+    ExpandEnvironmentStrings(USER_PREFERENCES_PATH, preferencesFilePath, dwRequiredBuf);
+    
+    CAtlFile preferencesFile;
+    hr = preferencesFile.Create(preferencesFilePath,
+                                GENERIC_READ,
+                                FILE_SHARE_READ,
+                                OPEN_EXISTING,
+                                FILE_FLAG_SEQUENTIAL_SCAN);
+    if (SUCCEEDED(hr))
+        result = ExecuteScriptFile(preferencesFile);
+
+    return result;
 }
 
 EmmetResult CEmmetEngine::ExecuteScriptFile(CAtlFile scriptFile)

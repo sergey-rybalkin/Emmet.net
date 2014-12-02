@@ -19,14 +19,15 @@ Below is the list of actions that are currently implemented in this extension. T
 
 ## Binaries
 
-Precompiled version can be downloaded here - https://dl.dropboxusercontent.com/u/38120966/Emmet.vsix
+Precompiled version can be downloaded here - https://www.dropbox.com/s/03rl7qecwf5b7k7/Emmet.vsix?dl=0
 
 ### Version history
 
-* v2.1.3 Added support for custom snippets.js file, should be located at the predefined path %APPDATA%\Emmet\snippets.js.
-* v2.1.2 Added CSS abbreviations for flex box model, removed XSL abbreviations.
-* v2.1.1 Added support for SCSS files
-* v2.1 Bugfixing release
+* v2.2.0 - Upgrade to Emmet engine v1.1.
+* v2.1.3 - Added support for custom snippets.js file, should be located at the predefined path %APPDATA%\Emmet\snippets.js.
+* v2.1.2 - Added CSS abbreviations for flex box model, removed XSL abbreviations.
+* v2.1.1 - Added support for SCSS files
+* v2.1 - Bugfixing release
 * v2.0 - Visual Studio 2013 migration completed. Major changes:
     * In HTML documents default abbreviation expansion on TAB now relies on WebEssentials as they seem to have implemented all of the functionality, Emmet abbreviations expansion still available using shortcut Ctrl+Shift+Alt+X.
     * RemoveTag action removed as ReSharper now supports it.
