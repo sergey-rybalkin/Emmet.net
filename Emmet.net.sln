@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.24720.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Emmet.net", "Emmet\Emmet.net.csproj", "{F2A9B592-8396-4A7B-995F-1A927B68B393}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Emmet.Tests", "Emmet.Tests\Emmet.Tests.csproj", "{3F8118A7-54F8-4A12-81DD-7E9BE5320276}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F2A9B592-8396-4A7B-995F-1A927B68B393}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F2A9B592-8396-4A7B-995F-1A927B68B393}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F2A9B592-8396-4A7B-995F-1A927B68B393}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F2A9B592-8396-4A7B-995F-1A927B68B393}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3F8118A7-54F8-4A12-81DD-7E9BE5320276}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3F8118A7-54F8-4A12-81DD-7E9BE5320276}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3F8118A7-54F8-4A12-81DD-7E9BE5320276}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3F8118A7-54F8-4A12-81DD-7E9BE5320276}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

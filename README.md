@@ -1,12 +1,12 @@
 # Emmet.net - Emmet for Visual Studio
 
-This project is a MS Visual Studio 2013 port of the emmet editor extensions by Sergey Chikuyonok. More information available on http://docs.emmet.io/
+This project is a MS Visual Studio port of the emmet editor extensions by Sergey Chikuyonok. More information available on [Emmet official website](http://docs.emmet.io/).
 
 ## Build
 
-As emmet is originally created using JavaScript and Visual Studio cannot run it natively this project is using V8 JavaScript engine version 3.22.15. In order to build this project you need to place V8 *.lib files (icui18n.lib, icuuc.lib, v8_base.ia32.lib, v8_nosnapshot.ia32.lib, v8_snapshot.lib) to Emmet/lib/Debug|Release folder. See https://developers.google.com/v8/embed for details.
+As emmet is originally created using JavaScript and Visual Studio cannot run it natively, so this project is using [V8.NET JavaScript engine](https://v8dotnet.codeplex.com/) to execute Emmet code. V8.NET libraries are included with source code and other dependencies are managed with NuGet.
 
-Visual Studio 2013 and Visual Studio SDK are required to build the project.
+Visual Studio 2015 and Visual Studio SDK are required to build the project.
 
 ## Ported actions
 
@@ -23,6 +23,7 @@ Precompiled version can be downloaded here - https://www.dropbox.com/s/03rl7qecw
 
 ### Version history
 
+* v3.0 - Version for Visual Studio 2015 based on Emmet v1.3.1 and V8.NET v1.5.19.36. Almost complete rewrite in pure C#, added custom section to Visual Studio configuration options, support for custom preferences and extensions.
 * v2.2.0 - Upgrade to Emmet engine v1.1.
 * v2.1.3 - Added support for custom snippets.js file, should be located at the predefined path %APPDATA%\Emmet\snippets.js.
 * v2.1.2 - Added CSS abbreviations for flex box model, removed XSL abbreviations.
