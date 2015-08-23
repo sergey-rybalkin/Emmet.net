@@ -1,0 +1,12 @@
+{
+    "preferences": {
+        "caniuse.era": "e-2"
+    },
+    "snippets": {
+        "css": {
+            "snippets": {
+                "section": "/**\n * |\n ****/"
+            }
+        }
+    }
+}

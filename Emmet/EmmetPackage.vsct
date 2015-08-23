@@ -1,0 +1,152 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<CommandTable xmlns="http://schemas.microsoft.com/VisualStudio/2005-10-18/CommandTable" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  
+  <Extern href="stdidcmd.h"/>
+  <Extern href="vsshlids.h"/>
+
+  <Commands package="GuidEmmetPackage">
+
+    <Menus>
+      
+      <Menu guid="GuidEmmetPackageCmdSet" id="IDEmmetCssContextMenu" priority="0x0100" type="Menu">
+        <Parent guid="GuidEmmetPackageCmdSet" id="IDCssEditorContextMenuGroup"/>
+        <Strings>
+          <ButtonText>&amp;Emmet</ButtonText>
+          <CommandName>&amp;Emmet</CommandName>
+        </Strings>
+      </Menu>
+
+      <Menu guid="GuidEmmetPackageCmdSet" id="IDEmmetHtmlContextMenu" priority="0x0100" type="Menu">
+        <Parent guid="GuidEmmetPackageCmdSet" id="IDHtmlEditorContextMenuGroup"/>
+        <Strings>
+          <ButtonText>&amp;Emmet</ButtonText>
+          <CommandName>&amp;Emmet</CommandName>
+        </Strings>
+      </Menu>
+      
+    </Menus>
+    
+    <Groups>
+
+      <Group guid="GuidEmmetPackageCmdSet" id="IDCssEditorContextMenuGroup" priority="0x0600">
+        <Parent guid="GuidVisualStudioCssEditorCmdSet" id="IDVisualStudioCssContextMenu"/>
+      </Group>
+
+      <Group guid="GuidEmmetPackageCmdSet" id="IDHtmlEditorContextMenuGroup" priority="0x0600">
+        <Parent guid="GuidVisualStudioHtmlEditorCmdSet" id="IDVisualStudioHtmlContextMenu"/>
+      </Group>
+
+      <Group guid="GuidEmmetPackageCmdSet" id="IDEmmetCssCmdGroup" priority="0x0600">
+        <Parent guid="GuidEmmetPackageCmdSet" id="IDEmmetCssContextMenu" />
+      </Group>
+     
+      <Group guid="GuidEmmetPackageCmdSet" id="IDEmmetHtmlCmdGroup" priority="0x0600">
+        <Parent guid="GuidEmmetPackageCmdSet" id="IDEmmetHtmlContextMenu" />
+      </Group> 
+      
+    </Groups>
+
+    <Buttons>
+      
+      <Button guid="GuidEmmetPackageCmdSet" id="CmdIDExpandAbbreviation" priority="0x0100" type="Button">
+        <Strings>
+          <ButtonText>&amp;Expand Abbreviation</ButtonText>
+          <LocCanonicalName>ExpandAbbreviation</LocCanonicalName>
+          <CommandName>ExpandAbbreviation</CommandName>
+        </Strings>
+      </Button>
+      
+      <Button guid="GuidEmmetPackageCmdSet" id="CmdIDWrapWithAbbreviation" priority="0x0100" type="Button">
+        <Strings>
+          <ButtonText>&amp;Wrap with Abbreviation</ButtonText>
+          <CommandName>WrapWithAbbreviation</CommandName>
+          <LocCanonicalName>WrapWithAbbreviation</LocCanonicalName>
+        </Strings>
+      </Button>
+
+      <Button guid="GuidEmmetPackageCmdSet" id="CmdIDToggleComment" priority="0x0100" type="Button">
+        <Strings>
+          <ButtonText>&amp;Toggle Comment</ButtonText>
+          <CommandName>ToggleComment</CommandName>
+          <LocCanonicalName>ToggleComment</LocCanonicalName>
+        </Strings>
+      </Button>
+
+      <Button guid="GuidEmmetPackageCmdSet" id="CmdIDMergeLines" priority="0x0100" type="Button">
+        <Strings>
+          <ButtonText>&amp;Merge Lines</ButtonText>
+          <CommandName>MergeLines</CommandName>
+          <LocCanonicalName>MergeLines</LocCanonicalName>
+        </Strings>
+      </Button>
+      
+    </Buttons>
+    
+  </Commands>
+
+  <Symbols>
+
+    <GuidSymbol name="GuidEmmetPackage" value="{28e5fe40-f8d1-4720-8fdb-42a638b75fe5}" />
+
+    <GuidSymbol name="GuidEmmetPackageCmdSet" value="{8e070628-bb22-4983-99e8-ac37608cc5a6}">
+      <IDSymbol name="IDCssEditorContextMenuGroup" value="0x1020" />
+      <IDSymbol name="IDHtmlEditorContextMenuGroup" value="0x1021" />
+      
+      <IDSymbol name="IDEmmetCssCmdGroup" value="0x1030"/>
+      <IDSymbol name="IDEmmetHtmlCmdGroup" value="0x1031"/>
+      
+      <IDSymbol name="IDEmmetCssContextMenu" value="0x1040"/>
+      <IDSymbol name="IDEmmetHtmlContextMenu" value="0x1041"/>
+      
+      <IDSymbol name="CmdIDExpandAbbreviation" value="0x0100" />
+      <IDSymbol name="CmdIDWrapWithAbbreviation" value="0x0101" />
+      <IDSymbol name="CmdIDToggleComment" value="0x0102" />
+      <IDSymbol name="CmdIDMergeLines" value="0x0103" />
+    </GuidSymbol>
+
+    <!-- These are Visual Studio constants not found in SDK header files (found via VSIPLogging) -->
+    <GuidSymbol name="GuidVisualStudioHtmlEditorCmdSet" value="{78F03954-2FB8-4087-8CE7-59D71710B3BB}">
+      <IDSymbol name="IDVisualStudioHtmlContextMenu" value="1"/>
+    </GuidSymbol>
+
+    <GuidSymbol name="GuidVisualStudioCssEditorCmdSet" value="{64DA400E-B4AD-4D67-AA92-4B7ACB01ECD5}">
+      <IDSymbol name="IDVisualStudioCssContextMenu" value="0x0002"/>
+    </GuidSymbol>
+
+  </Symbols>
+
+  <CommandPlacements>
+
+    <CommandPlacement guid="GuidEmmetPackageCmdSet" id="CmdIDExpandAbbreviation" priority="0x0200">
+      <Parent guid="GuidEmmetPackageCmdSet" id="IDEmmetCssCmdGroup" />
+    </CommandPlacement>
+
+    <CommandPlacement guid="GuidEmmetPackageCmdSet" id="CmdIDExpandAbbreviation" priority="0x0200">
+      <Parent guid="GuidEmmetPackageCmdSet" id="IDEmmetHtmlCmdGroup" />
+    </CommandPlacement>
+    
+    <CommandPlacement guid="GuidEmmetPackageCmdSet" id="CmdIDWrapWithAbbreviation" priority="0x0200">
+      <Parent guid="GuidEmmetPackageCmdSet" id="IDEmmetHtmlCmdGroup" />
+    </CommandPlacement>
+
+    <CommandPlacement guid="GuidEmmetPackageCmdSet" id="CmdIDToggleComment" priority="0x0200">
+      <Parent guid="GuidEmmetPackageCmdSet" id="IDEmmetCssCmdGroup" />
+    </CommandPlacement>
+
+    <CommandPlacement guid="GuidEmmetPackageCmdSet" id="CmdIDToggleComment" priority="0x0200">
+      <Parent guid="GuidEmmetPackageCmdSet" id="IDEmmetHtmlCmdGroup" />
+    </CommandPlacement>
+
+    <CommandPlacement guid="GuidEmmetPackageCmdSet" id="CmdIDMergeLines" priority="0x0200">
+      <Parent guid="GuidEmmetPackageCmdSet" id="IDEmmetHtmlCmdGroup" />
+    </CommandPlacement>
+    
+  </CommandPlacements>
+
+  <KeyBindings>
+    <KeyBinding guid="GuidEmmetPackageCmdSet" id="CmdIDExpandAbbreviation" editor="guidVSStd97" key1="X" mod1="Control Shift Alt"/>
+    <KeyBinding guid="GuidEmmetPackageCmdSet" id="CmdIDWrapWithAbbreviation" editor="guidVSStd97" key1="W" mod1="Shift Alt"/>
+    <KeyBinding guid="GuidEmmetPackageCmdSet" id="CmdIDToggleComment" editor="guidVSStd97" key1="VK_DIVIDE" mod1="Control Alt"/>
+    <KeyBinding guid="GuidEmmetPackageCmdSet" id="CmdIDMergeLines" editor="guidVSStd97" key1="M" mod1="Shift Alt"/>
+  </KeyBindings>
+</CommandTable>

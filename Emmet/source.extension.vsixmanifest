@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
+  <Metadata>
+    <Identity Id="Emmet.net.Sergey Rybalkin.9a011f0e-c870-4faa-aaee-536a8040385c" Version="3.0" Language="en-US" Publisher="Sergey Rybalkin" />
+    <DisplayName>Emmet.net</DisplayName>
+    <Description xml:space="preserve">Visual Studio port of the https://github.com/emmetio/emmet project by Sergey Chikuyonok.</Description>
+    <MoreInfo>http://docs.emmet.io/</MoreInfo>
+    <License>license.txt</License>
+    <GettingStartedGuide>https://github.com/sergey-rybalkin/emmet.net</GettingStartedGuide>
+    <Icon>Resources/Logo.png</Icon>
+    <PreviewImage>Resources/PreviewImage.png</PreviewImage>
+  </Metadata>
+  <Installation>
+    <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[14.0]" />
+  </Installation>
+  <Dependencies>
+    <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="[4.5,)" />
+    <Dependency Id="Microsoft.VisualStudio.MPF.14.0" DisplayName="Visual Studio MPF 14.0" d:Source="Installed" Version="[14.0]" />
+  </Dependencies>
+  <Assets>
+    <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%;PkgdefProjectOutputGroup|" />
+    <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%|" />
+  </Assets>
+</PackageManifest>
