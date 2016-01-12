@@ -1,7 +1,6 @@
 Copyright 2015 Sergey Rybalkin (s.rybalkin@hotmail.com)
 
-The software is provided "as is", without warranty of any kind. The following
-third party packages are used:
+The software is provided "as is", without warranty of any kind. The following third party packages are used:
 
 Emmet by Sergey Chikuyonok (https://github.com/emmetio/emmet)
 V8.NET by jamesnw (https://v8dotnet.codeplex.com/)
