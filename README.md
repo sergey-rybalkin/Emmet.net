@@ -1,5 +1,7 @@
 # Emmet.net - Emmet for Visual Studio
 
+[![Build status](https://ci.appveyor.com/api/projects/status/b5sa82u73by2bcq1?svg=true)](https://ci.appveyor.com/project/sergey-rybalkin/emmet-net)
+
 This project is a MS Visual Studio port of the emmet editor extensions by Sergey Chikuyonok. More information available on [Emmet official website](http://docs.emmet.io/).
 
 ## Build
