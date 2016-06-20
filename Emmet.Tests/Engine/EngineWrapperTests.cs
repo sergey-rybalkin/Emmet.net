@@ -42,7 +42,7 @@ namespace Emmet.Tests.Engine
             editor.ReplaceContentRange(Arg.Do<string>(s => result = s), Arg.Any<int>(), Arg.Any<int>());
 
             // Act
-            _engine.RunCommand(Constants.ExpandAbbreviationCommandId, editor).Should().BeTrue();
+            _engine.RunCommand(PackageIds.CmdIDExpandAbbreviation, editor).Should().BeTrue();
             result.Should().Be("<div></div>");
         }
 
@@ -60,7 +60,7 @@ namespace Emmet.Tests.Engine
             editor.ReplaceContentRange(Arg.Do<string>(s => result = s), Arg.Any<int>(), Arg.Any<int>());
 
             // Act
-            _engine.RunCommand(Constants.ExpandAbbreviationCommandId, editor).Should().BeTrue();
+            _engine.RunCommand(PackageIds.CmdIDExpandAbbreviation, editor).Should().BeTrue();
             result.Should().Be("padding: 10px;");
         }
 
