@@ -14,19 +14,14 @@ namespace Emmet
     /// <summary>
     /// This is the class that implements the package exposed by this assembly.
     /// </summary>
-    [Guid(PackageGuidString)]
-    [InstalledProductRegistration("#110", "#112", "3.0", IconResourceID = 400)]
+    [Guid(PackageGuids.GuidEmmetPackageCmdSetString)]
+    [InstalledProductRegistration("#110", "#112", Vsix.Version, IconResourceID = 400)]
     [PackageRegistration(UseManagedResourcesOnly = true)]
     [ProvideAutoLoad(UIContextGuids80.SolutionExists)]
     [ProvideOptionPage(typeof(Options), "Emmet", "General", 0, 0, true)]
     [ProvideMenuResource("Menus.ctmenu", 1)]
     public sealed class EmmetPackage : Package
     {
-        /// <summary>
-        /// EmmetPackage GUID string.
-        /// </summary>
-        public const string PackageGuidString = "28e5fe40-f8d1-4720-8fdb-42a638b75fe5";
-
         private EngineWrapper _engine;
 
         /// <summary>

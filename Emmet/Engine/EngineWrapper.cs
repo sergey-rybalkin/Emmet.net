@@ -43,16 +43,16 @@ namespace Emmet.Engine
             string script = string.Empty;
             switch (cmdId)
             {
-                case Constants.ExpandAbbreviationCommandId:
+                case PackageIds.CmdIDExpandAbbreviation:
                     script = "window.emmet.run('expand_abbreviation', editor);";
                     break;
-                case Constants.WrapWithAbbreviationCommandId:
+                case PackageIds.CmdIDWrapWithAbbreviation:
                     script = "window.emmet.run('wrap_with_abbreviation', editor);";
                     break;
-                case Constants.ToggleCommentCommandId:
+                case PackageIds.CmdIDToggleComment:
                     script = "window.emmet.run('toggle_comment', editor);";
                     break;
-                case Constants.MergeLinesCommandId:
+                case PackageIds.CmdIDMergeLines:
                     script = "window.emmet.run('merge_lines', editor);";
                     break;
                 default:

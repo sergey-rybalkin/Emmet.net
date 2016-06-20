@@ -68,12 +68,16 @@
     <Compile Include="AbbreviationPrompt.Designer.cs">
       <DependentUpon>AbbreviationPrompt.cs</DependentUpon>
     </Compile>
-    <Compile Include="Constants.cs" />
     <Compile Include="Diagnostics\Exception.cs" />
     <Compile Include="Diagnostics\ExceptionArgs.cs" />
     <Compile Include="Diagnostics\Tracer.cs" />
     <Compile Include="Diagnostics\Verify.cs" />
     <Compile Include="EditorExtensions\CommandTargetBase.cs" />
+    <Compile Include="EmmetPackage1.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>EmmetPackage.vsct</DependentUpon>
+    </Compile>
     <Compile Include="Engine\EmmetEditorCallbacks.cs" />
     <Compile Include="EmmetPackage.cs" />
     <Compile Include="Engine\EmmetEngineExceptionArgs.cs" />
@@ -94,12 +98,17 @@
     <Compile Include="EmmetEditor.cs" />
     <Compile Include="EditorExtensions\ViewCreationListener.cs" />
     <Compile Include="Snippets\CodeSnippet.cs" />
+    <Compile Include="source.extension.cs">
+      <DependentUpon>source.extension.vsixmanifest</DependentUpon>
+    </Compile>
     <Compile Include="ViewContext.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
     <None Include="source.extension.vsixmanifest">
       <SubType>Designer</SubType>
+      <Generator>VsixManifestGenerator</Generator>
+      <LastGenOutput>source.extension.resx</LastGenOutput>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -245,6 +254,9 @@
     <Content Include="emmet-min.js">
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
+    <Content Include="source.extension.ico">
+      <DependentUpon>source.extension.vsixmanifest</DependentUpon>
+    </Content>
     <Content Include="x86\icudt.dll">
       <IncludeInVSIX>true</IncludeInVSIX>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -260,12 +272,10 @@
     <VSCTCompile Include="EmmetPackage.vsct">
       <ResourceName>Menus.ctmenu</ResourceName>
       <SubType>Designer</SubType>
+      <Generator>VsctGenerator</Generator>
+      <LastGenOutput>EmmetPackage1.cs</LastGenOutput>
     </VSCTCompile>
     <Content Include="license.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      <IncludeInVSIX>true</IncludeInVSIX>
-    </Content>
-    <Content Include="Resources\EmmetPackage.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
@@ -280,7 +290,10 @@
     <EmbeddedResource Include="AbbreviationPrompt.resx">
       <DependentUpon>AbbreviationPrompt.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="VSPackage.resx">
+    <EmbeddedResource Include="source.extension.resx">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>source.extension.vsixmanifest</DependentUpon>
       <MergeWithCTO>true</MergeWithCTO>
       <ManifestResourceName>VSPackage</ManifestResourceName>
     </EmbeddedResource>

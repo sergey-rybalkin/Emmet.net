@@ -51,7 +51,7 @@ namespace Emmet.EditorExtensions
 
         public int QueryStatus(ref Guid pguidCmdGroup, uint cCmds, OLECMD[] prgCmds, IntPtr pCmdText)
         {
-            if (pguidCmdGroup == Constants.CommandSetGuid)
+            if (pguidCmdGroup == PackageGuids.GuidEmmetPackageCmdSet)
             {
                 for (uint i = 0; i < cCmds; i++)
                     prgCmds[i].cmdf = (uint)(OLECMDF.OLECMDF_ENABLED | OLECMDF.OLECMDF_SUPPORTED);

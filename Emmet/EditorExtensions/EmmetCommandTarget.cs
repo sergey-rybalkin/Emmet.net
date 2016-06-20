@@ -68,16 +68,16 @@ namespace Emmet.EditorExtensions
                 if (InterceptNativeEvents(nCmdID))
                     return VSConstants.S_OK;
             }
-            else if (Constants.CommandSetGuid == pguidCmdGroup)
+            else if (PackageGuids.GuidEmmetPackageCmdSet == pguidCmdGroup)
             {
                 // Actual Emmet commands handling goes here. All new commands should be added to the switch
                 // statement below. 
                 switch (nCmdID)
                 {
-                    case Constants.ExpandAbbreviationCommandId:
+                    case PackageIds.CmdIDExpandAbbreviation:
                         TryExpandAbbreviation();
                         return VSConstants.S_OK;
-                    case Constants.WrapWithAbbreviationCommandId:
+                    case PackageIds.CmdIDWrapWithAbbreviation:
                         TryWrapAbbreviation();
                         return VSConstants.S_OK;
                     default:
@@ -147,7 +147,7 @@ namespace Emmet.EditorExtensions
 
             _completionBroker.DismissAllSessions(View.WpfView);
             var editor = new EmmetEditor(View.WpfView, View.TextView);
-            bool retVal = EmmetPackage.Instance.RunCommand(editor, Constants.ExpandAbbreviationCommandId);
+            bool retVal = EmmetPackage.Instance.RunCommand(editor, PackageIds.CmdIDExpandAbbreviation);
 
             if (HasActiveTabStops)
             {
@@ -165,7 +165,7 @@ namespace Emmet.EditorExtensions
                 return false;
 
             var editor = new EmmetEditor(View.WpfView, View.TextView);
-            bool retVal = EmmetPackage.Instance.RunCommand(editor, Constants.WrapWithAbbreviationCommandId);
+            bool retVal = EmmetPackage.Instance.RunCommand(editor, PackageIds.CmdIDWrapWithAbbreviation);
 
             if (HasActiveTabStops)
             {

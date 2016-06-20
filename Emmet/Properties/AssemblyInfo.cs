@@ -1,12 +1,13 @@
 ﻿using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Emmet;
 
-[assembly: AssemblyTitle("Emmet.net")]
-[assembly: AssemblyDescription("Emmet toolkit port for Visual Studio")]
-[assembly: AssemblyCompany("Sergey Rybalkin")]
-[assembly: AssemblyProduct("Emmet.net")]
+[assembly: AssemblyTitle(Vsix.Name)]
+[assembly: AssemblyDescription(Vsix.Description)]
+[assembly: AssemblyCompany(Vsix.Author)]
+[assembly: AssemblyProduct(Vsix.Name)]
 [assembly: ComVisible(false)]
-[assembly: AssemblyVersion("3.0.0.0")]
-[assembly: AssemblyFileVersion("3.0.0.0")]
+[assembly: AssemblyVersion(Vsix.Version)]
+[assembly: AssemblyFileVersion(Vsix.Version)]
 [assembly: InternalsVisibleTo("Emmet.Tests")]
