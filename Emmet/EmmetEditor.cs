@@ -1,11 +1,11 @@
-﻿using Emmet.Engine;
+﻿using System.Windows.Forms;
+using Emmet.Engine;
 using Emmet.Snippets;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Text.Projection;
 using Microsoft.VisualStudio.TextManager.Interop;
 using Microsoft.VisualStudio.Utilities;
-using System.Windows.Forms;
 
 namespace Emmet
 {
@@ -77,7 +77,7 @@ namespace Emmet
             var caretPosition = _wpfView.Caret.Position.BufferPosition;
             var buffers = projection.SourceBuffers;
             var bufferGraph = _wpfView.BufferGraph;
-            
+
             foreach (ITextBuffer buffer in buffers)
             {
                 SnapshotPoint? point = bufferGraph.MapDownToBuffer(caretPosition,

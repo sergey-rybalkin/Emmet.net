@@ -1,9 +1,9 @@
-﻿using Microsoft.VisualStudio.Editor;
-using Microsoft.VisualStudio.TextManager.Interop;
-using Microsoft.VisualStudio.Text.Editor;
-using Microsoft.VisualStudio.Utilities;
-using System.ComponentModel.Composition;
+﻿using System.ComponentModel.Composition;
+using Microsoft.VisualStudio.Editor;
 using Microsoft.VisualStudio.Language.Intellisense;
+using Microsoft.VisualStudio.Text.Editor;
+using Microsoft.VisualStudio.TextManager.Interop;
+using Microsoft.VisualStudio.Utilities;
 
 namespace Emmet.EditorExtensions
 {
@@ -16,6 +16,7 @@ namespace Emmet.EditorExtensions
     [ContentType("SCSS")]
     [ContentType("HTML")]
     [ContentType("HTMLX")]
+    [ContentType("CSharp")]
     [TextViewRole(PredefinedTextViewRoles.Document)]
     public class ViewCreationListener : IVsTextViewCreationListener
     {
@@ -38,11 +39,20 @@ namespace Emmet.EditorExtensions
         public void VsTextViewCreated(IVsTextView textViewAdapter)
         {
             IWpfTextView textView = EditorAdaptersFactoryService.GetWpfTextView(textViewAdapter);
-
             ViewContext context = new ViewContext(textView, textViewAdapter);
-            textView.Properties.GetOrCreateSingletonProperty(
-                "EmmetCommandTarget",
-                () => new EmmetCommandTarget(context, CompletionBroker));
+
+            if ("CSharp" != textView.TextBuffer.ContentType.TypeName)
+            {
+                textView.Properties.GetOrCreateSingletonProperty(
+                    "EmmetCommandTarget",
+                    () => new EmmetCommandTarget(context, CompletionBroker));
+            }
+            else
+            {
+                textView.Properties.GetOrCreateSingletonProperty(
+                    "ZenSharpCommandTarget",
+                    () => new ZenSharpCommandTarget(context, CompletionBroker));
+            }
         }
     }
 }

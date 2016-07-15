@@ -1,6 +1,6 @@
-﻿using Microsoft.VisualStudio;
+﻿using System;
+using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.OLE.Interop;
-using System;
 
 namespace Emmet.EditorExtensions
 {
@@ -13,6 +13,16 @@ namespace Emmet.EditorExtensions
 
         private IOleCommandTarget _nextTarget;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CommandTargetBase"/> class.
+        /// </summary>
+        /// <param name="view">Context of the view to operate on.</param>
+        public CommandTargetBase(ViewContext view)
+        {
+            View = view;
+            View.TextView.AddCommandFilter(this, out _nextTarget);
+        }
+
         protected ViewContext View { get; private set; }
 
         protected IOleCommandTarget NextTarget
@@ -20,22 +30,12 @@ namespace Emmet.EditorExtensions
             get { return _nextTarget; }
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CommandTargetBase"/> class.
-        /// </summary>
-        /// <param name="context">Context of the view to operate on.</param>
-        public CommandTargetBase(ViewContext view)
-        {
-            View = view;
-            View.TextView.AddCommandFilter(this, out _nextTarget);
-        }
-
         public virtual int Exec(
             ref Guid pguidCmdGroup, uint nCmdID, uint nCmdexecopt, IntPtr pvaIn, IntPtr pvaOut)
         {
             // Put this command target instance at the end of the chain in order to be able to handle TAB key
             // before the intellisense system.
-            if (!_reloadedWithHighPriority && nCmdID == (uint)VSConstants.VSStd2KCmdID.TYPECHAR)
+            if (!_reloadedWithHighPriority && (uint)VSConstants.VSStd2KCmdID.TYPECHAR == nCmdID)
             {
                 int retVal = _nextTarget.Exec(pguidCmdGroup, nCmdID, nCmdexecopt, pvaIn, pvaOut);
 
@@ -51,15 +51,18 @@ namespace Emmet.EditorExtensions
 
         public int QueryStatus(ref Guid pguidCmdGroup, uint cCmds, OLECMD[] prgCmds, IntPtr pCmdText)
         {
-            if (pguidCmdGroup == PackageGuids.GuidEmmetPackageCmdSet)
-            {
-                for (uint i = 0; i < cCmds; i++)
-                    prgCmds[i].cmdf = (uint)(OLECMDF.OLECMDF_ENABLED | OLECMDF.OLECMDF_SUPPORTED);
+            if (pguidCmdGroup != PackageGuids.GuidEmmetPackageCmdSet)
+                return NextTarget.QueryStatus(ref pguidCmdGroup, cCmds, prgCmds, pCmdText);
 
-                return VSConstants.S_OK;
-            }
+            for (uint i = 0; i < cCmds; i++)
+                prgCmds[i].cmdf = (uint)GetCommandStatus(prgCmds[i].cmdID);
 
-            return NextTarget.QueryStatus(ref pguidCmdGroup, cCmds, prgCmds, pCmdText);
+            return VSConstants.S_OK;
+        }
+
+        protected virtual OLECMDF GetCommandStatus(uint commandId)
+        {
+            return OLECMDF.OLECMDF_ENABLED | OLECMDF.OLECMDF_SUPPORTED;
         }
     }
 }

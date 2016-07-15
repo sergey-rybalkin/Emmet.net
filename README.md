@@ -1,42 +1,113 @@
-# Emmet.net - Emmet for Visual Studio
+# Emmet.net - Emmet for Microsoft Visual Studio
 
 [![Build status](https://ci.appveyor.com/api/projects/status/b5sa82u73by2bcq1?svg=true)](https://ci.appveyor.com/project/sergey-rybalkin/emmet-net)
 
-This project is a MS Visual Studio port of the emmet editor extensions by Sergey Chikuyonok. More information available on [Emmet official website](http://docs.emmet.io/).
+This project is a MS Visual Studio port of Emmet editor extensions created by Sergey Chikuyonok.
 
-## Build
+More information on the oriignal project is available on [Emmet official website](http://docs.emmet.io/).
 
-As emmet is originally created using JavaScript and Visual Studio cannot run it natively, so this project is using [V8.NET JavaScript engine](https://v8dotnet.codeplex.com/) to execute Emmet code. V8.NET libraries are included with source code and other dependencies are managed with NuGet.
+## Download
 
-Visual Studio 2015 and Visual Studio SDK are required to build the project.
+Precompiled version can be downloaded from [VSIX Gallery](http://vsixgallery.com/extension/Emmet.net.Sergey%20Rybalkin.9a011f0e-c870-4faa-aaee-536a8040385c/). Simply install downloaded VSIX package and you are good to go.
 
-## Ported actions
+[Version History](docs/changelog.md)
+
+## Features
 
 Below is the list of actions that are currently implemented in this extension. The rest of them are either natively supported by Visual Studio or exist in either ReSharper or WebEssentials extensions and therefore were not included.
 
-1. Expand Abbreviation (Ctrl+Shift+Alt+X) - http://docs.emmet.io/actions/expand-abbreviation/
-2. Wrap with Abbreviation (Shift+Alt+W) - http://docs.emmet.io/actions/wrap-with-abbreviation/
-3. Toggle Comment (Ctrl+Alt+Num /) - http://docs.emmet.io/actions/toggle-comment/
-4. Merge Lines (Ctrl+Alt+Shift+M) - http://docs.emmet.io/actions/merge-lines/
+### Expand Abbreviation (Ctrl+Shift+Alt+X)
 
-## Binaries
+Supported in HTML and CSS-like syntaxes (Razor views, LESS, SCSS).
 
-Precompiled version can be downloaded here - https://www.dropbox.com/s/03rl7qecwf5b7k7/Emmet.vsix?dl=0
+![Demo](docs/i/expand.gif)
 
-### Version history
+[Details](http://docs.emmet.io/actions/expand-abbreviation/)
 
-* v3.0 - Version for Visual Studio 2015 based on Emmet v1.3.1 and V8.NET v1.5.19.36. Almost complete rewrite in pure C#, added custom section to Visual Studio configuration options, support for custom preferences and extensions.
-* v2.2.0 - Upgrade to Emmet engine v1.1.
-* v2.1.3 - Added support for custom snippets.js file, should be located at the predefined path %APPDATA%\Emmet\snippets.js.
-* v2.1.2 - Added CSS abbreviations for flex box model, removed XSL abbreviations.
-* v2.1.1 - Added support for SCSS files
-* v2.1 - Bugfixing release
-* v2.0 - Visual Studio 2013 migration completed. Major changes:
-    * In HTML documents default abbreviation expansion on TAB now relies on WebEssentials as they seem to have implemented all of the functionality, Emmet abbreviations expansion still available using shortcut Ctrl+Shift+Alt+X.
-    * RemoveTag action removed as ReSharper now supports it.
-    * UpdateImageSize action removed as Visual Studio now supports it.
-    * Upgraded V8 to version 3.22.15
-* v1.3 - New Emmet engine version, fixed compatibility issues for Visual Studio Web Tools update 2012.2
-* v1.2 - Now using custom emmet build without actions that are irrelevant for visual studio, fixed tab stops bug when placeholders where not removed.
-* v1.1 - Minor performance improvements and bug fixes.
-* v1.0 - Initial release.
+### Wrap with Abbreviation (Shift+Alt+W)
+
+![Demo](docs/i/wrap.gif)
+
+[Details](http://docs.emmet.io/actions/wrap-with-abbreviation/)
+
+### Toggle Comment (Ctrl+Alt+Num /) 
+
+![Demo](docs/i/comment.gif)
+
+[Details](http://docs.emmet.io/actions/toggle-comment/)
+
+### Merge Lines (Ctrl+Alt+Shift+M) 
+
+![Demo](docs/i/merge.gif)
+
+[Details](http://docs.emmet.io/actions/merge-lines/)
+
+### Configuration and Extensions
+
+Configuration settings are available under Tools -> Options -> Emmet section.
+
+![Configuration](docs/i/config.png)
+
+Default keyboard shortcuts configuration:
+
+![Htkeys](docs/i/hotkeys.png)
+
+Emmet.net supports loading custom JavaScript-based preferences, snippets and extensions directly into Emmet engine. All you need is to specify extensions directory in the Emmet configuration section on the Tools -> Options page. Detailed information about writing Emmet extensions and snippets is available [here](http://docs.emmet.io/customization).
+
+### C# mnemonics expansion (experimental)
+
+Mnemonics are advanced dynamic snippets for C# language that let you quickly generate fields, properties and methods by typing a short abbreviation that defines its accessibility level, return value and other attributes. This implementation is inspired by popular ReSharper extensions [ZenSharp](https://github.com/ulex/ZenSharp) and [Live Templates](https://resharper-plugins.jetbrains.com/packages/JetBrains.Mnemonics/).
+
+Mnemonic snippet has the following structure: `<accessibility level><modifiers><return value><member type>`.
+
+Accessibility levels:
+
+| shortcut | expands to         |
+|----------|--------------------|
+| _        | private            |
+| p        | public             |
+| P        | protected          |
+| i        | internal           |
+| pi       | protected internal |
+
+Modifiers:
+
+| shortcut | expands to         |
+|----------|--------------------|
+| c        | const              |
+| s        | static             |
+| v        | virtual            |
+| a        | abstract           |
+| r        | readonly           |
+
+Return values:
+
+| shortcut | expands to |
+|----------|------------|
+| s        | string     |
+| sh       | short      |
+| by       | byte       |
+| b        | bool       |
+| dt       | DateTime   |
+| d        | double     |
+| i        | int        |
+| u        | uint       |
+| g        | Guid       |
+| de       | decimal    |
+| v        | void       |
+
+Member types:
+
+| shortcut | expands to |
+|----------|------------|
+| p        | property   |
+| m        | method     |
+| f        | field      |
+
+For example, mnemonic `_rif` will generate new private field `private readonly int |`.
+
+## Build
+
+Emmet is originally written in JavaScript and Visual Studio cannot run it natively, so this project is using [V8.NET JavaScript engine](https://v8dotnet.codeplex.com/) to execute Emmet code. V8.NET libraries are included with source code and other dependencies are managed with NuGet.
+
+Visual Studio 2015 Update 3 and Visual Studio SDK are required to build the project.

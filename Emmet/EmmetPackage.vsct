@@ -23,7 +23,7 @@
           <CommandName>&amp;Emmet</CommandName>
         </Strings>
       </Menu>
-      
+
     </Menus>
     
     <Groups>
@@ -42,8 +42,12 @@
      
       <Group guid="GuidEmmetPackageCmdSet" id="IDEmmetHtmlCmdGroup" priority="0x0600">
         <Parent guid="GuidEmmetPackageCmdSet" id="IDEmmetHtmlContextMenu" />
-      </Group> 
-      
+      </Group>
+
+      <Group guid="GuidEmmetPackageCmdSet" id="IDEmmetCSharpCmdGroup" priority="0x0600">
+        <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_CODEWIN"/>
+      </Group>
+
     </Groups>
 
     <Buttons>
@@ -80,6 +84,17 @@
         </Strings>
       </Button>
       
+      <Button guid="GuidEmmetPackageCmdSet" id="CmdIDExpandMnemonic" priority="0x0100" type="Button">
+        <Parent guid="GuidEmmetPackageCmdSet" id="IDEmmetCSharpCmdGroup" />
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>&amp;Expand Mnemonic</ButtonText>
+          <CommandName>ExpandMnemonic</CommandName>
+          <LocCanonicalName>ExpandMnemonic</LocCanonicalName>
+        </Strings>
+      </Button>
+      
     </Buttons>
     
   </Commands>
@@ -94,6 +109,7 @@
       
       <IDSymbol name="IDEmmetCssCmdGroup" value="0x1030"/>
       <IDSymbol name="IDEmmetHtmlCmdGroup" value="0x1031"/>
+      <IDSymbol name="IDEmmetCSharpCmdGroup" value="0x1032"/>
       
       <IDSymbol name="IDEmmetCssContextMenu" value="0x1040"/>
       <IDSymbol name="IDEmmetHtmlContextMenu" value="0x1041"/>
@@ -102,6 +118,7 @@
       <IDSymbol name="CmdIDWrapWithAbbreviation" value="0x0101" />
       <IDSymbol name="CmdIDToggleComment" value="0x0102" />
       <IDSymbol name="CmdIDMergeLines" value="0x0103" />
+      <IDSymbol name="CmdIDExpandMnemonic" value="0x0104" />
     </GuidSymbol>
 
     <!-- These are Visual Studio constants not found in SDK header files (found via VSIPLogging) -->
@@ -148,5 +165,6 @@
     <KeyBinding guid="GuidEmmetPackageCmdSet" id="CmdIDWrapWithAbbreviation" editor="guidVSStd97" key1="W" mod1="Shift Alt"/>
     <KeyBinding guid="GuidEmmetPackageCmdSet" id="CmdIDToggleComment" editor="guidVSStd97" key1="VK_DIVIDE" mod1="Control Alt"/>
     <KeyBinding guid="GuidEmmetPackageCmdSet" id="CmdIDMergeLines" editor="guidVSStd97" key1="M" mod1="Shift Alt"/>
+    <KeyBinding guid="GuidEmmetPackageCmdSet" id="CmdIDExpandMnemonic" editor="guidVSStd97" key1="VK_INSERT" mod1="Alt"/>
   </KeyBindings>
 </CommandTable>

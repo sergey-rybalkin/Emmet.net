@@ -1,20 +1,20 @@
-﻿using Emmet.Diagnostics;
+﻿using System;
+using System.IO;
+using System.Runtime.InteropServices;
+using Emmet.Diagnostics;
 using Emmet.Engine;
 using EnvDTE;
 using EnvDTE80;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
-using System;
-using System.IO;
-using System.Runtime.InteropServices;
 
 namespace Emmet
 {
     /// <summary>
     /// This is the class that implements the package exposed by this assembly.
     /// </summary>
-    [Guid(PackageGuids.GuidEmmetPackageCmdSetString)]
+    [Guid(PackageGuids.GuidEmmetPackageString)]
     [InstalledProductRegistration("#110", "#112", Vsix.Version, IconResourceID = 400)]
     [PackageRegistration(UseManagedResourcesOnly = true)]
     [ProvideAutoLoad(UIContextGuids80.SolutionExists)]
@@ -30,7 +30,7 @@ namespace Emmet
         internal static Options Options { get; private set; }
 
         /// <summary>
-        /// Gets or sets the singleton instance of the package.
+        /// Gets the singleton instance of the package.
         /// </summary>
         internal static EmmetPackage Instance { get; private set; }
 
@@ -63,15 +63,15 @@ namespace Emmet
                 if (ownUndoContext)
                     dte.UndoContext.SetAborted();
 
-                string msg = string.Format("Unexpected error occurred inside of the Emmet engine. {0}",
-                                           ex.Message);
+                string msg = $"Unexpected error occurred inside of the Emmet engine. {ex.Message}";
 
-                VsShellUtilities.ShowMessageBox(this,
-                                                msg,
-                                                "Emmet.NET: Unexpected error.",
-                                                OLEMSGICON.OLEMSGICON_CRITICAL,
-                                                OLEMSGBUTTON.OLEMSGBUTTON_OK,
-                                                OLEMSGDEFBUTTON.OLEMSGDEFBUTTON_FIRST);
+                VsShellUtilities.ShowMessageBox(
+                    this,
+                    msg,
+                    "Emmet.NET: Unexpected error.",
+                    OLEMSGICON.OLEMSGICON_CRITICAL,
+                    OLEMSGBUTTON.OLEMSGBUTTON_OK,
+                    OLEMSGDEFBUTTON.OLEMSGDEFBUTTON_FIRST);
 
                 return false;
             }
@@ -110,7 +110,9 @@ namespace Emmet
         /// </param>
         protected override void Dispose(bool disposing)
         {
-            _engine.Dispose();
+            if (disposing)
+                _engine.Dispose();
+
             base.Dispose(disposing);
         }
     }

@@ -18,7 +18,8 @@ namespace Emmet.Snippets
         private int[] _tabStopGroups;
 
         /// <summary>
-        /// Constructor that prevents a default instance of this class from being created.
+        /// Initializes a new instance of the <see cref="CodeSnippet"/> class. Constructor that prevents a
+        /// default instance of this class from being created.
         /// </summary>
         private CodeSnippet()
         {
@@ -72,7 +73,7 @@ namespace Emmet.Snippets
             MoveToSpan(_tabStops[index]);
 
             // There is no need to track anything if there is only one tab stop.
-            if (_tabStops.Length == 1)
+            if (1 == _tabStops.Length)
                 EndEditSnippet();
         }
 
@@ -106,7 +107,7 @@ namespace Emmet.Snippets
                 else if (reverse && 0 == index--)
                     index = _tabStops.Length - 1;
 
-                index = GetLastTabStopInGroup(index);                
+                index = GetLastTabStopInGroup(index);
                 MoveToSpan(_tabStops[index]);
 
                 return true;
@@ -155,16 +156,21 @@ namespace Emmet.Snippets
                 SnapshotSpan selection = new SnapshotSpan(_view.WpfView.TextBuffer.CurrentSnapshot, target);
                 _view.WpfView.Selection.Select(target, false);
             }
-            else if (4 == content.Length) // special case for code formatting issues
+            else if (4 == content.Length)
+            {
+                // special case for code formatting issues
                 _view.WpfView.Caret.MoveTo(target.Start + 2);
+            }
             else
+            {
                 _view.WpfView.Caret.MoveTo(target.End);
+            }
         }
 
         private int GetLastTabStopInGroup(int index = 0)
         {
             // Group zero does not apply here as it is used by default when no grouping is required.
-            if (_tabStopGroups[index] == 0)
+            if (0 == _tabStopGroups[index])
                 return index;
 
             for (int i = index; i < _tabStopGroups.Length; i++)

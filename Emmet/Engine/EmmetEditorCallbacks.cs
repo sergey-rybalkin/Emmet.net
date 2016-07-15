@@ -1,5 +1,5 @@
-﻿using Emmet.Diagnostics;
-using System.Linq;
+﻿using System.Linq;
+using Emmet.Diagnostics;
 using V8.Net;
 
 namespace Emmet.Engine
@@ -27,10 +27,15 @@ namespace Emmet.Engine
             if (string.IsNullOrEmpty(contentType))
                 return false;
 
-            if (contentType.EndsWith(@"ss")) // css, less or scss
+            // css, less or scss
+            if (contentType.EndsWith(@"ss"))
+            {
                 _syntax = contentType;
+            }
             else if (contentType == @"htmlx" || contentType.StartsWith("razor"))
+            {
                 _syntax = @"html";
+            }
             else
             {
                 this.TraceWarning($"Syntax {contentType} is not supported");
@@ -54,10 +59,11 @@ namespace Emmet.Engine
         /// and <code>end</code> properties.If there's no selection, should return object with
         /// <code>start</code> and <code>end</code> properties referring to current caret position.
         /// </summary>
-        public InternalHandle GetSelectionRange(V8Engine engine,
-                                                bool isConstructCall,
-                                                InternalHandle _this,
-                                                params InternalHandle[] args)
+        public InternalHandle GetSelectionRange(
+            V8Engine engine,
+            bool isConstructCall,
+            InternalHandle _this,
+            params InternalHandle[] args)
         {
             var selection = _editor.GetSelectionRange();
             ObjectHandle retVal = engine.CreateObject();
@@ -84,7 +90,9 @@ namespace Emmet.Engine
                 _editor.CreateSelection(start, end);
             }
             else
+            {
                 return SetCarretPos(engine, isConstructCall, _this, args);
+            }
 
             return engine.CreateValue(true);
         }

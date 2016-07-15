@@ -1,8 +1,8 @@
-﻿using Emmet.Snippets;
+﻿using System;
+using Emmet.Snippets;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Language.Intellisense;
 using Microsoft.VisualStudio.Text;
-using System;
 
 namespace Emmet.EditorExtensions
 {
@@ -26,6 +26,20 @@ namespace Emmet.EditorExtensions
             _expandAbbreviationOnTab = EmmetPackage.Options.InterceptTabs;
         }
 
+        /// <summary>
+        /// Event queue for all listeners interested in TabStopsRemoved events which is triggered when tab
+        /// stops collection changes.
+        /// </summary>
+        public event EventHandler TabStopsChanged;
+
+        /// <summary>
+        /// Gets a value indicating whether associated view has active tab stops.
+        /// </summary>
+        public bool HasActiveTabStops
+        {
+            get { return null != CurrentSnippet; }
+        }
+
         private CodeSnippet CurrentSnippet
         {
             get
@@ -37,20 +51,6 @@ namespace Emmet.EditorExtensions
                     return null;
             }
         }
-
-        /// <summary>
-        /// Gets a value indicating whether associated view has active tab stops.
-        /// </summary>
-        public bool HasActiveTabStops
-        {
-            get { return null != CurrentSnippet; }
-        }
-      
-        /// <summary>
-        /// Event queue for all listeners interested in TabStopsRemoved events which is triggered when tab
-        /// stops collection changes.
-        /// </summary>
-        public event EventHandler TabStopsChanged;
 
         /// <summary>
         /// Gets tab stops from the associated view that should be highlighted.
@@ -71,7 +71,7 @@ namespace Emmet.EditorExtensions
             else if (PackageGuids.GuidEmmetPackageCmdSet == pguidCmdGroup)
             {
                 // Actual Emmet commands handling goes here. All new commands should be added to the switch
-                // statement below. 
+                // statement below.
                 switch (nCmdID)
                 {
                     case PackageIds.CmdIDExpandAbbreviation:
@@ -81,7 +81,7 @@ namespace Emmet.EditorExtensions
                         TryWrapAbbreviation();
                         return VSConstants.S_OK;
                     default:
-                        // Other commands to not require post processing and can be invoked directly.
+                        // Other commands do not require post processing and can be invoked directly.
                         EmmetPackage.Instance.RunCommand(
                             new EmmetEditor(View.WpfView, View.TextView),
                             (int)nCmdID);
@@ -111,7 +111,7 @@ namespace Emmet.EditorExtensions
                         HighlightTabStops();
 
                         return false;
-                    }                        
+                    }
 
                     if (nCmdID != backTabCode && _expandAbbreviationOnTab && TryExpandAbbreviation())
                         return true;

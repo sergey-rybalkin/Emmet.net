@@ -2,7 +2,6 @@
 using NSubstitute;
 using FluentAssertions;
 using Emmet.Engine;
-using V8.Net;
 
 namespace Emmet.Tests.Engine
 {
