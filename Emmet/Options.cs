@@ -1,7 +1,7 @@
-﻿using System.ComponentModel;
-using Microsoft.VisualStudio.Shell;
-using System;
+﻿using System;
+using System.ComponentModel;
 using System.IO;
+using Microsoft.VisualStudio.Shell;
 
 namespace Emmet
 {

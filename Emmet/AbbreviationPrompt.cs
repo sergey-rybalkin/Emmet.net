@@ -20,7 +20,9 @@ namespace Emmet
                 DialogResult = DialogResult.OK;
             }
             else
+            {
                 DialogResult = DialogResult.Cancel;
+            }
 
             Close();
         }

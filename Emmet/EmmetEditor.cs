@@ -80,10 +80,11 @@ namespace Emmet
 
             foreach (ITextBuffer buffer in buffers)
             {
-                SnapshotPoint? point = bufferGraph.MapDownToBuffer(caretPosition,
-                                                                   PointTrackingMode.Negative,
-                                                                   buffer,
-                                                                   PositionAffinity.Predecessor);
+                SnapshotPoint? point = bufferGraph.MapDownToBuffer(
+                    caretPosition,
+                    PointTrackingMode.Negative,
+                    buffer,
+                    PositionAffinity.Predecessor);
 
                 if (!point.HasValue)
                     continue;

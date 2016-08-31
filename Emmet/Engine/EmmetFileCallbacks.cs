@@ -1,5 +1,5 @@
-﻿using Emmet.Diagnostics;
-using System.IO;
+﻿using System.IO;
+using Emmet.Diagnostics;
 using V8.Net;
 
 namespace Emmet.Engine
@@ -13,10 +13,11 @@ namespace Emmet.Engine
         /// <summary>
         /// JavaScript callback. Reads the specified file content and returns it as string.
         /// </summary>
-        public InternalHandle Read(V8Engine engine,
-                                   bool isConstructCall,
-                                   InternalHandle _this,
-                                   params InternalHandle[] args)
+        public InternalHandle Read(
+            V8Engine engine,
+            bool isConstructCall,
+            InternalHandle self,
+            params InternalHandle[] args)
         {
             if (args.Length != 3)
             {
@@ -53,10 +54,11 @@ namespace Emmet.Engine
         /// JavaScript callback. Returns absolute path to the file that is referenced from the file in the
         /// editor. Implementation copied from the Emmet project source code.
         /// </summary>
-        public InternalHandle LocateFile(V8Engine engine,
-                                         bool isConstructCall,
-                                         InternalHandle _this,
-                                         params InternalHandle[] args)
+        public InternalHandle LocateFile(
+            V8Engine engine,
+            bool isConstructCall,
+            InternalHandle self,
+            params InternalHandle[] args)
         {
             if (args.Length != 2)
             {
@@ -85,10 +87,11 @@ namespace Emmet.Engine
         /// <summary>
         /// JavaScript callback. Creates absolute path by concatenating two arguments.
         /// </summary>
-        public InternalHandle CreatePath(V8Engine engine,
-                                         bool isConstructorCall,
-                                         InternalHandle _this,
-                                         params InternalHandle[] args)
+        public InternalHandle CreatePath(
+            V8Engine engine,
+            bool isConstructorCall,
+            InternalHandle self,
+            params InternalHandle[] args)
         {
             if (args.Length != 2)
             {
@@ -108,10 +111,11 @@ namespace Emmet.Engine
         /// <summary>
         /// JavaScript callback. Saves the specified content to the file with the specified name.
         /// </summary>
-        public InternalHandle Save(V8Engine engine,
-                                   bool isConstructorCall,
-                                   InternalHandle _this,
-                                   params InternalHandle[] args)
+        public InternalHandle Save(
+            V8Engine engine,
+            bool isConstructorCall,
+            InternalHandle self,
+            params InternalHandle[] args)
         {
             if (args.Length != 2)
             {
@@ -130,10 +134,11 @@ namespace Emmet.Engine
         /// <summary>
         /// JavaScript callback. Returns file extension in lower case.
         /// </summary>
-        public InternalHandle GetExtension(V8Engine engine,
-                                           bool isConstructorCall,
-                                           InternalHandle _this,
-                                           params InternalHandle[] args)
+        public InternalHandle GetExtension(
+            V8Engine engine,
+            bool isConstructorCall,
+            InternalHandle self,
+            params InternalHandle[] args)
         {
             if (args.Length != 1)
             {

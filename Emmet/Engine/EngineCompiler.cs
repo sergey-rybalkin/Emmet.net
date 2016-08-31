@@ -1,8 +1,8 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
-using V8.Net;
 using Emmet.Diagnostics;
-using System.Collections.Generic;
+using V8.Net;
 
 namespace Emmet.Engine
 {

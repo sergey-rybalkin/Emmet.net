@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Dictionary>
+  <Words>
+    <Recognized>
+      <Word>Mvc</Word>
+      <Word>Mappable</Word>
+      <Word>Autocomplete</Word>
+      <Word>Cdn</Word>
+      <Word>Git</Word>
+      <Word>Svn</Word>
+      <Word>ToolPath</Word>
+      <Word>ms</Word>
+      <Word>Dir</Word>
+      <Word>Api</Word>
+      <Word>Emmet</Word>
+    </Recognized>
+  </Words>
+  <Acronyms>
+    <CasingExceptions>
+      <Acronym>Re</Acronym>
+    </CasingExceptions>
+  </Acronyms>
+</Dictionary>

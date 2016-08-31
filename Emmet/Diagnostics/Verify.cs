@@ -20,7 +20,8 @@ namespace Emmet.Diagnostics
         /// <exception cref="ArgumentNullException">
         /// Indicates that <param name="value"/> is null.
         /// </exception>
-        public static void ArgumentNotNull<T>(T value, string name) where T : class
+        public static void ArgumentNotNull<T>(T value, string name)
+            where T : class
         {
             Debug.Assert(null != value, string.Format("{0} is not null", name ?? string.Empty));
             if (null == value)
@@ -95,8 +96,10 @@ namespace Emmet.Diagnostics
                          string.Format("{0} does not exist: {1}", name, directoryPath));
 
             if (!Directory.Exists(directoryPath))
+            {
                 throw new DirectoryNotFoundException(
                     string.Format("{0} does not exist: {1}", name, directoryPath));
+            }
         }
     }
 }

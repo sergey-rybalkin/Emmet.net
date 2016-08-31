@@ -62,7 +62,7 @@ namespace Emmet.Engine
         public InternalHandle GetSelectionRange(
             V8Engine engine,
             bool isConstructCall,
-            InternalHandle _this,
+            InternalHandle self,
             params InternalHandle[] args)
         {
             var selection = _editor.GetSelectionRange();
@@ -78,10 +78,11 @@ namespace Emmet.Engine
         /// indexes. If <code>end</code> is omitted, this method should place caret and <code>start</code>
         /// index.
         /// </summary>
-        public InternalHandle CreateSelection(V8Engine engine,
-                                              bool isConstructCall,
-                                              InternalHandle _this,
-                                              params InternalHandle[] args)
+        public InternalHandle CreateSelection(
+            V8Engine engine,
+            bool isConstructCall,
+            InternalHandle self,
+            params InternalHandle[] args)
         {
             if (args.Length == 2)
             {
@@ -91,7 +92,7 @@ namespace Emmet.Engine
             }
             else
             {
-                return SetCarretPos(engine, isConstructCall, _this, args);
+                return SetCarretPos(engine, isConstructCall, self, args);
             }
 
             return engine.CreateValue(true);
@@ -101,10 +102,11 @@ namespace Emmet.Engine
         /// JavaScript callback. Returns current line's start and end indexes as object with
         /// <code>start</code> and <code>end</code> properties.
         /// </summary>
-        public InternalHandle GetCurrentLineRange(V8Engine engine,
-                                                  bool isConstructCall,
-                                                  InternalHandle _this,
-                                                  params InternalHandle[] args)
+        public InternalHandle GetCurrentLineRange(
+            V8Engine engine,
+            bool isConstructCall,
+            InternalHandle self,
+            params InternalHandle[] args)
         {
             var line = _editor.GetCurrentLineRange();
 
@@ -118,10 +120,11 @@ namespace Emmet.Engine
         /// <summary>
         /// JavaScript callback. Returns current caret position.
         /// </summary>
-        public InternalHandle GetCarretPos(V8Engine engine,
-                                           bool isConstructCall,
-                                           InternalHandle _this,
-                                           params InternalHandle[] args)
+        public InternalHandle GetCarretPos(
+            V8Engine engine,
+            bool isConstructCall,
+            InternalHandle self,
+            params InternalHandle[] args)
         {
             return engine.CreateValue(_editor.GetCaretPosition());
         }
@@ -129,10 +132,11 @@ namespace Emmet.Engine
         /// <summary>
         /// JavaScript callback. Set new caret position.
         /// </summary>
-        public InternalHandle SetCarretPos(V8Engine engine,
-                                           bool isConstructCall,
-                                           InternalHandle _this,
-                                           params InternalHandle[] args)
+        public InternalHandle SetCarretPos(
+            V8Engine engine,
+            bool isConstructCall,
+            InternalHandle self,
+            params InternalHandle[] args)
         {
             _editor.SetCaretPosition(args[0].AsInt32);
 
@@ -142,10 +146,11 @@ namespace Emmet.Engine
         /// <summary>
         /// JavaScript callback. Returns the content of the current line.
         /// </summary>
-        public InternalHandle GetCurrentLine(V8Engine engine,
-                                             bool isConstructCall,
-                                             InternalHandle _this,
-                                             params InternalHandle[] args)
+        public InternalHandle GetCurrentLine(
+            V8Engine engine,
+            bool isConstructCall,
+            InternalHandle self,
+            params InternalHandle[] args)
         {
             string txt = _editor.GetCurrentLine();
 
@@ -162,10 +167,11 @@ namespace Emmet.Engine
         /// If you pass <code>start</code> and <code>end</code> arguments, the corresponding substring of
         /// current target's content will be replaced with <code>value</code>.
         /// </summary>
-        public InternalHandle ReplaceContent(V8Engine engine,
-                                             bool isConstructCall,
-                                             InternalHandle _this,
-                                             params InternalHandle[] args)
+        public InternalHandle ReplaceContent(
+            V8Engine engine,
+            bool isConstructCall,
+            InternalHandle self,
+            params InternalHandle[] args)
         {
             string rawContent = args[0].AsString;
             int regionStart = args.Length > 1 ? args[1].AsInt32 : -1;
@@ -184,7 +190,7 @@ namespace Emmet.Engine
                 Range[] tabStopRanges = tabStops.TabStops;
 
                 // Tab stop offsets are relative to the newly generated content ranges, we need to convert
-                // them to the document-wide offsets. 
+                // them to the document-wide offsets.
                 if (regionStart > 0)
                 {
                     tabStopRanges = tabStopRanges.Select(
@@ -203,10 +209,11 @@ namespace Emmet.Engine
         /// <summary>
         /// JavaScript callbacks. Returns the content of the current editor window.
         /// </summary>
-        public InternalHandle GetContent(V8Engine engine,
-                                         bool isConstructCall,
-                                         InternalHandle _this,
-                                         params InternalHandle[] args)
+        public InternalHandle GetContent(
+            V8Engine engine,
+            bool isConstructCall,
+            InternalHandle self,
+            params InternalHandle[] args)
         {
             return engine.CreateValue(_editor.GetContent());
         }
@@ -214,10 +221,11 @@ namespace Emmet.Engine
         /// <summary>
         /// JavaScript callback. Returns current editor's syntax mode.
         /// </summary>
-        public InternalHandle GetSyntax(V8Engine engine,
-                                        bool isConstructCall,
-                                        InternalHandle _this,
-                                        params InternalHandle[] args)
+        public InternalHandle GetSyntax(
+            V8Engine engine,
+            bool isConstructCall,
+            InternalHandle self,
+            params InternalHandle[] args)
         {
             return engine.CreateValue(_syntax);
         }
@@ -229,10 +237,11 @@ namespace Emmet.Engine
         /// Sublime Text 2), you can return syntax name for current scope. For example, you may return
         /// `line` profile when editor caret is inside string of programming language.
         /// </summary>
-        public InternalHandle GetProfileName(V8Engine engine,
-                                             bool isConstructCall,
-                                             InternalHandle _this,
-                                             params InternalHandle[] args)
+        public InternalHandle GetProfileName(
+            V8Engine engine,
+            bool isConstructCall,
+            InternalHandle self,
+            params InternalHandle[] args)
         {
             // Let Emmet engine detect profile
             return engine.CreateNullValue();
@@ -241,10 +250,11 @@ namespace Emmet.Engine
         /// <summary>
         /// JavaScript callback. Asks user to enter something.
         /// </summary>
-        public InternalHandle Prompt(V8Engine engine,
-                                     bool isConstructCall,
-                                     InternalHandle _this,
-                                     params InternalHandle[] args)
+        public InternalHandle Prompt(
+            V8Engine engine,
+            bool isConstructCall,
+            InternalHandle self,
+            params InternalHandle[] args)
         {
             string input = _editor.Prompt();
             if (string.IsNullOrWhiteSpace(input))
@@ -256,10 +266,11 @@ namespace Emmet.Engine
         /// <summary>
         /// JavaScript callback. Returns current selection.
         /// </summary>
-        public InternalHandle GetSelection(V8Engine engine,
-                                           bool isConstructCall,
-                                           InternalHandle _this,
-                                           params InternalHandle[] args)
+        public InternalHandle GetSelection(
+            V8Engine engine,
+            bool isConstructCall,
+            InternalHandle self,
+            params InternalHandle[] args)
         {
             string selection = _editor.GetSelection();
             if (string.IsNullOrEmpty(selection))
@@ -271,10 +282,11 @@ namespace Emmet.Engine
         /// <summary>
         /// JavaScript callback. Returns current editor's file path.
         /// </summary>
-        public InternalHandle GetFilePath(V8Engine engine,
-                                          bool isConstructCall,
-                                          InternalHandle _this,
-                                          params InternalHandle[] args)
+        public InternalHandle GetFilePath(
+            V8Engine engine,
+            bool isConstructCall,
+            InternalHandle self,
+            params InternalHandle[] args)
         {
             // As of version 1.3 this callback is required only for actions with external images that we don't
             // support.

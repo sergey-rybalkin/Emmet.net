@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.VisualStudio.Text;
-using Microsoft.VisualStudio.Text.Tagging;
 using Microsoft.VisualStudio.Text.Editor;
+using Microsoft.VisualStudio.Text.Tagging;
 
 namespace Emmet.EditorExtensions
 {
@@ -26,7 +26,7 @@ namespace Emmet.EditorExtensions
             _buffer = sourceBuffer;
 
             EmmetCommandTarget filter;
-            if(_view.Properties.TryGetProperty("EmmetCommandTarget", out filter))
+            if (_view.Properties.TryGetProperty("EmmetCommandTarget", out filter))
                 filter.TabStopsChanged += TabStopsChanged;
         }
 

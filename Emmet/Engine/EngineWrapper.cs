@@ -1,6 +1,6 @@
 ﻿using System;
-using V8.Net;
 using Emmet.Diagnostics;
+using V8.Net;
 
 namespace Emmet.Engine
 {
@@ -100,6 +100,8 @@ namespace Emmet.Engine
         /// </summary>
         public void Dispose()
         {
+            GC.SuppressFinalize(this);
+
             if (null != _engine)
             {
                 _engine.Dispose();

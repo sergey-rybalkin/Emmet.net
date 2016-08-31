@@ -21,10 +21,11 @@ namespace Emmet.Diagnostics
         #region Trace method overloads
 
         [Conditional("TRACE")]
-        internal static void Trace(this object source,
-                                   string message,
-                                   TraceEventType eventType = TraceEventType.Verbose,
-                                   [CallerMemberName] string callerMethodName = "")
+        internal static void Trace(
+            this object source,
+            string message,
+            TraceEventType eventType = TraceEventType.Verbose,
+            [CallerMemberName] string callerMethodName = "")
         {
             StringBuilder trace = new StringBuilder(message.Length + 128);
             trace.Append('[');
@@ -39,11 +40,12 @@ namespace Emmet.Diagnostics
         }
 
         [Conditional("TRACE")]
-        internal static void Trace(this object source,
-                                  string message,
-                                  object param1,
-                                  TraceEventType eventType = TraceEventType.Verbose,
-                                  [CallerMemberName] string callerMethodName = "")
+        internal static void Trace(
+            this object source,
+            string message,
+            object param1,
+            TraceEventType eventType = TraceEventType.Verbose,
+            [CallerMemberName] string callerMethodName = "")
         {
             string formattedMessage = string.Format(message, param1);
 
@@ -51,12 +53,13 @@ namespace Emmet.Diagnostics
         }
 
         [Conditional("TRACE")]
-        internal static void Trace(this object source,
-                                   string message,
-                                   object param1,
-                                   object param2,
-                                   TraceEventType eventType = TraceEventType.Verbose,
-                                   [CallerMemberName] string callerMethodName = "")
+        internal static void Trace(
+            this object source,
+            string message,
+            object param1,
+            object param2,
+            TraceEventType eventType = TraceEventType.Verbose,
+            [CallerMemberName] string callerMethodName = "")
         {
             string formattedMessage = string.Format(message, param1, param2);
 
@@ -64,13 +67,14 @@ namespace Emmet.Diagnostics
         }
 
         [Conditional("TRACE")]
-        internal static void Trace(this object source,
-                                   string message,
-                                   object param1,
-                                   object param2,
-                                   object param3,
-                                   TraceEventType eventType = TraceEventType.Verbose,
-                                   [CallerMemberName] string callerMethodName = "")
+        internal static void Trace(
+            this object source,
+            string message,
+            object param1,
+            object param2,
+            object param3,
+            TraceEventType eventType = TraceEventType.Verbose,
+            [CallerMemberName] string callerMethodName = "")
         {
             string formattedMessage = string.Format(message, param1, param2, param3);
 
@@ -82,18 +86,20 @@ namespace Emmet.Diagnostics
         #region TraceInformation method overloads
 
         [Conditional("TRACE")]
-        internal static void TraceInformation(this object source,
-                                              string message,
-                                              [CallerMemberName] string callerMethodName = "")
+        internal static void TraceInformation(
+            this object source,
+            string message,
+            [CallerMemberName] string callerMethodName = "")
         {
             Trace(source, message, TraceEventType.Information, callerMethodName);
         }
 
         [Conditional("TRACE")]
-        internal static void TraceInformation(this object source,
-                                              string message,
-                                              object param1,
-                                              [CallerMemberName] string callerMethodName = "")
+        internal static void TraceInformation(
+            this object source,
+            string message,
+            object param1,
+            [CallerMemberName] string callerMethodName = "")
         {
             string formattedMessage = string.Format(message, param1);
 
@@ -101,11 +107,12 @@ namespace Emmet.Diagnostics
         }
 
         [Conditional("TRACE")]
-        internal static void TraceInformation(this object source,
-                                              string message,
-                                              object param1,
-                                              object param2,
-                                              [CallerMemberName] string callerMethodName = "")
+        internal static void TraceInformation(
+            this object source,
+            string message,
+            object param1,
+            object param2,
+            [CallerMemberName] string callerMethodName = "")
         {
             string formattedMessage = string.Format(message, param1, param2);
 
@@ -113,12 +120,13 @@ namespace Emmet.Diagnostics
         }
 
         [Conditional("TRACE")]
-        internal static void TraceInformation(this object source,
-                                              string message,
-                                              object param1,
-                                              object param2,
-                                              object param3,
-                                 [CallerMemberName] string callerMethodName = "")
+        internal static void TraceInformation(
+            this object source,
+            string message,
+            object param1,
+            object param2,
+            object param3,
+            [CallerMemberName] string callerMethodName = "")
         {
             string formattedMessage = string.Format(message, param1, param2, param3);
 
@@ -130,18 +138,20 @@ namespace Emmet.Diagnostics
         #region TraceWarning method overloads
 
         [Conditional("TRACE")]
-        internal static void TraceWarning(this object source,
-                                          string message,
-                                          [CallerMemberName] string callerMethodName = "")
+        internal static void TraceWarning(
+            this object source,
+            string message,
+            [CallerMemberName] string callerMethodName = "")
         {
             Trace(source, message, TraceEventType.Warning, callerMethodName);
         }
 
         [Conditional("TRACE")]
-        internal static void TraceWarning(this object source,
-                                          string message,
-                                          object param1,
-                                          [CallerMemberName] string callerMethodName = "")
+        internal static void TraceWarning(
+            this object source,
+            string message,
+            object param1,
+            [CallerMemberName] string callerMethodName = "")
         {
             string formattedMessage = string.Format(message, param1);
 
@@ -149,11 +159,12 @@ namespace Emmet.Diagnostics
         }
 
         [Conditional("TRACE")]
-        internal static void TraceWarning(this object source,
-                                          string message,
-                                          object param1,
-                                          object param2,
-                                          [CallerMemberName] string callerMethodName = "")
+        internal static void TraceWarning(
+            this object source,
+            string message,
+            object param1,
+            object param2,
+            [CallerMemberName] string callerMethodName = "")
         {
             string formattedMessage = string.Format(message, param1, param2);
 
@@ -161,12 +172,13 @@ namespace Emmet.Diagnostics
         }
 
         [Conditional("TRACE")]
-        internal static void TraceWarning(this object source,
-                                          string message,
-                                          object param1,
-                                          object param2,
-                                          object param3,
-                                          [CallerMemberName] string callerMethodName = "")
+        internal static void TraceWarning(
+            this object source,
+            string message,
+            object param1,
+            object param2,
+            object param3,
+            [CallerMemberName] string callerMethodName = "")
         {
             string formattedMessage = string.Format(message, param1, param2, param3);
 
@@ -178,18 +190,20 @@ namespace Emmet.Diagnostics
         #region TraceError method overloads
 
         [Conditional("TRACE")]
-        internal static void TraceError(this object source,
-                                        string message,
-                                        [CallerMemberName] string callerMethodName = "")
+        internal static void TraceError(
+            this object source,
+            string message,
+            [CallerMemberName] string callerMethodName = "")
         {
             Trace(source, message, TraceEventType.Error, callerMethodName);
         }
 
         [Conditional("TRACE")]
-        internal static void TraceError(this object source,
-                                        string message,
-                                        object param1,
-                                        [CallerMemberName] string callerMethodName = "")
+        internal static void TraceError(
+            this object source,
+            string message,
+            object param1,
+            [CallerMemberName] string callerMethodName = "")
         {
             string formattedMessage = string.Format(message, param1);
 
@@ -197,11 +211,12 @@ namespace Emmet.Diagnostics
         }
 
         [Conditional("TRACE")]
-        internal static void TraceError(this object source,
-                                        string message,
-                                        object param1,
-                                        object param2,
-                                        [CallerMemberName] string callerMethodName = "")
+        internal static void TraceError(
+            this object source,
+            string message,
+            object param1,
+            object param2,
+            [CallerMemberName] string callerMethodName = "")
         {
             string formattedMessage = string.Format(message, param1, param2);
 
@@ -209,18 +224,19 @@ namespace Emmet.Diagnostics
         }
 
         [Conditional("TRACE")]
-        internal static void TraceError(this object source,
-                                        string message,
-                                        object param1,
-                                        object param2,
-                                        object param3,
-                                        [CallerMemberName] string callerMethodName = "")
+        internal static void TraceError(
+            this object source,
+            string message,
+            object param1,
+            object param2,
+            object param3,
+            [CallerMemberName] string callerMethodName = "")
         {
             string formattedMessage = string.Format(message, param1, param2, param3);
 
             TraceError(source, formattedMessage, callerMethodName);
         }
 
-        #endregion      
+        #endregion
     }
 }

@@ -1,9 +1,9 @@
-﻿using Microsoft.VisualStudio.Text;
+﻿using System.ComponentModel.Composition;
+using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Text.Projection;
 using Microsoft.VisualStudio.Text.Tagging;
 using Microsoft.VisualStudio.Utilities;
-using System.ComponentModel.Composition;
 
 namespace Emmet.EditorExtensions
 {
@@ -25,7 +25,8 @@ namespace Emmet.EditorExtensions
         /// </summary>
         /// <param name="textView">View to create tagger for.</param>
         /// <param name="buffer">Text buffer to create tagger for.</param>
-        public ITagger<T> CreateTagger<T>(ITextView textView, ITextBuffer buffer) where T : ITag
+        public ITagger<T> CreateTagger<T>(ITextView textView, ITextBuffer buffer)
+            where T : ITag
         {
             // Make sure that each view has only one tagger associated with it. If view has several buffers
             // (e.g. html file with css code) only the top level buffer will have a tagger associated with it.

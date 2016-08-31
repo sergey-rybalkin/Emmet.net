@@ -1,7 +1,7 @@
-﻿using EnvDTE;
+﻿using System;
+using EnvDTE;
 using EnvDTE80;
 using Microsoft.VisualStudio.Shell;
-using System;
 
 namespace Emmet
 {

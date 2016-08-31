@@ -48,8 +48,9 @@ namespace Emmet.Engine
 
             if (extractResult.IsError)
             {
-                var ex = new EmmetEngineExceptionArgs("Error while trying to extract tab stops.",
-                                                      extractResult);
+                var ex = new EmmetEngineExceptionArgs(
+                    "Error while trying to extract tab stops.",
+                    extractResult);
                 throw new Exception<EmmetEngineExceptionArgs>(ex);
             }
 
