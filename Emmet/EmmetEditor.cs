@@ -195,9 +195,10 @@ namespace Emmet
                 tabStopSpans[index] = new Span(source.Start, source.End - source.Start);
             }
 
-            CodeSnippet.CreateSnippetInView(new ViewContext(_wpfView, _textView),
-                                            tabStopSpans,
-                                            tabStopGroups);
+            CodeSnippet.CreateSnippetInView(
+                new ViewContext(_wpfView, _textView),
+                tabStopSpans,
+                tabStopGroups);
         }
 
         /// <summary>

@@ -114,6 +114,7 @@
     <Compile Include="Engine\EngineCompilerTests.cs" />
     <Compile Include="Engine\EngineWrapperTests.cs" />
     <Compile Include="Global.cs" />
+    <Compile Include="Mnemonics\MnemonicParserTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

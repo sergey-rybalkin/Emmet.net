@@ -157,10 +157,8 @@ namespace Emmet.Engine
         /// <code>end</code> index). If <code>value</code> contains <code>caret_placeholder</code>, the editor
         /// will put caret into this position. If you skip <code>start</code> and <code>end</code> arguments,
         /// the whole target's content will be replaced with <code>value</code>.
-        /// 
         /// If you pass <code>start</code> argument only, the <code>value</code> will be placed at
         /// <code>start</code> string index of current content.
-        ///       
         /// If you pass <code>start</code> and <code>end</code> arguments, the corresponding substring of
         /// current target's content will be replaced with <code>value</code>.
         /// </summary>

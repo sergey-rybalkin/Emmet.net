@@ -20,7 +20,8 @@ namespace Emmet.EditorExtensions
         /// </summary>
         /// <param name="context">Context of the view to operate on.</param>
         /// <param name="completionBroker">The completion broker to control intellisense UI.</param>
-        public EmmetCommandTarget(ViewContext view, ICompletionBroker completionBroker) : base(view)
+        public EmmetCommandTarget(ViewContext view, ICompletionBroker completionBroker)
+            : base(view)
         {
             _completionBroker = completionBroker;
             _expandAbbreviationOnTab = EmmetPackage.Options.InterceptTabs;

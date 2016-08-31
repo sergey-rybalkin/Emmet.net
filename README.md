@@ -54,7 +54,7 @@ Default keyboard shortcuts configuration:
 
 Emmet.net supports loading custom JavaScript-based preferences, snippets and extensions directly into Emmet engine. All you need is to specify extensions directory in the Emmet configuration section on the Tools -> Options page. Detailed information about writing Emmet extensions and snippets is available [here](http://docs.emmet.io/customization).
 
-### C# mnemonics expansion (experimental)
+### C# mnemonics expansion (experimental, available on Alt+Ins)
 
 Mnemonics are advanced dynamic snippets for C# language that let you quickly generate fields, properties and methods by typing a short abbreviation that defines its accessibility level, return value and other attributes. This implementation is inspired by popular ReSharper extensions [ZenSharp](https://github.com/ulex/ZenSharp) and [Live Templates](https://resharper-plugins.jetbrains.com/packages/JetBrains.Mnemonics/).
 
