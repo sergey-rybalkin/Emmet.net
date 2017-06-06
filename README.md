@@ -18,7 +18,7 @@ Below is the list of actions that are currently implemented in this extension. T
 
 ### Expand Abbreviation (Ctrl+Shift+Alt+X)
 
-Supported in HTML and CSS-like syntaxes (Razor views, LESS, SCSS).
+Supported in HTML and CSS-like syntaxes (Razor views, LESS, SCSS). Can be bound to TAB in options.
 
 ![Demo](docs/i/expand.gif)
 
@@ -46,7 +46,7 @@ Supported in HTML and CSS-like syntaxes (Razor views, LESS, SCSS).
 
 Configuration settings are available under Tools -> Options -> Emmet section.
 
-![Configuration](docs/i/config.png)
+![Configuration](docs/i/conf.png)
 
 Default keyboard shortcuts configuration:
 
@@ -110,4 +110,4 @@ For example, mnemonic `_rif` will generate new private field `private readonly i
 
 Emmet is originally written in JavaScript and Visual Studio cannot run it natively, so this project is using [V8.NET JavaScript engine](https://v8dotnet.codeplex.com/) to execute Emmet code. V8.NET libraries are included with source code and other dependencies are managed with NuGet.
 
-Visual Studio 2015 Update 3 and Visual Studio SDK are required to build the project.
+Visual Studio 2017 and Visual Studio SDK are required to build the project.
