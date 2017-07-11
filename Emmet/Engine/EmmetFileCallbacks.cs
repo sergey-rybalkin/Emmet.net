@@ -1,6 +1,7 @@
-﻿using System.IO;
-using Emmet.Diagnostics;
-using V8.Net;
+﻿using System;
+using System.IO;
+using Emmet.Engine.ChakraInterop;
+using static Emmet.Diagnostics.Tracer;
 
 namespace Emmet.Engine
 {
@@ -13,28 +14,29 @@ namespace Emmet.Engine
         /// <summary>
         /// JavaScript callback. Reads the specified file content and returns it as string.
         /// </summary>
-        public InternalHandle Read(
-            V8Engine engine,
+        public JavaScriptValue Read(
+            JavaScriptValue callee,
             bool isConstructCall,
-            InternalHandle self,
-            params InternalHandle[] args)
+            JavaScriptValue[] arguments,
+            ushort argumentCount,
+            IntPtr callbackData)
         {
-            if (args.Length != 3)
+            if (4 != argumentCount)
             {
-                this.TraceError("IEmmetFile read called with invalid number of arguments.");
-                return engine.CreateValue(false);
+                Trace("IEmmetFile read called with invalid number of arguments.");
+                return JavaScriptValue.False;
             }
 
-            string targetFilePath = args[0].AsString;
-            int chunkSize = args[1].AsInt32;
-            ObjectHandle callback = args[2];
+            string targetFilePath = arguments[1].ToString();
+            int chunkSize = arguments[2].ToInt32();
+            JavaScriptValue callback = arguments[3];
 
             if (!File.Exists(targetFilePath))
             {
-                this.TraceError($"Emmet requested file {targetFilePath} that does not exist.");
-                callback.StaticCall(engine.CreateValue(true), engine.CreateNullValue());
+                Trace($"Emmet requested file {targetFilePath} that does not exist.");
+                callback.CallFunction(JavaScriptValue.FromBoolean(true), JavaScriptValue.Null);
 
-                return engine.CreateValue(false);
+                return JavaScriptValue.False;
             }
 
             char[] buf = new char[chunkSize];
@@ -45,111 +47,114 @@ namespace Emmet.Engine
             }
 
             string retVal = new string(buf, 0, chunkSize);
-            callback.StaticCall(engine.CreateValue(false), engine.CreateValue(retVal));
+            callback.CallFunction(JavaScriptValue.False, JavaScriptValue.FromString(retVal));
 
-            return engine.CreateValue(true);
+            return JavaScriptValue.True;
         }
 
         /// <summary>
         /// JavaScript callback. Returns absolute path to the file that is referenced from the file in the
         /// editor. Implementation copied from the Emmet project source code.
         /// </summary>
-        public InternalHandle LocateFile(
-            V8Engine engine,
+        public JavaScriptValue LocateFile(
+            JavaScriptValue callee,
             bool isConstructCall,
-            InternalHandle self,
-            params InternalHandle[] args)
+            JavaScriptValue[] arguments,
+            ushort argumentCount,
+            IntPtr callbackData)
         {
-            if (args.Length != 2)
+            if (3 != argumentCount)
             {
-                this.TraceError("IEmmetFile locateFile called with invalid number of arguments.");
-                return engine.CreateValue(false);
+                Trace("IEmmetFile locateFile called with invalid number of arguments.");
+                return JavaScriptValue.False;
             }
 
-            string editorFile = args[0].AsString;
-            string targetFile = args[1].AsString;
+            string editorFile = arguments[1].ToString();
+            string targetFile = arguments[2].ToString();
 
-            if (targetFile.StartsWith("HTTP", System.StringComparison.InvariantCultureIgnoreCase))
-                return engine.CreateValue(targetFile);
+            if (targetFile.StartsWith("HTTP", StringComparison.InvariantCultureIgnoreCase))
+                return JavaScriptValue.FromString(targetFile);
 
             string folder = Path.GetDirectoryName(editorFile);
             do
             {
                 string retVal = Path.Combine(folder, targetFile);
                 if (File.Exists(retVal))
-                    return engine.CreateValue(retVal);
+                    return JavaScriptValue.FromString(retVal);
             }
             while (folder.Length > 3);
 
-            return engine.CreateValue(string.Empty);
+            return JavaScriptValue.FromString(string.Empty);
         }
 
         /// <summary>
         /// JavaScript callback. Creates absolute path by concatenating two arguments.
         /// </summary>
-        public InternalHandle CreatePath(
-            V8Engine engine,
-            bool isConstructorCall,
-            InternalHandle self,
-            params InternalHandle[] args)
+        public JavaScriptValue CreatePath(
+            JavaScriptValue callee,
+            bool isConstructCall,
+            JavaScriptValue[] arguments,
+            ushort argumentCount,
+            IntPtr callbackData)
         {
-            if (args.Length != 2)
+            if (3 != argumentCount)
             {
-                this.TraceError("IEmmetFile createPath called with invalid number of arguments.");
-                return engine.CreateValue(false);
+                Trace("IEmmetFile createPath called with invalid number of arguments.");
+                return JavaScriptValue.True;
             }
 
-            string parent = args[0].AsString;
-            string fileName = args[1].AsString;
+            string parent = arguments[1].ToString();
+            string fileName = arguments[2].ToString();
 
             if (Path.HasExtension(parent))
                 parent = Path.GetDirectoryName(parent);
 
-            return engine.CreateValue(Path.Combine(parent, fileName));
+            return JavaScriptValue.FromString(Path.Combine(parent, fileName));
         }
 
         /// <summary>
         /// JavaScript callback. Saves the specified content to the file with the specified name.
         /// </summary>
-        public InternalHandle Save(
-            V8Engine engine,
-            bool isConstructorCall,
-            InternalHandle self,
-            params InternalHandle[] args)
+        public JavaScriptValue Save(
+            JavaScriptValue callee,
+            bool isConstructCall,
+            JavaScriptValue[] arguments,
+            ushort argumentCount,
+            IntPtr callbackData)
         {
-            if (args.Length != 2)
+            if (3 != argumentCount)
             {
-                this.TraceError("IEmmetFile save called with invalid number of arguments.");
-                return engine.CreateValue(false);
+                Trace("IEmmetFile save called with invalid number of arguments.");
+                return JavaScriptValue.False;
             }
 
-            string filePath = args[0].AsString;
-            string content = args[1].AsString;
+            string filePath = arguments[1].ToString();
+            string content = arguments[2].ToString();
 
             File.WriteAllText(filePath, content);
 
-            return engine.CreateValue(true);
+            return JavaScriptValue.True;
         }
 
         /// <summary>
         /// JavaScript callback. Returns file extension in lower case.
         /// </summary>
-        public InternalHandle GetExtension(
-            V8Engine engine,
-            bool isConstructorCall,
-            InternalHandle self,
-            params InternalHandle[] args)
+        public JavaScriptValue GetExtension(
+            JavaScriptValue callee,
+            bool isConstructCall,
+            JavaScriptValue[] arguments,
+            ushort argumentCount,
+            IntPtr callbackData)
         {
-            if (args.Length != 1)
+            if (2 != argumentCount)
             {
-                this.TraceError("IEmmetFile getExt called with invalid number of arguments.");
-                return engine.CreateValue(false);
+                Trace("IEmmetFile getExt called with invalid number of arguments.");
+                return JavaScriptValue.False;
             }
 
-            string filePath = args[0].AsString;
+            string filePath = arguments[1].ToString();
 
-            return engine.CreateValue(Path.GetExtension(filePath).ToLowerInvariant());
+            return JavaScriptValue.FromString(Path.GetExtension(filePath).ToLowerInvariant());
         }
-
     }
 }

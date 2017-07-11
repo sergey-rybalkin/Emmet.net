@@ -1,5 +1,6 @@
 # Version history
 
+* v3.2 - Upgraded to Emmet v1.6.3 without CanIUse database. Added nullable types support to C# mnemonics. Replaced V8 engine with ChakraCore for running JavaScript code.
 * v3.1 - Upgraded to Emmet v1.6. Added experimental C# mnemonics implementation.
 * v3.0 - Version for Visual Studio 2015 based on Emmet v1.3.1 and V8.NET v1.5.19.36. Almost complete rewrite in pure C#, added custom section to Visual Studio configuration options, support for custom preferences and extensions.
 * v2.2.0 - Upgrade to Emmet engine v1.1.

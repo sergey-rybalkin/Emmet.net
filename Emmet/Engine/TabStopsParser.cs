@@ -1,5 +1,4 @@
-﻿using Emmet.Diagnostics;
-using V8.Net;
+﻿using Emmet.Engine.ChakraInterop;
 
 namespace Emmet.Engine
 {
@@ -10,7 +9,8 @@ namespace Emmet.Engine
     public class TabStopsParser
     {
         /// <summary>
-        /// Constructor that prevents a default instance of this class from being created.
+        /// Initializes a new instance of the <see cref="TabStopsParser"/> class. Prevents a default
+        /// instance of this class from being created.
         /// </summary>
         private TabStopsParser()
         {
@@ -36,31 +36,26 @@ namespace Emmet.Engine
         /// Looks for tab stops in the specified content and returns a processed version with expanded
         /// placeholders and tab stops found.
         /// </summary>
-        /// <param name="engine">V8 instance with Emmet engine compiled in it.</param>
         /// <param name="content">Expanded abbreviation content.</param>
-        /// <exception cref="Exception{EmmetEngineExceptionArgs}">
-        /// Indicates that Emmet engine has failed to parse the specified content.
-        /// </exception>
-        public static TabStopsParser ParseContent(V8Engine engine, string content)
+        public static TabStopsParser ParseContent(JavaScriptValue content)
         {
-            ObjectHandle tabStopsUtil = engine.DynamicGlobalObject.window.emmet.tabStops;
-            Handle extractResult = tabStopsUtil.Call("extract", null, engine.CreateValue(content));
+            JavaScriptValue tabStopsUtil =
+                JavaScriptValue.GlobalObject
+                               .GetProperty("window")
+                               .GetProperty("emmet")
+                               .GetProperty("tabStops");
 
-            if (extractResult.IsError)
-            {
-                var ex = new EmmetEngineExceptionArgs(
-                    "Error while trying to extract tab stops.",
-                    extractResult);
-                throw new Exception<EmmetEngineExceptionArgs>(ex);
-            }
+            JavaScriptValue extractFunc = tabStopsUtil.GetProperty("extract");
+
+            // 'this' should be the first argument
+            JavaScriptValue extractResult = extractFunc.CallFunction(tabStopsUtil, content);
 
             TabStopsParser retVal = new TabStopsParser();
-            ObjectHandle tabStopsObj = (ObjectHandle)extractResult;
-            retVal.Content = tabStopsObj.GetProperty(@"text").AsString;
-            ObjectHandle tabStopsList = tabStopsObj.GetProperty(@"tabstops");
+            retVal.Content = extractResult.GetProperty(@"text").ToString();
+            JavaScriptValue tabStopsList = extractResult.GetProperty(@"tabstops");
 
             // Tab stops should be added before modifying document so that editor can track their position.
-            int tabStopsCount = tabStopsList.ArrayLength;
+            int tabStopsCount = tabStopsList.GetProperty("length").ToInt32();
 
             if (tabStopsCount > 0)
             {
@@ -69,13 +64,13 @@ namespace Emmet.Engine
 
                 for (int i = 0; i < tabStopsCount; i++)
                 {
-                    ObjectHandle tabStopObj = tabStopsList.GetProperty(i.ToString());
-                    int start = tabStopObj.GetProperty("start").AsInt32;
-                    int end = tabStopObj.GetProperty("end").AsInt32;
-                    int group = tabStopObj.GetProperty("group").AsInt32;
+                    var tabStopObj = tabStopsList.GetIndexedProperty(JavaScriptValue.FromInt32(i));
+                    int start = tabStopObj.GetProperty("start").ToInt32();
+                    int end = tabStopObj.GetProperty("end").ToInt32();
+                    string group = tabStopObj.GetProperty("group").ToString();
 
                     retVal.TabStops[i] = new Range(start, end);
-                    retVal.TabStopGroups[i] = group;
+                    retVal.TabStopGroups[i] = int.Parse(group);
                 }
             }
 

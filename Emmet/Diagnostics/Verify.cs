@@ -38,8 +38,10 @@ namespace Emmet.Diagnostics
         /// </exception>
         public static void ArgumentNotEmpty(string value, string name)
         {
-            Debug.Assert(!string.IsNullOrEmpty(value),
-                         string.Format("{0} is not null or empty", name ?? string.Empty));
+            Debug.Assert(
+                !string.IsNullOrEmpty(value),
+                string.Format("{0} is not null or empty", name ?? string.Empty));
+
             if (string.IsNullOrEmpty(value))
                 throw new ArgumentNullException(name ?? string.Empty);
         }
@@ -55,8 +57,7 @@ namespace Emmet.Diagnostics
         /// </exception>
         public static void ArgumentNotEmpty<T>(IReadOnlyCollection<T> value, string name)
         {
-            Debug.Assert(value.Any(),
-                         string.Format("{0} contains elements", name ?? string.Empty));
+            Debug.Assert(value.Any(), string.Format("{0} contains elements", name ?? string.Empty));
             if (!value.Any())
                 throw new ArgumentNullException(name ?? string.Empty);
         }
@@ -74,8 +75,10 @@ namespace Emmet.Diagnostics
             if (string.IsNullOrEmpty(value))
                 return;
 
-            Debug.Assert(value.StartsWith("~/"),
-                         string.Format("{0} is a valid virtual path", name ?? string.Empty));
+            Debug.Assert(
+                value.StartsWith("~/"),
+                string.Format("{0} is a valid virtual path", name ?? string.Empty));
+
             if (!value.StartsWith("~/"))
                 throw new ArgumentException(@"Specified value is not a valid virtual path", name);
         }
@@ -92,8 +95,9 @@ namespace Emmet.Diagnostics
         {
             ArgumentNotEmpty(directoryPath, @"directoryPath");
 
-            Debug.Assert(Directory.Exists(directoryPath),
-                         string.Format("{0} does not exist: {1}", name, directoryPath));
+            Debug.Assert(
+                Directory.Exists(directoryPath),
+                string.Format("{0} does not exist: {1}", name, directoryPath));
 
             if (!Directory.Exists(directoryPath))
             {

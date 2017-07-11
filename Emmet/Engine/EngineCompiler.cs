@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using Emmet.Diagnostics;
-using V8.Net;
+using Emmet.Engine.ChakraInterop;
+using static Emmet.Diagnostics.Tracer;
 
 namespace Emmet.Engine
 {
@@ -13,15 +13,15 @@ namespace Emmet.Engine
     {
         public const string PreferencesFileName = "preferences.json";
 
-        private V8Engine _engine;
+        private JavaScriptRuntime _engine;
 
         private EmmetFileCallbacks _fileCallbacks;
 
         /// <summary>
-        /// Constructor.
+        /// Initializes a new instance of the <see cref="EngineCompiler"/> class.
         /// </summary>
         /// <param name="engine">The engine to use for compilation.</param>
-        public EngineCompiler(V8Engine engine)
+        public EngineCompiler(JavaScriptRuntime engine)
         {
             _engine = engine;
         }
@@ -29,69 +29,79 @@ namespace Emmet.Engine
         /// <summary>
         /// Finds and compiles Emmet source file.
         /// </summary>
-        /// <exception cref="FileNotFoundException">
-        /// Indicates that Emmet script was not found.
+        /// <param name="sourceContext">Source context to use during compilation.</param>
+        /// <exception cref="FileNotFoundException">Indicates that Emmet script was not found.</exception>
+        /// <exception cref="Exception{EmmetEngineExceptionArgs}">
+        /// Indicates that JavaScript error occured during compilation.
         /// </exception>
-        public void CompileCore()
+        public void CompileCore(JavaScriptSourceContext sourceContext)
         {
             string extensionFolder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            string emmetScript = Path.Combine(extensionFolder, @"emmet-min.js");
+            string emmetScriptPath = Path.Combine(extensionFolder, @"emmet-min.js");
 
-            if (!File.Exists(emmetScript))
-                throw new FileNotFoundException("Emmet script not found.", emmetScript);
+            if (!File.Exists(emmetScriptPath))
+                throw new FileNotFoundException("Emmet script not found.", emmetScriptPath);
 
-            ObjectHandle window = _engine.CreateObject();
-            _engine.DynamicGlobalObject.window = window;
+            JavaScriptValue window = JavaScriptValue.CreateObject();
+            JavaScriptValue.GlobalObject.SetProperty("window", window, true);
 
-            Handle script = _engine.LoadScript(emmetScript, "Emmet");
-            if (script.IsError)
-            {
-                this.TraceError(script.AsString);
-                throw new Exception<EmmetEngineExceptionArgs>(
-                    new EmmetEngineExceptionArgs("Failed to compile Emmet", script));
-            }
-            else
-                this.Trace("Emmet core compiled successfully.");
+            string script = File.ReadAllText(emmetScriptPath);
+            JavaScriptContext.RunScript(script, sourceContext);
+
+            Trace("Emmet core compiled successfully.");
         }
 
         /// <summary>
-        /// Registers the callbacks required by Emmet.
+        /// Registers the callbacks required by Emmet. Returned collection should not be garbage collected
+        /// before the engine itself.
         /// </summary>
         /// <param name="editor">Callbacks handler.</param>
-        public void RegisterCallbacks(EmmetEditorCallbacks editor)
+        /// <param name="sourceContext">Source context to use during compilation.</param>
+        public IDictionary<string, JavaScriptNativeFunction> RegisterCallbacks(
+            EmmetEditorCallbacks editor,
+            JavaScriptSourceContext sourceContext)
         {
-            ObjectHandle proxy = _engine.CreateObject();
-
-            proxy.SetProperty("getSelectionRange", GetFunctionWrapper(editor.GetSelectionRange));
-            proxy.SetProperty("createSelection", GetFunctionWrapper(editor.CreateSelection));
-            proxy.SetProperty("getCurrentLineRange", GetFunctionWrapper(editor.GetCurrentLineRange));
-            proxy.SetProperty("getCaretPos", GetFunctionWrapper(editor.GetCarretPos));
-            proxy.SetProperty("setCaretPos", GetFunctionWrapper(editor.SetCarretPos));
-            proxy.SetProperty("getCurrentLine", GetFunctionWrapper(editor.GetCurrentLine));
-            proxy.SetProperty("replaceContent", GetFunctionWrapper(editor.ReplaceContent));
-            proxy.SetProperty("getContent", GetFunctionWrapper(editor.GetContent));
-            proxy.SetProperty("getSyntax", GetFunctionWrapper(editor.GetSyntax));
-            proxy.SetProperty("getProfileName", GetFunctionWrapper(editor.GetProfileName));
-            proxy.SetProperty("prompt", GetFunctionWrapper(editor.Prompt));
-            proxy.SetProperty("getSelection", GetFunctionWrapper(editor.GetSelection));
-            proxy.SetProperty("getFilePath", GetFunctionWrapper(editor.GetFilePath));
-
-            _engine.DynamicGlobalObject.editor = proxy;
-
-            this.Trace("IEmmetEditor callbacks successfully registered.");
+            var retVal = new Dictionary<string, JavaScriptNativeFunction>();
 
             _fileCallbacks = new EmmetFileCallbacks();
-            ObjectHandle file = _engine.CreateObject();
+            JavaScriptValue file = JavaScriptValue.CreateObject();
+            JavaScriptValue editorProxy = JavaScriptValue.CreateObject();
 
-            file.SetProperty("read", GetFunctionWrapper(_fileCallbacks.Read));
-            file.SetProperty("locateFile", GetFunctionWrapper(_fileCallbacks.LocateFile));
-            file.SetProperty("createPath", GetFunctionWrapper(_fileCallbacks.CreatePath));
-            file.SetProperty("save", GetFunctionWrapper(_fileCallbacks.Save));
-            file.SetProperty("getExt", GetFunctionWrapper(_fileCallbacks.GetExtension));
+            retVal.Add("getSelectionRange", editor.GetSelectionRange);
+            retVal.Add("createSelection", editor.CreateSelection);
+            retVal.Add("getCurrentLineRange", editor.GetCurrentLineRange);
+            retVal.Add("getCaretPos", editor.GetCarretPos);
+            retVal.Add("setCaretPos", editor.SetCarretPos);
+            retVal.Add("getCurrentLine", editor.GetCurrentLine);
+            retVal.Add("replaceContent", editor.ReplaceContent);
+            retVal.Add("getContent", editor.GetContent);
+            retVal.Add("getSyntax", editor.GetSyntax);
+            retVal.Add("getProfileName", editor.GetProfileName);
+            retVal.Add("prompt", editor.Prompt);
+            retVal.Add("getSelection", editor.GetSelection);
+            retVal.Add("getFilePath", editor.GetFilePath);
 
-            _engine.DynamicGlobalObject.window.emmet.file = file;
+            retVal.Add("read", _fileCallbacks.Read);
+            retVal.Add("locateFile", _fileCallbacks.LocateFile);
+            retVal.Add("createPath", _fileCallbacks.CreatePath);
+            retVal.Add("save", _fileCallbacks.Save);
+            retVal.Add("getExt", _fileCallbacks.GetExtension);
 
-            this.Trace("IEmmetFile callbacks successfully registered.");
+            foreach (var callback in retVal)
+            {
+                if (callback.Value.Target == editor)
+                    RegisterCallback(editorProxy, callback.Key, callback.Value);
+                else
+                    RegisterCallback(file, callback.Key, callback.Value);
+            }
+
+            JavaScriptValue emmet = JavaScriptValue.GlobalObject.GetProperty("window").GetProperty("emmet");
+            emmet.SetProperty("file", file, true);
+            JavaScriptValue.GlobalObject.SetProperty("editor", editorProxy, true);
+
+            Trace("IEmmetFile and IEmmetEditor callbacks successfully registered.");
+
+            return retVal;
         }
 
         /// <summary>
@@ -100,43 +110,27 @@ namespace Emmet.Engine
         /// <param name="extensionsDirectory">Pathname of the extensions directory.</param>
         public void LoadExtensions(string extensionsDirectory)
         {
-            List<InternalHandle> extensions = new List<InternalHandle>();
             var files = Directory.EnumerateFiles(extensionsDirectory, "*.*");
-            ObjectHandle emmet = _engine.DynamicGlobalObject.window.emmet;
+            JavaScriptValue emmet = JavaScriptValue.GlobalObject.GetProperty("window").GetProperty("emmet");
 
             foreach (string filePath in files)
             {
                 if (0 != string.Compare(Path.GetFileName(filePath), PreferencesFileName, true))
-                {
-                    extensions.Add(_engine.CreateValue(filePath));
                     continue;
-                }
 
                 string content = File.ReadAllText(filePath);
-                Handle parameter = _engine.CreateValue(content);
-                Handle result = emmet.Call("loadUserData", emmet, parameter);
+                var parameter = JavaScriptValue.FromString(content);
+                emmet.GetProperty("loadUserData").CallFunction(emmet, parameter);
 
-                if (result.IsError)
-                    this.TraceError($"Failed to load Emmet preferences from {filePath}: {result.AsString}");
-                else
-                    this.Trace($"Successfully loaded Emmet preferences from {filePath}");
-            }
-
-            if (extensions.Count > 0)
-            {
-                var parameter = _engine.CreateArray(extensions.ToArray());
-                Handle result = emmet.Call("loadExtensions", emmet, parameter);
-
-                if (result.IsError)
-                    this.TraceError($"Failed to load Emmet extensions: {result.AsString}");
-                else
-                    this.Trace($"Successfully loaded {extensions.Count} Emmet extensions");
+                Trace($"Successfully loaded Emmet preferences from {filePath}");
             }
         }
 
-        private V8Function GetFunctionWrapper(JSFunction callback)
+        private void RegisterCallback(
+            JavaScriptValue container, string name, JavaScriptNativeFunction callback)
         {
-            return _engine.CreateFunctionTemplate().GetFunctionObject(callback);
+            var func = JavaScriptValue.CreateFunction(callback);
+            container.SetProperty(name, func, true);
         }
     }
 }

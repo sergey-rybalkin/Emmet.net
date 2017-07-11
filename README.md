@@ -44,7 +44,7 @@ Supported in HTML and CSS-like syntaxes (Razor views, LESS, SCSS). Can be bound 
 
 ### Configuration and Extensions
 
-Configuration settings are available under Tools -> Options -> Emmet section.
+Configuration settings are available under Tools -> Options -> Emmet section. Restart Visual Studio to apply your changes.
 
 ![Configuration](docs/i/conf.png)
 
@@ -104,10 +104,10 @@ Member types:
 | m        | method     |
 | f        | field      |
 
-For example, mnemonic `_rif` will generate new private field `private readonly int |`.
+For example, mnemonic `_rif` will generate new private field `private readonly int |`. Add `?` to the type abbreviation to expand into nullable type.
 
 ## Build
 
-Emmet is originally written in JavaScript and Visual Studio cannot run it natively, so this project is using [V8.NET JavaScript engine](https://v8dotnet.codeplex.com/) to execute Emmet code. V8.NET libraries are included with source code and other dependencies are managed with NuGet.
+Emmet is originally written in JavaScript and Visual Studio cannot run it natively, so this project is using [Microsoft ChakraCore engine](https://github.com/Microsoft/ChakraCore) to execute Emmet code. ChakraCore.dll library is included with source code and other dependencies are managed with NuGet.
 
 Visual Studio 2017 and Visual Studio SDK are required to build the project.

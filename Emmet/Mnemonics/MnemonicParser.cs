@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -10,7 +12,7 @@ namespace Emmet.Mnemonics
     public static class MnemonicParser
     {
         private static readonly Regex _mnemonicTemplate = new Regex(
-            @"(_|p|P|pi|i)([csvar]?)(\w{1,2})([pmf])",
+            @"(_|p|P|pi|i)([csvar]?)(\w{1,2})\??([pmf])",
             RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
         private static readonly Dictionary<string, string> _accessibilityLevels =
@@ -36,16 +38,17 @@ namespace Emmet.Mnemonics
         private static readonly Dictionary<string, string> _types =
             new Dictionary<string, string>
         {
+            { "b", "bool" },
+            { "by", "byte" },
+            { "d", "double" },
+            { "de", "decimal" },
+            { "dt", "DateTime" },
+            { "g", "Guid" },
+            { "i", "int" },
+            { "l", "long" },
             { "s", "string" },
             { "sh", "short" },
-            { "by", "byte" },
-            { "b", "bool" },
-            { "dt", "DateTime" },
-            { "d", "double" },
-            { "i", "int" },
             { "u", "uint" },
-            { "g", "Guid" },
-            { "de", "decimal" },
             { "v", "void" }
         };
 
@@ -76,14 +79,29 @@ namespace Emmet.Mnemonics
             }
         }
 
+        public static void MergeConfiguration(string configurationFile)
+        {
+            string[] lines = File.ReadAllLines(configurationFile);
+
+            foreach (string line in lines)
+            {
+                string[] pair = line.Split('=');
+                _types[pair[0]] = pair[1];
+            }
+        }
+
         private static int BuildSnippet(StringBuilder snippet, Match match, string mnemonic, string indent)
         {
             int caretPos = 0;
 
             string accessibilityLevel = _accessibilityLevels[match.Groups[1].Value];
             string modifier = match.Groups[2].Value.Length > 0 ? _modifiers[match.Groups[2].Value] : null;
-            string returnValue = _types[match.Groups[3].Value];
             char memberType = match.Groups[4].Value[0];
+            string returnValue = _types[match.Groups[3].Value];
+
+            // Check whether we have a nullable type
+            if (mnemonic.IndexOf('?') > 0)
+                returnValue += '?';
 
             snippet.Append(accessibilityLevel);
             snippet.Append(' ');

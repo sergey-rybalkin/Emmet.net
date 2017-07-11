@@ -14,15 +14,16 @@ namespace Emmet
         public Options()
         {
             string documentsDir = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
-            ExtensionsDir = Path.Combine(documentsDir, "Visual Studio 2015\\Emmet");
+            ExtensionsDir = Path.Combine(documentsDir, "Visual Studio 2017\\Emmet");
+            MnemonicsConfiguration = Path.Combine(ExtensionsDir, "mnemonics.ini");
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether abbreviations expansion should should occur on TAB key.
+        /// Gets or sets a value indicating whether abbreviations expansion should occur on TAB key.
         /// </summary>
         [Category("General")]
         [DisplayName("Intercept TAB")]
-        [Description("Intercept TAB key to expand abbreviations.")]
+        [Description("Intercept TAB key to expand abbreviations (restart required).")]
         public bool InterceptTabs { get; set; } = false;
 
         /// <summary>
@@ -34,11 +35,19 @@ namespace Emmet
         public string ExtensionsDir { get; set; } = string.Empty;
 
         /// <summary>
+        /// Gets or sets the full pathname of the mnemonics configuration file.
+        /// </summary>
+        [Category("General")]
+        [DisplayName("Mnemonics configuration")]
+        [Description("Full path to the mnemonics configuration file.")]
+        public string MnemonicsConfiguration { get; set; } = string.Empty;
+
+        /// <summary>
         /// Gets or sets a value indicating whether the debug messages should be written to the output window.
         /// </summary>
         [Category("General")]
         [DisplayName("Write debug messages")]
-        [Description("When enabled writes diagnostic messages to the Output Window.")]
+        [Description("When enabled writes diagnostic messages to the Output Window (restart required).")]
         public bool WriteDebugMessages { get; set; } = false;
     }
 }

@@ -64,8 +64,10 @@ namespace Emmet.EditorExtensions
                 }
 
                 if (!string.IsNullOrWhiteSpace(snapshotSpan.GetText()) && spans.OverlapsWith(snapshotSpan))
+                {
                     yield return new TagSpan<TextMarkerTag>(
                         snapshotSpan, new TextMarkerTag("MarkerFormatDefinition/HighlightedReference"));
+                }
             }
         }
 
@@ -73,8 +75,8 @@ namespace Emmet.EditorExtensions
         {
             int bufferLen = _buffer.CurrentSnapshot.Length;
             Span affectedSpan = new Span(0, bufferLen);
-            TagsChanged?.Invoke(this, new SnapshotSpanEventArgs(
-                new SnapshotSpan(_buffer.CurrentSnapshot, affectedSpan)));
+            var args = new SnapshotSpanEventArgs(new SnapshotSpan(_buffer.CurrentSnapshot, affectedSpan));
+            TagsChanged?.Invoke(this, args);
         }
     }
 }

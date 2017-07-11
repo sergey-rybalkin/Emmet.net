@@ -1,6 +1,7 @@
 ﻿using System;
-using Emmet.Diagnostics;
-using V8.Net;
+using System.Collections.Generic;
+using Emmet.Engine.ChakraInterop;
+using static Emmet.Diagnostics.Tracer;
 
 namespace Emmet.Engine
 {
@@ -9,14 +10,23 @@ namespace Emmet.Engine
     /// </summary>
     public class EngineWrapper : IDisposable
     {
-        private V8Engine _engine = null;
+        private static JavaScriptSourceContext currentSourceContext =
+            JavaScriptSourceContext.FromIntPtr(IntPtr.Zero);
+
+        private static IDictionary<string, JavaScriptNativeFunction> _callbacks;
+
+        private bool _initialized = false;
+
+        private JavaScriptRuntime _engine;
+
+        private JavaScriptContext _context;
 
         private string _extensionsDir = null;
 
         private EmmetEditorCallbacks _editor = new EmmetEditorCallbacks();
 
         /// <summary>
-        /// Constructor.
+        /// Initializes a new instance of the <see cref="EngineWrapper"/> class.
         /// </summary>
         /// <param name="extensionsDirectory">Pathname of the directory to load Emmet extensions from.</param>
         public EngineWrapper(string extensionsDirectory)
@@ -34,7 +44,7 @@ namespace Emmet.Engine
         /// </exception>
         public bool RunCommand(int cmdId, IEmmetEditor editor)
         {
-            if (null == _engine)
+            if (!_initialized)
                 InitializeEngine();
 
             if (!_editor.Attach(editor))
@@ -56,42 +66,26 @@ namespace Emmet.Engine
                     script = "window.emmet.run('merge_lines', editor);";
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(cmdId),
-                                                          cmdId,
-                                                          "Specified command identifier not found.");
+                    throw new ArgumentOutOfRangeException(
+                        nameof(cmdId),
+                        cmdId,
+                        "Specified command identifier not found.");
             }
 
-            Handle retVal = _engine.Execute(script);
+            JavaScriptContext.Current = _context;
+            JavaScriptValue result = JavaScriptContext.RunScript(script, currentSourceContext++);
             _editor.Detach();
 
-            if (retVal.IsError)
+            if (!result.ToBoolean())
             {
-                this.TraceError($"Emmet engine error: {retVal.AsString}");
-                return false;
-            }
-            else if (retVal.AsBoolean == false)
-            {
-                this.Trace($"Command {script} returned false.");
+                Trace("Emmet engine failed to execute command.");
                 return false;
             }
 
-            this.Trace($"Command {script} completed successfully.");
+            JavaScriptContext.Idle();
+
+            Trace($"Command {script} completed successfully.");
             return true;
-        }
-
-        private void InitializeEngine()
-        {
-            this.Trace("Started initializing Emmet engine.");
-
-            _engine = new V8Engine();
-            var compiler = new EngineCompiler(_engine);
-
-            compiler.CompileCore();
-            compiler.RegisterCallbacks(_editor);
-            if (null != _extensionsDir)
-                compiler.LoadExtensions(_extensionsDir);
-
-            this.Trace("Emmet engine successfully initialized.");
         }
 
         /// <summary>
@@ -102,11 +96,30 @@ namespace Emmet.Engine
         {
             GC.SuppressFinalize(this);
 
-            if (null != _engine)
+            if (_initialized)
             {
                 _engine.Dispose();
-                _engine = null;
+                _initialized = false;
             }
+        }
+
+        private void InitializeEngine()
+        {
+            Trace("Started initializing Emmet engine.");
+
+            _engine = JavaScriptRuntime.Create(JavaScriptRuntimeAttributes.EnableIdleProcessing);
+            _context = _engine.CreateContext();
+            JavaScriptContext.Current = _context;
+            var compiler = new EngineCompiler(_engine);
+
+            compiler.CompileCore(currentSourceContext);
+            _callbacks = compiler.RegisterCallbacks(_editor, currentSourceContext);
+            if (null != _extensionsDir)
+                compiler.LoadExtensions(_extensionsDir);
+
+            Trace("Emmet engine successfully initialized.");
+
+            _initialized = true;
         }
     }
 }

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -18,225 +17,37 @@ namespace Emmet.Diagnostics
             _logger = pane;
         }
 
-        #region Trace method overloads
-
         [Conditional("TRACE")]
         internal static void Trace(
-            this object source,
             string message,
-            TraceEventType eventType = TraceEventType.Verbose,
-            [CallerMemberName] string callerMethodName = "")
+            [CallerFilePath]string callerFilePath = "",
+            [CallerLineNumber]int codeLineNumber = 0,
+            [CallerMemberName]string callingMember = "")
         {
-            StringBuilder trace = new StringBuilder(message.Length + 128);
-            trace.Append('[');
-            trace.Append(source.GetType().FullName);
-            trace.Append('.');
-            trace.Append(callerMethodName);
-            trace.Append("] ");
-            trace.Append(message);
+            if (null == _logger)
+                return;
 
-            _logger.OutputString(trace.ToString());
-            _logger.OutputString(Environment.NewLine);
+            string caller = GenerateCallerName(callerFilePath, callingMember);
+
+            _logger.OutputString($"{caller}({codeLineNumber}): {message}\n");
         }
 
-        [Conditional("TRACE")]
-        internal static void Trace(
-            this object source,
-            string message,
-            object param1,
-            TraceEventType eventType = TraceEventType.Verbose,
-            [CallerMemberName] string callerMethodName = "")
+        private static string GenerateCallerName(string path, string member)
         {
-            string formattedMessage = string.Format(message, param1);
+            int fileNameIndex = path.Length - 3;
+            while (fileNameIndex > 0)
+            {
+                if ('\\' == path[--fileNameIndex])
+                    break;
+            }
 
-            Trace(source, formattedMessage, eventType, callerMethodName);
+            string className = path.Substring(fileNameIndex + 1, path.Length - fileNameIndex - 4);
+            StringBuilder retVal = new StringBuilder(className.Length + member.Length + 1);
+            retVal.Append(className);
+            retVal.Append('.');
+            retVal.Append(member);
+
+            return retVal.ToString();
         }
-
-        [Conditional("TRACE")]
-        internal static void Trace(
-            this object source,
-            string message,
-            object param1,
-            object param2,
-            TraceEventType eventType = TraceEventType.Verbose,
-            [CallerMemberName] string callerMethodName = "")
-        {
-            string formattedMessage = string.Format(message, param1, param2);
-
-            Trace(source, formattedMessage, eventType, callerMethodName);
-        }
-
-        [Conditional("TRACE")]
-        internal static void Trace(
-            this object source,
-            string message,
-            object param1,
-            object param2,
-            object param3,
-            TraceEventType eventType = TraceEventType.Verbose,
-            [CallerMemberName] string callerMethodName = "")
-        {
-            string formattedMessage = string.Format(message, param1, param2, param3);
-
-            Trace(source, formattedMessage, eventType, callerMethodName);
-        }
-
-        #endregion
-
-        #region TraceInformation method overloads
-
-        [Conditional("TRACE")]
-        internal static void TraceInformation(
-            this object source,
-            string message,
-            [CallerMemberName] string callerMethodName = "")
-        {
-            Trace(source, message, TraceEventType.Information, callerMethodName);
-        }
-
-        [Conditional("TRACE")]
-        internal static void TraceInformation(
-            this object source,
-            string message,
-            object param1,
-            [CallerMemberName] string callerMethodName = "")
-        {
-            string formattedMessage = string.Format(message, param1);
-
-            TraceInformation(source, formattedMessage, callerMethodName);
-        }
-
-        [Conditional("TRACE")]
-        internal static void TraceInformation(
-            this object source,
-            string message,
-            object param1,
-            object param2,
-            [CallerMemberName] string callerMethodName = "")
-        {
-            string formattedMessage = string.Format(message, param1, param2);
-
-            TraceInformation(source, formattedMessage, callerMethodName);
-        }
-
-        [Conditional("TRACE")]
-        internal static void TraceInformation(
-            this object source,
-            string message,
-            object param1,
-            object param2,
-            object param3,
-            [CallerMemberName] string callerMethodName = "")
-        {
-            string formattedMessage = string.Format(message, param1, param2, param3);
-
-            TraceInformation(source, formattedMessage, callerMethodName);
-        }
-
-        #endregion
-
-        #region TraceWarning method overloads
-
-        [Conditional("TRACE")]
-        internal static void TraceWarning(
-            this object source,
-            string message,
-            [CallerMemberName] string callerMethodName = "")
-        {
-            Trace(source, message, TraceEventType.Warning, callerMethodName);
-        }
-
-        [Conditional("TRACE")]
-        internal static void TraceWarning(
-            this object source,
-            string message,
-            object param1,
-            [CallerMemberName] string callerMethodName = "")
-        {
-            string formattedMessage = string.Format(message, param1);
-
-            TraceWarning(source, formattedMessage, callerMethodName);
-        }
-
-        [Conditional("TRACE")]
-        internal static void TraceWarning(
-            this object source,
-            string message,
-            object param1,
-            object param2,
-            [CallerMemberName] string callerMethodName = "")
-        {
-            string formattedMessage = string.Format(message, param1, param2);
-
-            TraceWarning(source, formattedMessage, callerMethodName);
-        }
-
-        [Conditional("TRACE")]
-        internal static void TraceWarning(
-            this object source,
-            string message,
-            object param1,
-            object param2,
-            object param3,
-            [CallerMemberName] string callerMethodName = "")
-        {
-            string formattedMessage = string.Format(message, param1, param2, param3);
-
-            TraceWarning(source, formattedMessage, callerMethodName);
-        }
-
-        #endregion
-
-        #region TraceError method overloads
-
-        [Conditional("TRACE")]
-        internal static void TraceError(
-            this object source,
-            string message,
-            [CallerMemberName] string callerMethodName = "")
-        {
-            Trace(source, message, TraceEventType.Error, callerMethodName);
-        }
-
-        [Conditional("TRACE")]
-        internal static void TraceError(
-            this object source,
-            string message,
-            object param1,
-            [CallerMemberName] string callerMethodName = "")
-        {
-            string formattedMessage = string.Format(message, param1);
-
-            TraceError(source, formattedMessage, callerMethodName);
-        }
-
-        [Conditional("TRACE")]
-        internal static void TraceError(
-            this object source,
-            string message,
-            object param1,
-            object param2,
-            [CallerMemberName] string callerMethodName = "")
-        {
-            string formattedMessage = string.Format(message, param1, param2);
-
-            TraceError(source, formattedMessage, callerMethodName);
-        }
-
-        [Conditional("TRACE")]
-        internal static void TraceError(
-            this object source,
-            string message,
-            object param1,
-            object param2,
-            object param3,
-            [CallerMemberName] string callerMethodName = "")
-        {
-            string formattedMessage = string.Format(message, param1, param2, param3);
-
-            TraceError(source, formattedMessage, callerMethodName);
-        }
-
-        #endregion
     }
 }

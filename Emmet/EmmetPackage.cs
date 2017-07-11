@@ -3,6 +3,8 @@ using System.IO;
 using System.Runtime.InteropServices;
 using Emmet.Diagnostics;
 using Emmet.Engine;
+using Emmet.Engine.ChakraInterop;
+using Emmet.Mnemonics;
 using EnvDTE;
 using EnvDTE80;
 using Microsoft.VisualStudio;
@@ -18,7 +20,7 @@ namespace Emmet
     [InstalledProductRegistration("#110", "#112", Vsix.Version, IconResourceID = 400)]
     [PackageRegistration(UseManagedResourcesOnly = true)]
     [ProvideAutoLoad(UIContextGuids80.SolutionExists)]
-    [ProvideOptionPage(typeof(Options), "Emmet", "General", 0, 0, true)]
+    [ProvideOptionPage(typeof(Options), Vsix.Name, "General", 0, 0, true)]
     [ProvideMenuResource("Menus.ctmenu", 1)]
     public sealed class EmmetPackage : Package
     {
@@ -48,7 +50,7 @@ namespace Emmet
                 if (!dte.UndoContext.IsOpen)
                 {
                     ownUndoContext = true;
-                    dte.UndoContext.Open("Emmet.NET");
+                    dte.UndoContext.Open(Vsix.Name);
                 }
 
                 bool succeeded = _engine.RunCommand(cmdId, context);
@@ -58,17 +60,30 @@ namespace Emmet
 
                 return succeeded;
             }
-            catch (Exception<EmmetEngineExceptionArgs> ex)
+            catch (Exception ex) when (IsExpectedException(ex))
             {
                 if (ownUndoContext)
                     dte.UndoContext.SetAborted();
 
-                string msg = $"Unexpected error occurred inside of the Emmet engine. {ex.Message}";
+                string msg = string.Empty;
+
+                switch (ex)
+                {
+                    case Exception<ChakraExceptionArgs> jsex:
+                        msg = $"Unexpected error occurred inside of the Emmet engine. {jsex.Message}";
+                        break;
+                    case COMException comex:
+                        msg = $"Cannot load Microsoft Chakra engine.";
+                        break;
+                    default:
+                        msg = $"Unexpected error of type {ex.GetType()}: {ex.Message}";
+                        break;
+                }
 
                 VsShellUtilities.ShowMessageBox(
                     this,
                     msg,
-                    "Emmet.NET: Unexpected error.",
+                    $"{Vsix.Name}: Unexpected error.",
                     OLEMSGICON.OLEMSGICON_CRITICAL,
                     OLEMSGBUTTON.OLEMSGBUTTON_OK,
                     OLEMSGDEFBUTTON.OLEMSGDEFBUTTON_FIRST);
@@ -91,7 +106,7 @@ namespace Emmet
 
             if (Options.WriteDebugMessages)
             {
-                var pane = GetOutputPane(VSConstants.OutputWindowPaneGuid.DebugPane_guid, "Emmet.NET");
+                var pane = GetOutputPane(VSConstants.OutputWindowPaneGuid.DebugPane_guid, Vsix.Name);
                 Tracer.Initialize(pane);
             }
 
@@ -99,6 +114,22 @@ namespace Emmet
                 _engine = new EngineWrapper(Options.ExtensionsDir);
             else
                 _engine = new EngineWrapper(null);
+
+            try
+            {
+                if (File.Exists(Options.MnemonicsConfiguration))
+                    MnemonicParser.MergeConfiguration(Options.MnemonicsConfiguration);
+            }
+            catch
+            {
+                VsShellUtilities.ShowMessageBox(
+                    this,
+                    $"Failed to load mnemonics configuration from {Options.MnemonicsConfiguration}",
+                    $"{Vsix.Name}: Unexpected error.",
+                    OLEMSGICON.OLEMSGICON_CRITICAL,
+                    OLEMSGBUTTON.OLEMSGBUTTON_OK,
+                    OLEMSGDEFBUTTON.OLEMSGDEFBUTTON_FIRST);
+            }
         }
 
         /// <summary>
@@ -114,6 +145,11 @@ namespace Emmet
                 _engine.Dispose();
 
             base.Dispose(disposing);
+        }
+
+        private static bool IsExpectedException(Exception ex)
+        {
+            return ex is Exception<ChakraExceptionArgs> || ex is COMException;
         }
     }
 }

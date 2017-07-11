@@ -5,7 +5,7 @@
     "snippets": {
         "css": {
             "snippets": {
-                "section": "/**\n * |\n ****/"
+                "cst": "custom"
             }
         }
     }
