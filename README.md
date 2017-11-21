@@ -4,7 +4,7 @@
 
 This project is a MS Visual Studio port of Emmet editor extensions created by Sergey Chikuyonok.
 
-More information on the oriignal project is available on [Emmet official website](http://docs.emmet.io/).
+More information on the original project is available on [Emmet official website](http://docs.emmet.io/).
 
 ## Download
 
