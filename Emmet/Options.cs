@@ -24,7 +24,7 @@ namespace Emmet
         [Category("General")]
         [DisplayName("Intercept TAB")]
         [Description("Intercept TAB key to expand abbreviations (restart required).")]
-        public bool InterceptTabs { get; set; } = false;
+        public bool InterceptTabs { get; set; } = true;
 
         /// <summary>
         /// Gets or sets the full pathname of the extensions directory.
@@ -48,6 +48,13 @@ namespace Emmet
         [Category("General")]
         [DisplayName("Write debug messages")]
         [Description("When enabled writes diagnostic messages to the Output Window (restart required).")]
-        public bool WriteDebugMessages { get; set; } = false;
+        public bool WriteDebugMessages { get; set; } = true;
+
+        protected override void OnApply(PageApplyEventArgs e)
+        {
+            base.OnApply(e);
+
+            EmmetPackage.Instance?.ReloadOptions();
+        }
     }
 }

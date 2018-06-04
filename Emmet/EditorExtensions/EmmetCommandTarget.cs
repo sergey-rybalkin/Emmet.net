@@ -18,7 +18,7 @@ namespace Emmet.EditorExtensions
         /// <summary>
         /// Initializes a new instance of the <see cref="EmmetCommandTarget"/> class.
         /// </summary>
-        /// <param name="context">Context of the view to operate on.</param>
+        /// <param name="view">Context of the view to operate on.</param>
         /// <param name="completionBroker">The completion broker to control intellisense UI.</param>
         public EmmetCommandTarget(ViewContext view, ICompletionBroker completionBroker)
             : base(view)

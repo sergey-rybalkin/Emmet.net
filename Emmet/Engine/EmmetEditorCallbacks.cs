@@ -33,7 +33,9 @@ namespace Emmet.Engine
             {
                 _syntax = contentType;
             }
-            else if (@"htmlx" == contentType || contentType.StartsWith("razor"))
+            else if (@"htmlx" == contentType ||
+                     contentType.StartsWith("razor") ||
+                     "typescript" == contentType)
             {
                 _syntax = @"html";
             }

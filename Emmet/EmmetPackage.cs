@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Threading;
 using Emmet.Diagnostics;
 using Emmet.Engine;
 using Emmet.Engine.ChakraInterop;
@@ -18,13 +19,21 @@ namespace Emmet
     /// </summary>
     [Guid(PackageGuids.GuidEmmetPackageString)]
     [InstalledProductRegistration("#110", "#112", Vsix.Version, IconResourceID = 400)]
-    [PackageRegistration(UseManagedResourcesOnly = true)]
-    [ProvideAutoLoad(UIContextGuids80.SolutionExists)]
+    [PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
+    [ProvideAutoLoad(UIContextGuids80.SolutionExists, PackageAutoLoadFlags.BackgroundLoad)]
     [ProvideOptionPage(typeof(Options), Vsix.Name, "General", 0, 0, true)]
     [ProvideMenuResource("Menus.ctmenu", 1)]
-    public sealed class EmmetPackage : Package
+    public sealed class EmmetPackage : AsyncPackage
     {
         private EngineWrapper _engine;
+
+        /// <summary>
+        /// Initializes static members of the <see cref="EmmetPackage"/> class.
+        /// </summary>
+        static EmmetPackage()
+        {
+            Options = new Options();
+        }
 
         /// <summary>
         /// Gets current configuration settings for the package.
@@ -81,7 +90,7 @@ namespace Emmet
                 }
 
                 VsShellUtilities.ShowMessageBox(
-                    this,
+                    null,
                     msg,
                     $"{Vsix.Name}: Unexpected error.",
                     OLEMSGICON.OLEMSGICON_CRITICAL,
@@ -93,22 +102,26 @@ namespace Emmet
         }
 
         /// <summary>
+        /// Forces reloading cached package options. Is expected to be called when user changes his
+        /// preferences through the options dialog.
+        /// </summary>
+        internal void ReloadOptions()
+        {
+            Options = GetDialogPage(typeof(Options)) as Options;
+        }
+
+        /// <summary>
         /// Initialization of the package; this method is called right after the package is sited, so this
         /// is the place where you can put all the initialization code that rely on services provided by
         /// Visual Studio.
         /// </summary>
-        protected override void Initialize()
+        /// <param name="token">The token.</param>
+        /// <param name="progress">The progress.</param>
+        protected override async System.Threading.Tasks.Task InitializeAsync(
+            CancellationToken token,
+            IProgress<ServiceProgressData> progress)
         {
-            base.Initialize();
-
             Instance = this;
-            Options = GetDialogPage(typeof(Options)) as Options;
-
-            if (Options.WriteDebugMessages)
-            {
-                var pane = GetOutputPane(VSConstants.OutputWindowPaneGuid.DebugPane_guid, Vsix.Name);
-                Tracer.Initialize(pane);
-            }
 
             if (Directory.Exists(Options.ExtensionsDir))
                 _engine = new EngineWrapper(Options.ExtensionsDir);
@@ -122,13 +135,25 @@ namespace Emmet
             }
             catch
             {
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(token);
+
                 VsShellUtilities.ShowMessageBox(
-                    this,
+                    null,
                     $"Failed to load mnemonics configuration from {Options.MnemonicsConfiguration}",
                     $"{Vsix.Name}: Unexpected error.",
                     OLEMSGICON.OLEMSGICON_CRITICAL,
                     OLEMSGBUTTON.OLEMSGBUTTON_OK,
                     OLEMSGDEFBUTTON.OLEMSGDEFBUTTON_FIRST);
+            }
+
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(token);
+
+            Options = GetDialogPage(typeof(Options)) as Options;
+
+            if (Options.WriteDebugMessages)
+            {
+                var pane = GetOutputPane(VSConstants.OutputWindowPaneGuid.DebugPane_guid, Vsix.Name);
+                Tracer.Initialize(pane);
             }
         }
 

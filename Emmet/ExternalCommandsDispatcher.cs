@@ -17,7 +17,7 @@ namespace Emmet
         {
             get
             {
-                if (_dte == null)
+                if (null == _dte)
                     _dte = ServiceProvider.GlobalProvider.GetService(typeof(DTE)) as DTE2;
 
                 return _dte;

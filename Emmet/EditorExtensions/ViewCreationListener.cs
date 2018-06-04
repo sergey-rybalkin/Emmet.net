@@ -17,6 +17,7 @@ namespace Emmet.EditorExtensions
     [ContentType("HTML")]
     [ContentType("HTMLX")]
     [ContentType("CSharp")]
+    [ContentType("TypeScript")]
     [TextViewRole(PredefinedTextViewRoles.Document)]
     public class ViewCreationListener : IVsTextViewCreationListener
     {
