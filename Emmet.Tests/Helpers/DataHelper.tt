@@ -21,7 +21,7 @@ namespace Emmet.Tests.Helpers
 <#
     PushIndent("        ");
     string testDataPath = this.Host.ResolvePath("..\\Resources");
-    string[] files = Directory.GetFiles(testDataPath, "*.html", SearchOption.AllDirectories);
+    string[] files = Directory.GetFiles(testDataPath, "*.*", SearchOption.AllDirectories);
 
     foreach (string file in files)
     {

@@ -33,11 +33,14 @@ namespace Emmet.Engine
             {
                 _syntax = contentType;
             }
-            else if (@"htmlx" == contentType ||
-                     contentType.StartsWith("razor") ||
-                     "typescript" == contentType)
+            else if (@"htmlx" == contentType || contentType.StartsWith("razor"))
             {
                 _syntax = @"html";
+            }
+            else if ("typescript" == contentType)
+            {
+                // JSX files have TypeScript content in Visual Studio
+                _syntax = @"jsx";
             }
             else
             {

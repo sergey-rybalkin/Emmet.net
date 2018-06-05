@@ -113,6 +113,7 @@
     <Compile Include="Engine\EngineTestsBase.cs" />
     <Compile Include="Engine\CssTests.cs" />
     <Compile Include="Engine\HtmlTests.cs" />
+    <Compile Include="Engine\JsxTests.cs" />
     <Compile Include="Global.cs" />
     <Compile Include="Helpers\DataHelper.cs" />
     <Compile Include="Helpers\DataHelper.Generated.cs">
@@ -144,6 +145,8 @@
   <ItemGroup>
     <EmbeddedResource Include="Resources\Abbreviation.html" />
     <EmbeddedResource Include="Resources\AbbreviationGold.html" />
+    <EmbeddedResource Include="Resources\AbbreviationInJsx.jsx" />
+    <EmbeddedResource Include="Resources\AbbreviationInJsxGold.jsx" />
     <EmbeddedResource Include="Resources\MergeLines.html" />
     <EmbeddedResource Include="Resources\ToggleComment.html" />
     <EmbeddedResource Include="Resources\ToggleCommentGold.html" />
