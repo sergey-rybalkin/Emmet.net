@@ -14,6 +14,7 @@ namespace Emmet.Tests
         [AssemblyInitialize]
         public static void AssemblyInit(TestContext context)
         {
+            // Output window is used as a tracing source and needs to be available before any tests run.
             var pane = Substitute.For<IVsOutputWindowPane>();
             Tracer.Initialize(pane);
         }
