@@ -1,5 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
 using Emmet.Snippets;
+
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Language.Intellisense;
 using Microsoft.VisualStudio.Text;
@@ -11,6 +15,9 @@ namespace Emmet.EditorExtensions
     /// </summary>
     public class EmmetCommandTarget : CommandTargetBase
     {
+        private List<string> _htmlTags = new List<string>() { "link", "meta", "style", "title", "html", "body", "address", "article", "aside", "footer", "header", "h1", "h2", "h3", "h4", "h5", "h6", "hgroup", "main", "nav", "section", "blockquote", "dd", "dir", "div", "dl", "dt", "figcaption", "figure", "hr", "li", "main", "ol", "p", "pre", "ul", "a", "abbr", "b", "bdi", "bdo", "br", "cite", "code", "data", "dfn", "em", "i", "kbd", "mark", "q", "rb", "rp", "rt", "rtc", "ruby", "s", "samp", "small", "span", "strong", "sub", "sup", "time", "tt", "u", "var", "wbr", "area", "audio", "img", "map", "track", "video", "applet", "embed", "iframe", "noembed", "object", "param", "picture", "source", "canvas", "noscript", "script", "del", "ins", "caption", "col", "colgroup", "table", "tbody", "td", "tfoot", "th", "thead", "tr", "button", "datalist", "fieldset", "form", "input", "label", "legend", "meter", "optgroup", "option", "output", "progress", "select", "textarea", "details", "dialog", "menu", "menuitem", "summary", "content", "element", "shadow", "slot", "template" };
+        private List<string> _emmetSpecChars = new List<string>() { ".", "#", ">", "{", "[" };
+
         private readonly ICompletionBroker _completionBroker;
 
         private readonly bool _expandAbbreviationOnTab = false;
@@ -78,9 +85,11 @@ namespace Emmet.EditorExtensions
                     case PackageIds.CmdIDExpandAbbreviation:
                         TryExpandAbbreviation();
                         return VSConstants.S_OK;
+
                     case PackageIds.CmdIDWrapWithAbbreviation:
                         TryWrapAbbreviation();
                         return VSConstants.S_OK;
+
                     default:
                         // Other commands do not require post processing and can be invoked directly.
                         EmmetPackage.Instance.RunCommand(
@@ -118,6 +127,7 @@ namespace Emmet.EditorExtensions
                         return true;
 
                     break;
+
                 case (uint)VSConstants.VSStd2KCmdID.CANCEL:
                     if (HasActiveTabStops && !_completionBroker.IsCompletionActive(View.WpfView))
                     {
@@ -146,6 +156,14 @@ namespace Emmet.EditorExtensions
             if (string.IsNullOrWhiteSpace(txt) || position.Position != line.End)
                 return false;
 
+            // remove all white spaces from current line text
+            var normalize = string.Join(string.Empty, Regex.Split(txt, @"\s+").Where(c => c != string.Empty));
+
+            // is typed is not HTML and is not Emmet, so it's (probably) code snippet
+            // so return false and leave the Tab handle to visual studio
+            if (!IsHtmlTag(normalize) && !IsEmmet(normalize))
+                return false;
+
             _completionBroker.DismissAllSessions(View.WpfView);
             var editor = new EmmetEditor(View.WpfView, View.TextView);
             bool retVal = EmmetPackage.Instance.RunCommand(editor, PackageIds.CmdIDExpandAbbreviation);
@@ -158,6 +176,10 @@ namespace Emmet.EditorExtensions
 
             return retVal;
         }
+
+        private bool IsEmmet(string s) => _emmetSpecChars.Any(c => s.Contains(c));
+
+        private bool IsHtmlTag(string s) => _htmlTags.Any(c => c == s);
 
         private bool TryWrapAbbreviation()
         {
