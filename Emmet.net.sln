@@ -5,12 +5,12 @@ VisualStudioVersion = 15.0.26403.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Emmet.net", "Emmet\Emmet.net.csproj", "{F2A9B592-8396-4A7B-995F-1A927B68B393}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Emmet.Tests", "Emmet.Tests\Emmet.Tests.csproj", "{3F8118A7-54F8-4A12-81DD-7E9BE5320276}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{54F638E7-7A82-49B0-BECA-9329004E34DA}"
 	ProjectSection(SolutionItems) = preProject
 		appveyor.yml = appveyor.yml
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Emmet.Tests", "Emmet.Tests\Emmet.Tests.csproj", "{3F8118A7-54F8-4A12-81DD-7E9BE5320276}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,5 +29,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {DD61ED63-010C-422B-93E7-5500DCC4BFCC}
 	EndGlobalSection
 EndGlobal
