@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<RuleSet Name="Custom" ToolsVersion="14.0">
+<RuleSet Name="Custom" ToolsVersion="15.0">
   <Include Path="basiccorrectnessrules.ruleset" Action="Default" />
   <Include Path="basicdesignguidelinerules.ruleset" Action="Default" />
   <Include Path="extendedcorrectnessrules.ruleset" Action="Default" />
@@ -14,6 +14,9 @@
     <Rule Id="CA1303" Action="None" />
     <Rule Id="CA1308" Action="None" />
     <Rule Id="CA2243" Action="None" />
+  </Rules>
+  <Rules AnalyzerId="OzCode.VisualStudioExtensionAnalyzers" RuleNamespace="OzCode.VisualStudioExtensionAnalyzers">
+    <Rule Id="MefImportExceptionAnalyzer" Action="None" />
   </Rules>
   <Rules AnalyzerId="StyleCop.Analyzers" RuleNamespace="StyleCop.Analyzers">
     <Rule Id="SA1101" Action="None" />

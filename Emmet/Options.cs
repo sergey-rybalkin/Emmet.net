@@ -14,7 +14,7 @@ namespace Emmet
         public Options()
         {
             string documentsDir = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
-            ExtensionsDir = Path.Combine(documentsDir, "Visual Studio 2017\\Emmet");
+            ExtensionsDir = Path.Combine(documentsDir, "Visual Studio 2019\\Emmet");
             MnemonicsConfiguration = Path.Combine(ExtensionsDir, "mnemonics.ini");
         }
 
