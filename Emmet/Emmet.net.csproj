@@ -175,6 +175,7 @@
     <Content Include="lib\ChakraCore.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
+      <VSIXSubPath>.\</VSIXSubPath>
     </Content>
     <Content Include="source.extension.ico">
       <DependentUpon>source.extension.vsixmanifest</DependentUpon>
