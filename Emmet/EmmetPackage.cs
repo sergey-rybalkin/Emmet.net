@@ -3,11 +3,13 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Emmet.Diagnostics;
+using Emmet.EditorExtensions;
 using Emmet.Engine;
 using Emmet.Engine.ChakraInterop;
 using Emmet.Mnemonics;
 using EnvDTE;
 using EnvDTE80;
+using Microsoft;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -20,7 +22,8 @@ namespace Emmet
     [Guid(PackageGuids.GuidEmmetPackageString)]
     [InstalledProductRegistration("#110", "#112", Vsix.Version, IconResourceID = 400)]
     [PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
-    [ProvideAutoLoad(UIContextGuids80.SolutionExists, PackageAutoLoadFlags.BackgroundLoad)]
+    [ProvideAutoLoad(
+        VSConstants.UICONTEXT.SolutionExistsAndFullyLoaded_string, PackageAutoLoadFlags.BackgroundLoad)]
     [ProvideOptionPage(typeof(Options), Vsix.Name, "General", 0, 0, true)]
     [ProvideMenuResource("Menus.ctmenu", 1)]
     public sealed class EmmetPackage : AsyncPackage
@@ -52,14 +55,17 @@ namespace Emmet
         /// <param name="cmdId">Identifier of the command to execute.</param>
         internal bool RunCommand(EmmetEditor context, int cmdId)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             DTE2 dte = GetService(typeof(DTE)) as DTE2;
+            Assumes.Present(dte);
+
             bool ownUndoContext = false;
             try
             {
                 if (!dte.UndoContext.IsOpen)
                 {
-                    ownUndoContext = true;
                     dte.UndoContext.Open(Vsix.Name);
+                    ownUndoContext = true;
                 }
 
                 bool succeeded = _engine.RunCommand(cmdId, context);
@@ -74,28 +80,21 @@ namespace Emmet
                 if (ownUndoContext)
                     dte.UndoContext.SetAborted();
 
-                string msg = string.Empty;
-
+                string msg;
                 switch (ex)
                 {
                     case Exception<ChakraExceptionArgs> jsex:
                         msg = $"Unexpected error occurred inside of the Emmet engine. {jsex.Message}";
                         break;
                     case COMException comex:
-                        msg = $"Cannot load Microsoft Chakra engine.";
+                        msg = $"Cannot load Microsoft Chakra engine: {comex.Message}";
                         break;
                     default:
                         msg = $"Unexpected error of type {ex.GetType()}: {ex.Message}";
                         break;
                 }
 
-                VsShellUtilities.ShowMessageBox(
-                    null,
-                    msg,
-                    $"{Vsix.Name}: Unexpected error.",
-                    OLEMSGICON.OLEMSGICON_CRITICAL,
-                    OLEMSGBUTTON.OLEMSGBUTTON_OK,
-                    OLEMSGDEFBUTTON.OLEMSGDEFBUTTON_FIRST);
+                ShowCriticalError(msg);
 
                 return false;
             }
@@ -137,14 +136,11 @@ namespace Emmet
             {
                 await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(token);
 
-                VsShellUtilities.ShowMessageBox(
-                    null,
-                    $"Failed to load mnemonics configuration from {Options.MnemonicsConfiguration}",
-                    $"{Vsix.Name}: Unexpected error.",
-                    OLEMSGICON.OLEMSGICON_CRITICAL,
-                    OLEMSGBUTTON.OLEMSGBUTTON_OK,
-                    OLEMSGDEFBUTTON.OLEMSGDEFBUTTON_FIRST);
+                ShowCriticalError(
+                    $"Failed to load mnemonics configuration from {Options.MnemonicsConfiguration}");
             }
+
+            SortCssPropertiesCommand.Initialize(this);
 
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(token);
 
@@ -175,6 +171,17 @@ namespace Emmet
         private static bool IsExpectedException(Exception ex)
         {
             return ex is Exception<ChakraExceptionArgs> || ex is COMException;
+        }
+
+        private static void ShowCriticalError(string message)
+        {
+            VsShellUtilities.ShowMessageBox(
+                null,
+                message,
+                $"{Vsix.Name}: Unexpected error.",
+                OLEMSGICON.OLEMSGICON_CRITICAL,
+                OLEMSGBUTTON.OLEMSGBUTTON_OK,
+                OLEMSGDEFBUTTON.OLEMSGDEFBUTTON_FIRST);
         }
     }
 }

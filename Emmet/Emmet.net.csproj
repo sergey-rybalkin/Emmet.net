@@ -85,6 +85,7 @@
     <Compile Include="Diagnostics\Tracer.cs" />
     <Compile Include="Diagnostics\Verify.cs" />
     <Compile Include="EditorExtensions\CommandTargetBase.cs" />
+    <Compile Include="EditorExtensions\SortCssPropertiesCommand.cs" />
     <Compile Include="EditorExtensions\ZenSharpCommandTarget.cs" />
     <Compile Include="EmmetPackage.Constants.cs">
       <AutoGen>True</AutoGen>
@@ -160,10 +161,15 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.VisualStudio.SDK" Version="15.9.3" ExcludeAssets="runtime" />
-    <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="16.0.2264" />
+    <PackageReference Include="Microsoft.VisualStudio.SDK" Version="16.0.200" ExcludeAssets="runtime">
+      <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="16.3.1066">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="StyleCop.Analyzers">
-      <Version>1.0.2</Version>
+      <Version>1.1.118</Version>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>

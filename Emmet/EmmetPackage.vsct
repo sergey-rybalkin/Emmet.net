@@ -83,6 +83,14 @@
           <LocCanonicalName>MergeLines</LocCanonicalName>
         </Strings>
       </Button>
+
+      <Button guid="GuidEmmetPackageCmdSet" id="CmdIDSortCssProperties" priority="0x0100" type="Button">
+        <Strings>
+          <ButtonText>&amp;Sort CSS Properties</ButtonText>
+          <CommandName>SortCssProperties</CommandName>
+          <LocCanonicalName>SortCssProperties</LocCanonicalName>
+        </Strings>
+      </Button>
       
       <Button guid="GuidEmmetPackageCmdSet" id="CmdIDExpandMnemonic" priority="0x0100" type="Button">
         <Parent guid="GuidEmmetPackageCmdSet" id="IDEmmetCSharpCmdGroup" />
@@ -119,6 +127,7 @@
       <IDSymbol name="CmdIDToggleComment" value="0x0102" />
       <IDSymbol name="CmdIDMergeLines" value="0x0103" />
       <IDSymbol name="CmdIDExpandMnemonic" value="0x0104" />
+      <IDSymbol name="CmdIDSortCssProperties" value="0x0105" />
     </GuidSymbol>
 
     <!-- These are Visual Studio constants not found in SDK header files (found via VSIPLogging) -->
@@ -156,6 +165,10 @@
 
     <CommandPlacement guid="GuidEmmetPackageCmdSet" id="CmdIDMergeLines" priority="0x0200">
       <Parent guid="GuidEmmetPackageCmdSet" id="IDEmmetHtmlCmdGroup" />
+    </CommandPlacement>
+
+    <CommandPlacement guid="GuidEmmetPackageCmdSet" id="CmdIDSortCssProperties" priority="0x0200">
+      <Parent guid="GuidEmmetPackageCmdSet" id="IDEmmetCssCmdGroup" />
     </CommandPlacement>
     
   </CommandPlacements>

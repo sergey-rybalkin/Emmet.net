@@ -36,6 +36,7 @@ namespace Emmet.Engine.ChakraInterop
                 NativeMethods.JsGetCurrentContext(out JavaScriptContext reference).ThrowIfError();
                 return reference;
             }
+
             set
             {
                 NativeMethods.JsSetCurrentContext(value).ThrowIfError();

@@ -141,9 +141,9 @@ namespace Emmet.Tests.Helpers
 
         public void ReplaceContentRange(string newContent, int startPosition = -1, int endPosition = 0)
         {
-            if (-1 == startPosition)
+            if (startPosition is -1)
                 _content = newContent;
-            else if (0 == endPosition)
+            else if (endPosition is 0)
                 _content = _content.Insert(startPosition, newContent);
             else
                 _content = _content.Remove(startPosition, endPosition - startPosition)

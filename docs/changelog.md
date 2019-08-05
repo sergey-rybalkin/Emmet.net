@@ -1,6 +1,7 @@
 # Version history
 
-8 v4.0 - Upgrade to Visual Studio 2019.
+* v4.1 - Added experimental 'Sort CSS properties' command.
+* v4.0 - Upgrade to Visual Studio 2019.
 * v3.3 - ChakraCore updated to version 1.8.4. Package converted to async and is loaded in background according to new Microsoft requirements.
 * v3.2 - Upgraded to Emmet v1.6.3 without CanIUse database. Added nullable types support to C# mnemonics. Replaced V8 engine with ChakraCore for running JavaScript code.
 * v3.1 - Upgraded to Emmet v1.6. Added experimental C# mnemonics implementation.

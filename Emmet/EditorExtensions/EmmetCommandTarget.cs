@@ -81,6 +81,8 @@ namespace Emmet.EditorExtensions
                     case PackageIds.CmdIDWrapWithAbbreviation:
                         TryWrapAbbreviation();
                         return VSConstants.S_OK;
+                    case PackageIds.CmdIDSortCssProperties:
+                        break;
                     default:
                         // Other commands do not require post processing and can be invoked directly.
                         EmmetPackage.Instance.RunCommand(

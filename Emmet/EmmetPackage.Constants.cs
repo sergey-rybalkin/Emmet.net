@@ -41,6 +41,7 @@ namespace Emmet
         public const int CmdIDToggleComment = 0x0102;
         public const int CmdIDMergeLines = 0x0103;
         public const int CmdIDExpandMnemonic = 0x0104;
+        public const int CmdIDSortCssProperties = 0x0105;
         public const int IDVisualStudioHtmlContextMenu = 0x0001;
         public const int IDVisualStudioCssContextMenu = 0x0002;
     }
