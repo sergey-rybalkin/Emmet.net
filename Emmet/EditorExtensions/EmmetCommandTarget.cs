@@ -13,8 +13,6 @@ namespace Emmet.EditorExtensions
     {
         private readonly ICompletionBroker _completionBroker;
 
-        private readonly bool _expandAbbreviationOnTab = false;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="EmmetCommandTarget"/> class.
         /// </summary>
@@ -24,7 +22,7 @@ namespace Emmet.EditorExtensions
             : base(view)
         {
             _completionBroker = completionBroker;
-            _expandAbbreviationOnTab = EmmetPackage.Options.InterceptTabs;
+            ExpandAbbreviationOnTab = EmmetPackage.Options.InterceptTabs;
         }
 
         /// <summary>
@@ -32,6 +30,11 @@ namespace Emmet.EditorExtensions
         /// stops collection changes.
         /// </summary>
         public event EventHandler TabStopsChanged;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to run expand abbreviation command on TAB.
+        /// </summary>
+        public bool ExpandAbbreviationOnTab { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether associated view has active tab stops.
@@ -61,6 +64,18 @@ namespace Emmet.EditorExtensions
             return CurrentSnippet?.GetTabStopsPositions();
         }
 
+        /// <summary>
+        /// Executes the specified command.
+        /// </summary>
+        /// <param name="pguidCmdGroup">[in,out] The GUID of the command group.</param>
+        /// <param name="nCmdID">The command ID.</param>
+        /// <param name="nCmdexecopt">
+        /// Specifies how the object should execute the command. Possible values are taken from the
+        /// <see cref="T:Microsoft.VisualStudio.OLE.Interop.OLECMDEXECOPT" /> and
+        /// <see cref="T:Microsoft.VisualStudio.OLE.Interop.OLECMDID_WINDOWSTATE_FLAG" /> enumerations.
+        /// </param>
+        /// <param name="pvaIn">The input arguments of the command.</param>
+        /// <param name="pvaOut">The output arguments of the command.</param>
         public override int Exec(
             ref Guid pguidCmdGroup, uint nCmdID, uint nCmdexecopt, IntPtr pvaIn, IntPtr pvaOut)
         {
@@ -95,10 +110,10 @@ namespace Emmet.EditorExtensions
             return base.Exec(ref pguidCmdGroup, nCmdID, nCmdexecopt, pvaIn, pvaOut);
         }
 
-        private bool InterceptNativeEvents(uint nCmdID)
+        private bool InterceptNativeEvents(uint cmdID)
         {
             // TAB and Shift+TAB should cycle through all tab stops until ESC or Enter are pressed.
-            switch (nCmdID)
+            switch (cmdID)
             {
                 case (uint)VSConstants.VSStd2KCmdID.TAB:
                 case (uint)VSConstants.VSStd2KCmdID.BACKTAB:
@@ -106,7 +121,7 @@ namespace Emmet.EditorExtensions
 
                     if (HasActiveTabStops)
                     {
-                        if (CurrentSnippet.TryMoveToNextTabStop(nCmdID == backTabCode))
+                        if (CurrentSnippet.TryMoveToNextTabStop(cmdID == backTabCode))
                             return true;
 
                         // User has moved caret away from tab stops, clear them.
@@ -116,7 +131,7 @@ namespace Emmet.EditorExtensions
                         return false;
                     }
 
-                    if (nCmdID != backTabCode && _expandAbbreviationOnTab && TryExpandAbbreviation())
+                    if (cmdID != backTabCode && ExpandAbbreviationOnTab && TryExpandAbbreviation())
                         return true;
 
                     break;

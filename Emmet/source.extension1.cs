@@ -11,7 +11,7 @@ namespace Emmet
         public const string Name = "Emmet.net";
         public const string Description = @"Visual Studio port of the https://github.com/emmetio/emmet project by Sergey Chikuyonok.";
         public const string Language = "en-US";
-        public const string Version = "4.1.1";
+        public const string Version = "4.1.3";
         public const string Author = "Sergey Rybalkin";
         public const string Tags = "Emmet";
     }

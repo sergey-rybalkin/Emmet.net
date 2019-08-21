@@ -42,8 +42,8 @@ namespace Emmet
                 return;
             }
 
-            Span range = new Span(start, end - start);
-            SnapshotSpan selectionSpan = new SnapshotSpan(_wpfView.TextBuffer.CurrentSnapshot, range);
+            var range = new Span(start, end - start);
+            var selectionSpan = new SnapshotSpan(_wpfView.TextBuffer.CurrentSnapshot, range);
             _wpfView.Selection.Select(selectionSpan, false);
         }
 
@@ -69,8 +69,7 @@ namespace Emmet
         public string GetContentTypeInActiveBuffer()
         {
             IContentType retVal = _wpfView.TextBuffer.ContentType;
-            IProjectionBuffer projection = _wpfView.TextBuffer as IProjectionBuffer;
-            if (null == projection)
+            if (!(_wpfView.TextBuffer is IProjectionBuffer projection))
                 return retVal?.TypeName?.ToLowerInvariant();
 
             // Current view has several buffers (e.g. html file with css code), get the one that has the caret
@@ -121,7 +120,7 @@ namespace Emmet
         public string GetSelection()
         {
             var selection = _wpfView.Selection;
-            if (0 == selection.SelectedSpans.Count)
+            if (selection.SelectedSpans.Count is 0)
                 return string.Empty;
 
             SnapshotSpan selectionSpan = selection.SelectedSpans[0];
@@ -144,7 +143,7 @@ namespace Emmet
         /// </summary>
         public string Prompt()
         {
-            AbbreviationPrompt dlg = new AbbreviationPrompt();
+            var dlg = new AbbreviationPrompt();
             if (DialogResult.OK != dlg.ShowDialog() || string.IsNullOrWhiteSpace(dlg.Abbreviation))
                 return null;
 
@@ -175,7 +174,7 @@ namespace Emmet
         /// <param name="position">New caret position.</param>
         public void SetCaretPosition(int position)
         {
-            SnapshotPoint point = new SnapshotPoint(_wpfView.TextBuffer.CurrentSnapshot, position);
+            var point = new SnapshotPoint(_wpfView.TextBuffer.CurrentSnapshot, position);
             _wpfView.Caret.MoveTo(point);
         }
 
@@ -186,10 +185,10 @@ namespace Emmet
         /// <param name="tabStopGroups">Tab stops groups indexes array.</param>
         public void TrackTabStops(Range[] tabStops, int[] tabStopGroups)
         {
-            if (null == tabStops || 0 == tabStops.Length)
+            if (tabStops is null || tabStops.Length is 0)
                 return;
 
-            Span[] tabStopSpans = new Span[tabStops.Length];
+            var tabStopSpans = new Span[tabStops.Length];
             for (int index = 0; index < tabStops.Length; index++)
             {
                 Range source = tabStops[index];
@@ -216,7 +215,7 @@ namespace Emmet
             else
                 span = new Span(0, _wpfView.TextBuffer.CurrentSnapshot.Length);
 
-            SnapshotSpan snapshotSpan = new SnapshotSpan(_wpfView.TextBuffer.CurrentSnapshot, span);
+            var snapshotSpan = new SnapshotSpan(_wpfView.TextBuffer.CurrentSnapshot, span);
             _wpfView.Selection.Select(snapshotSpan, false);
 
             ExternalCommandsDispatcher.FormatSelection();

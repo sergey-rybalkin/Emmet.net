@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Emmet.Engine.ChakraInterop;
 using static Emmet.Diagnostics.Tracer;
@@ -11,6 +12,17 @@ namespace Emmet.Engine
     /// </summary>
     public class EmmetEditorCallbacks
     {
+        private static readonly Dictionary<string, string> ContentTypesMap = new Dictionary<string, string>
+        {
+            { "css", "css" },
+            { "less", "less" },
+            { "scss", "scss" },
+            { "htmlx", "html" },
+            { "csharp", "html" }, // cshtml files have csharp content type in Visual Studio 2019.
+            { "razorcorecsharp", "html" }, // content type of HTML buffers in Razor files.
+            { "typescript", "jsx" }, // JSX files have TypeScript content type in Visual Studio 2019.
+        };
+
         private IEmmetEditor _editor = null;
 
         private string _syntax;
@@ -28,21 +40,7 @@ namespace Emmet.Engine
             if (string.IsNullOrEmpty(contentType))
                 return false;
 
-            // css, less or scss
-            if (contentType.EndsWith(@"ss"))
-            {
-                _syntax = contentType;
-            }
-            else if (@"htmlx" == contentType || contentType.StartsWith("razor"))
-            {
-                _syntax = @"html";
-            }
-            else if ("typescript" == contentType)
-            {
-                // JSX files have TypeScript content in Visual Studio
-                _syntax = @"jsx";
-            }
-            else
+            if (!ContentTypesMap.TryGetValue(contentType, out _syntax))
             {
                 Trace($"Syntax {contentType} is not supported");
                 return false;

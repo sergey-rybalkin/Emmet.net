@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.Composition;
+﻿using System;
+using System.ComponentModel.Composition;
 using Microsoft.VisualStudio.Editor;
 using Microsoft.VisualStudio.Language.Intellisense;
 using Microsoft.VisualStudio.Text.Editor;
@@ -18,6 +19,7 @@ namespace Emmet.EditorExtensions
     [ContentType("HTMLX")]
     [ContentType("CSharp")]
     [ContentType("TypeScript")]
+    [ContentType("JavaScript")]
     [TextViewRole(PredefinedTextViewRoles.Document)]
     public class ViewCreationListener : IVsTextViewCreationListener
     {
@@ -41,12 +43,19 @@ namespace Emmet.EditorExtensions
         {
             IWpfTextView textView = EditorAdaptersFactoryService.GetWpfTextView(textViewAdapter);
             ViewContext context = new ViewContext(textView, textViewAdapter);
+            string contentType = textView.TextBuffer.ContentType.TypeName;
 
-            if ("CSharp" != textView.TextBuffer.ContentType.TypeName)
+            if ("CSharp" != contentType)
             {
-                textView.Properties.GetOrCreateSingletonProperty(
+                EmmetCommandTarget target = textView.Properties.GetOrCreateSingletonProperty(
                     "EmmetCommandTarget",
                     () => new EmmetCommandTarget(context, CompletionBroker));
+
+                // As of v2019 Visual Studio does not use projection buffer for JSX files and thus we cannot
+                // detect JS and HTML buffers. So, in order to prevent unintended JS and Emmet snippets
+                // collisions we support only hotkey based commands invocation.
+                if (contentType.EndsWith("script", StringComparison.InvariantCultureIgnoreCase))
+                    target.ExpandAbbreviationOnTab = false;
             }
             else
             {
