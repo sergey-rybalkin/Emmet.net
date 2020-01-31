@@ -1,8 +1,5013 @@
-!function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var t;"undefined"!=typeof window?t=window:"undefined"!=typeof global?t=global:"undefined"!=typeof self&&(t=self),t.emmet=e()}}(function(){var define,module,exports;return function e(t,n,r){function i(o,a){if(!n[o]){if(!t[o]){var l="function"==typeof require&&require;if(!a&&l)return l(o,!0);if(s)return s(o,!0);var c=new Error("Cannot find module '"+o+"'");throw c.code="MODULE_NOT_FOUND",c}var u=n[o]={exports:{}};t[o][0].call(u.exports,function(e){var n=t[o][1][e];return i(n?n:e)},u,u.exports,e,t,n,r)}return n[o].exports}for(var s="function"==typeof require&&require,o=0;o<r.length;o++)i(r[o]);return i}({"./bundles/snippets.js":[function(e,t,n){var r=e("../lib/assets/resources"),i=e("../lib/snippets.json");r.setVocabulary(i,"system")},{"../lib/assets/resources":"C:\\Temp\\emmet\\lib\\assets\\resources.js","../lib/snippets.json":"C:\\Temp\\emmet\\lib\\snippets.json"}],"./lib/emmet.js":[function(require,module,exports){if("object"==typeof module&&"function"!=typeof define)var define=function(e){module.exports=e(require,exports,module)};define(function(require,exports,module){function getFileName(e){var t=/([\w\.\-]+)$/i,n=t.exec(e);return n?n[1]:""}function normalizeProfile(e){return"object"==typeof e&&("indent"in e&&(e.indent=!!e.indent),"self_closing_tag"in e&&"number"==typeof e.self_closing_tag&&(e.self_closing_tag=!!e.self_closing_tag)),e}var global="undefined"!=typeof self?self:this,utils=require("./utils/common"),actions=require("./action/main"),parser=require("./parser/abbreviation"),file=require("./plugin/file"),preferences=require("./assets/preferences"),resources=require("./assets/resources"),profile=require("./assets/profile"),ciu=require("./assets/caniuse"),logger=require("./assets/logger"),sliceFn=Array.prototype.slice;return{expandAbbreviation:function(e,t,n,r){return parser.expand(e,{syntax:t,profile:n,contextNode:r})},run:function(e){return actions.run.apply(actions,sliceFn.call(arguments,0))},loadExtensions:function(fileList){var payload={},userSnippets=null,that=this;fileList=fileList.filter(function(e){var t=file.getExt(e);return"json"===t||"js"===t});var reader=(file.readText||file.read).bind(file),next=function(){if(fileList.length){var f=fileList.shift();reader(f,function(err,content){if(err)return logger.log('Unable to read "'+f+'" file: '+err),next();switch(file.getExt(f)){case"js":try{eval(content)}catch(e){logger.log('Unable to eval "'+f+'" file: '+e)}break;case"json":var fileName=getFileName(f).toLowerCase().replace(/\.json$/,"");content=utils.parseJSON(content),/^snippets/.test(fileName)?"snippets"===fileName?userSnippets=content:payload.snippets=utils.deepMerge(payload.snippets||{},content):payload[fileName]=content}next()})}else userSnippets&&(payload.snippets=utils.deepMerge(payload.snippets||{},userSnippets)),that.loadUserData(payload)};next()},loadPreferences:function(e){preferences.load(utils.parseJSON(e))},loadSnippets:function(e){e=utils.parseJSON(e);var t=resources.getVocabulary("user")||{};resources.setVocabulary(utils.deepMerge(t,e),"user")},loadSystemSnippets:function(e){resources.setVocabulary(utils.parseJSON(e),"system")},loadCIU:function(e){ciu.load(utils.parseJSON(e))},resetSnippets:function(){resources.setVocabulary({},"user")},loadUserData:function(e){e=utils.parseJSON(e),e.snippets&&this.loadSnippets(e.snippets),e.preferences&&this.loadPreferences(e.preferences),e.profiles&&this.loadProfiles(e.profiles),e.caniuse&&this.loadCIU(e.caniuse);var t=e.syntaxProfiles||e.syntaxprofiles;t&&this.loadSyntaxProfiles(t)},resetUserData:function(){this.resetSnippets(),preferences.reset(),profile.reset()},loadSyntaxProfiles:function(e){e=utils.parseJSON(e);var t={};Object.keys(e).forEach(function(n){var r=e[n];n in t||(t[n]={}),t[n].profile=normalizeProfile(r)}),this.loadSnippets(t)},loadProfiles:function(e){e=utils.parseJSON(e),Object.keys(e).forEach(function(t){profile.create(t,normalizeProfile(e[t]))})},actions:actions,parser:parser,file:file,preferences:preferences,resources:resources,profile:profile,tabStops:require("./assets/tabStops"),htmlMatcher:require("./assets/htmlMatcher"),utils:{common:utils,action:require("./utils/action"),editor:require("./utils/editor")}}})},{"./action/main":"C:\\Temp\\emmet\\lib\\action\\main.js","./assets/caniuse":"C:\\Temp\\emmet\\lib\\assets\\caniuse.js","./assets/htmlMatcher":"C:\\Temp\\emmet\\lib\\assets\\htmlMatcher.js","./assets/logger":"C:\\Temp\\emmet\\lib\\assets\\logger.js","./assets/preferences":"C:\\Temp\\emmet\\lib\\assets\\preferences.js","./assets/profile":"C:\\Temp\\emmet\\lib\\assets\\profile.js","./assets/resources":"C:\\Temp\\emmet\\lib\\assets\\resources.js","./assets/tabStops":"C:\\Temp\\emmet\\lib\\assets\\tabStops.js","./parser/abbreviation":"C:\\Temp\\emmet\\lib\\parser\\abbreviation.js","./plugin/file":"C:\\Temp\\emmet\\lib\\plugin\\file.js","./utils/action":"C:\\Temp\\emmet\\lib\\utils\\action.js","./utils/common":"C:\\Temp\\emmet\\lib\\utils\\common.js","./utils/editor":"C:\\Temp\\emmet\\lib\\utils\\editor.js"}],"C:\\Temp\\emmet\\lib\\action\\balance.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){function r(e){return e[e.length-1]}function i(e,t){var n=u.outputInfo(e),r=n.content,i=p(e.getSelectionRange());if(h&&!h.range.equal(i)&&(h=null),h&&i.length())if("in"==t){if("tag"==h.type&&!h.close)return!1;if(h.range.equal(h.outerRange))h.range=h.innerRange;else{var s=c.narrowToNonSpace(r,h.innerRange);h=l.find(r,s.start+1),h&&h.range.equal(i)&&h.outerRange.equal(i)&&(h.range=h.innerRange)}}else!h.innerRange.equal(h.outerRange)&&h.range.equal(h.innerRange)&&i.equal(h.range)?h.range=h.outerRange:(h=l.find(r,i.start),h&&h.range.equal(i)&&h.innerRange.equal(i)&&(h.range=h.outerRange));else h=l.find(r,i.start);return h&&(h.innerRange.equal(i)&&(h.range=h.outerRange),!h.range.equal(i))?(e.createSelection(h.range.start,h.range.end),!0):(h=null,!1)}function s(e,t){var n=[e.range(!0)];n.push(e.valueRange(!0));var i=d.nestedSectionsInRule(e),s=e.list();if(s.length||i.length){var o=Number.POSITIVE_INFINITY,a=-1;s.length&&(o=s[0].namePosition(!0),a=r(s).range(!0).end),i.length&&(i[0].start<o&&(o=i[0].start),r(i).end>a&&(a=r(i).end)),n.push(p.create2(o,a))}n=n.concat(i);var l=m.propertyFromPosition(e,t)||s[0];if(l){n.push(l.range(!0));var c=l.valueRange(!0);l.end()||(c._unterminated=!0),n.push(c)}return n}function o(e,t){var n;if("string"==typeof e){var r=d.matchEnclosingRule(e,t);r&&(n=m.parse(r.substring(e),{offset:r.start}))}else n=e;if(!n)return null;var i=s(n,t);return i=i.filter(function(e){return!!e.length}),c.unique(i,function(e){return e.valueOf()})}function a(e,t){var n=u.outputInfo(e),i=n.content,s=p(e.getSelectionRange()),a=o(n.content,s.start);if(!a&&s.length())try{var l=m.parse(s.substring(n.content),{offset:s.start});a=o(l,s.start)}catch(f){}if(!a)return!1;a=p.sort(a,!0);var d=c.find(a,function(e){return e.equal(s)});if(d||(d=c.find(a,function(e){return e._unterminated?e.include(s.start):e.inside(s.start)})),!d)return!1;var h=a.indexOf(d);if(d.equal(s)&&(h+="out"==t?1:-1),h<0||h>=a.length)if(h>=a.length&&"out"==t){pos=d.start-1;var b=o(i,pos);b&&(d=r(b.filter(function(e){return e.inside(pos)})))}else d=null;else d=a[h];return!!d&&(e.createSelection(d.start,d.end),!0)}var l=e("../assets/htmlMatcher"),c=e("../utils/common"),u=e("../utils/editor"),f=e("../utils/action"),p=e("../assets/range"),m=e("../editTree/css"),d=e("../utils/cssSections"),h=null;return{balance:function(e,t){t=String((t||"out").toLowerCase());var n=u.outputInfo(e);return f.isSupportedCSS(n.syntax)?a(e,t):i(e,t)},balanceInwardAction:function(e){return this.balance(e,"in")},balanceOutwardAction:function(e){return this.balance(e,"out")},goToMatchingPairAction:function(e){var t=String(e.getContent()),n=e.getCaretPos();"<"==t.charAt(n)&&n++;var r=l.tag(t,n);return!(!r||!r.close)&&(r.open.range.inside(n)?e.setCaretPos(r.close.range.start):e.setCaretPos(r.open.range.start),!0)}}})},{"../assets/htmlMatcher":"C:\\Temp\\emmet\\lib\\assets\\htmlMatcher.js","../assets/range":"C:\\Temp\\emmet\\lib\\assets\\range.js","../editTree/css":"C:\\Temp\\emmet\\lib\\editTree\\css.js","../utils/action":"C:\\Temp\\emmet\\lib\\utils\\action.js","../utils/common":"C:\\Temp\\emmet\\lib\\utils\\common.js","../utils/cssSections":"C:\\Temp\\emmet\\lib\\utils\\cssSections.js","../utils/editor":"C:\\Temp\\emmet\\lib\\utils\\editor.js"}],"C:\\Temp\\emmet\\lib\\action\\base64.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){function r(e,t,n){return n=n||0,t.charAt(n)==e.charAt(0)&&t.substr(n,e.length)==e}function i(e,t,n){var r=e.getFilePath(),i="application/octet-stream";if(null===r)throw"You should save your file before using this action";return o.locateFile(r,t,function(r){if(null===r)throw"Can't find "+t+" file";o.read(r,function(s,c){if(s)throw"Unable to read "+r+": "+s;var u=a.encode(String(c));if(!u)throw"Can't encode file content to base64";u="data:"+(l.mimeTypes[String(o.getExt(r))]||i)+";base64,"+u,e.replaceContent("$0"+u,n,n+t.length)})}),!0}function s(e,t,n,r){if(t=t||String(e.prompt("Enter path to file (absolute or relative)")),!t)return!1;var i=e.getFilePath();return o.createPath(i,t,function(i,s){if(i||!s)throw"Can't save file";var l=n.replace(/^data\:.+?;.+?,/,"");o.save(s,a.decode(l),function(i){if(i)throw"Unable to save "+s+": "+i;e.replaceContent("$0"+t,r,r+n.length)})}),!0}var o=e("../plugin/file"),a=e("../utils/base64"),l=e("../utils/action"),c=e("../utils/editor");return{encodeDecodeDataUrlAction:function(e,t){var n=String(e.getSelection()),o=e.getCaretPos(),a=c.outputInfo(e);if(!n)for(var l,u=a.content;o-- >=0;){if(r("src=",u,o)){(l=u.substr(o).match(/^(src=(["'])?)([^'"<>\s]+)\1?/))&&(n=l[3],o+=l[1].length);break}if(r("url(",u,o)){(l=u.substr(o).match(/^(url\((['"])?)([^'"\)\s]+)\1?/))&&(n=l[3],o+=l[1].length);break}}return!!n&&(r("data:",n)?s(e,t,n,o):i(e,n,o))}}})},{"../plugin/file":"C:\\Temp\\emmet\\lib\\plugin\\file.js","../utils/action":"C:\\Temp\\emmet\\lib\\utils\\action.js","../utils/base64":"C:\\Temp\\emmet\\lib\\utils\\base64.js","../utils/editor":"C:\\Temp\\emmet\\lib\\utils\\editor.js"}],"C:\\Temp\\emmet\\lib\\action\\editPoints.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){function r(e,t,n){function r(e){for(var t=e;t>=0;){var n=s.charAt(t);if("\n"==n||"\r"==n)break;t--}return s.substring(t,e)}t=t||1,n=n||0;for(var i=e.getCaretPos()+n,s=String(e.getContent()),o=s.length,a=-1,l=/^\s+$/;i<=o&&i>=0;){i+=t;var c=s.charAt(i),u=s.charAt(i+1),f=s.charAt(i-1);switch(c){case'"':case"'":u==c&&"="==f&&(a=i+1);break;case">":"<"==u&&(a=i+1);break;case"\n":case"\r":l.test(r(i-1))&&(a=i)}if(a!=-1)break}return a}return{previousEditPointAction:function(e,t,n){var i=e.getCaretPos(),s=r(e,-1);return s==i&&(s=r(e,-1,-2)),s!=-1&&(e.setCaretPos(s),!0)},nextEditPointAction:function(e,t,n){var i=r(e,1);return i!=-1&&(e.setCaretPos(i),!0)}}})},{}],"C:\\Temp\\emmet\\lib\\action\\evaluateMath.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){var r=e("../utils/action"),i=e("../utils/common"),s=e("../utils/math"),o=e("../assets/range");return{evaluateMathAction:function(e){var t=e.getContent(),n=".+-*/\\",a=o(e.getSelectionRange());if(a.length()||(a=r.findExpressionBounds(e,function(e){return i.isNumeric(e)||n.indexOf(e)!=-1})),a&&a.length()){var l=a.substring(t);l=l.replace(/([\d\.\-]+)\\([\d\.\-]+)/g,"round($1/$2)");try{var c=i.prettifyNumber(s.evaluate(l));return e.replaceContent(c,a.start,a.end),e.setCaretPos(a.start+c.length),!0}catch(u){}}return!1}}})},{"../assets/range":"C:\\Temp\\emmet\\lib\\assets\\range.js","../utils/action":"C:\\Temp\\emmet\\lib\\utils\\action.js","../utils/common":"C:\\Temp\\emmet\\lib\\utils\\common.js","../utils/math":"C:\\Temp\\emmet\\lib\\utils\\math.js"}],"C:\\Temp\\emmet\\lib\\action\\expandAbbreviation.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){function r(e){var t=s(e.getSelectionRange()),n=String(e.getContent());if(t.length())return t.substring(n);var r=e.getCurrentLineRange();return c.extractAbbreviation(n.substring(r.start,t.start))}var i=e("../assets/handlerList"),s=e("../assets/range"),o=e("../assets/preferences"),a=e("../utils/common"),l=e("../utils/editor"),c=e("../utils/action"),u=e("../resolver/cssGradient"),f=e("../parser/abbreviation"),p=i.create();return p.add(function(e,t,n){var i=e.getSelectionRange().end,s=r(e);if(s){var a=f.expand(s,{syntax:t,profile:n,contextNode:c.captureContext(e)});if(a){var l=i-s.length,u=i,p=o.getArray("css.syntaxes");if(p&&~p.indexOf(t)){var m=e.getContent();";"==m.charAt(i)&&";"==a.charAt(a.length-1)&&u++}return e.replaceContent(a,l,u),!0}}return!1},{order:-1}),p.add(u.expandAbbreviationHandler.bind(u)),{expandAbbreviationAction:function(e,t,n){var r=a.toArray(arguments),i=l.outputInfo(e,t,n);return r[1]=i.syntax,r[2]=i.profile,p.exec(!1,r)},expandAbbreviationWithTabAction:function(e,t,n){var r=e.getSelection(),i="\t";if(r){var o=s(e.getSelectionRange()),l=a.padString(r,i);e.replaceContent(i+"${0}",e.getCaretPos());var c=s(e.getCaretPos(),o.length());return e.replaceContent(l,c.start,c.end,!0),e.createSelection(c.start,c.start+l.length),!0}return this.expandAbbreviationAction(e,t,n)||e.replaceContent(i,e.getCaretPos()),!0},_defaultHandler:function(e,t,n){var r=e.getSelectionRange().end,i=this.findAbbreviation(e);if(i){var s=c.captureContext(e),o=f.expand(i,t,n,s);if(o)return e.replaceContent(o,r-i.length,r),!0}return!1},addHandler:function(e,t){p.add(e,t)},removeHandler:function(e){p.remove(e)},findAbbreviation:r}})},{"../assets/handlerList":"C:\\Temp\\emmet\\lib\\assets\\handlerList.js","../assets/preferences":"C:\\Temp\\emmet\\lib\\assets\\preferences.js","../assets/range":"C:\\Temp\\emmet\\lib\\assets\\range.js","../parser/abbreviation":"C:\\Temp\\emmet\\lib\\parser\\abbreviation.js","../resolver/cssGradient":"C:\\Temp\\emmet\\lib\\resolver\\cssGradient.js","../utils/action":"C:\\Temp\\emmet\\lib\\utils\\action.js","../utils/common":"C:\\Temp\\emmet\\lib\\utils\\common.js","../utils/editor":"C:\\Temp\\emmet\\lib\\utils\\editor.js"}],"C:\\Temp\\emmet\\lib\\action\\incrementDecrement.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){function r(e){return e=e.replace(/^\-/,""),~e.indexOf(".")?e.split(".")[0].length:e.length}var i=e("../utils/common"),s=e("../utils/action");return{increment01Action:function(e){return this.incrementNumber(e,.1)},increment1Action:function(e){return this.incrementNumber(e,1)},increment10Action:function(e){return this.incrementNumber(e,10)},decrement01Action:function(e){return this.incrementNumber(e,-.1)},decrement1Action:function(e){return this.incrementNumber(e,-1)},decrement10Action:function(e){return this.incrementNumber(e,-10)},incrementNumber:function(e,t){var n=!1,o=!1,a=s.findExpressionBounds(e,function(e,t,r){return!!i.isNumeric(e)||("."==e?!!i.isNumeric(r.charAt(t+1))&&(!o&&(o=!0)):"-"==e&&(!n&&(n=!0)))});if(a&&a.length()){var l=a.substring(String(e.getContent())),c=parseFloat(l);if(!isNaN(c)){if(c=i.prettifyNumber(c+t),/^(\-?)0+[1-9]/.test(l)){var u="";RegExp.$1&&(u="-",c=c.substring(1));var f=c.split(".");f[0]=i.zeroPadString(f[0],r(l)),c=u+f.join(".")}return e.replaceContent(c,a.start,a.end),e.createSelection(a.start,a.start+c.length),!0}}return!1}}})},{"../utils/action":"C:\\Temp\\emmet\\lib\\utils\\action.js","../utils/common":"C:\\Temp\\emmet\\lib\\utils\\common.js"}],"C:\\Temp\\emmet\\lib\\action\\lineBreaks.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){var r=e("../assets/preferences"),i=e("../utils/common"),s=(e("../assets/resources"),e("../assets/htmlMatcher")),o=e("../utils/editor"),a=["html","xml","xsl"];return r.define("css.closeBraceIndentation","\n","Indentation before closing brace of CSS rule. Some users prefere indented closing brace of CSS rule for better readability. This preference’s value will be automatically inserted before closing brace when user adds newline in newly created CSS rule (e.g. when “Insert formatted linebreak” action will be performed in CSS file). If you’re such user, you may want to write put a value like <code>\\n\\t</code> in this preference."),{insertLineBreakAction:function(e){if(!this.insertLineBreakOnlyAction(e)){for(var t,n=o.getCurrentLinePadding(e),r=String(e.getContent()),i=e.getCaretPos(),s=r.length,a="\n",l=e.getCurrentLineRange(),c="",u=l.end;u<s&&(t=r.charAt(u)," "==t||"\t"==t);u++)c+=t;c.length>n.length?e.replaceContent(a+c,i,i,!0):e.replaceContent(a,i)}return!0},insertLineBreakOnlyAction:function(e){var t=o.outputInfo(e),n=e.getCaretPos(),l="\n",c="\t";if(~a.indexOf(t.syntax)){var u=s.tag(t.content,n);if(u&&!u.innerRange.length())return e.replaceContent(l+c+i.getCaretPlaceholder()+l,n),!0}else if("css"==t.syntax){var f=t.content;if(n&&"{"==f.charAt(n-1)){var p=r.get("css.closeBraceIndentation"),m="}"==f.charAt(n);if(!m)for(var d,h=n,b=f.length;h<b&&(d=f.charAt(h),"{"!=d);h++)if("}"==d){p="",m=!0;break}m||(p+="}");var g=l+c+i.getCaretPlaceholder()+p;return e.replaceContent(g,n),!0}}return!1}}})},{"../assets/htmlMatcher":"C:\\Temp\\emmet\\lib\\assets\\htmlMatcher.js","../assets/preferences":"C:\\Temp\\emmet\\lib\\assets\\preferences.js","../assets/resources":"C:\\Temp\\emmet\\lib\\assets\\resources.js","../utils/common":"C:\\Temp\\emmet\\lib\\utils\\common.js","../utils/editor":"C:\\Temp\\emmet\\lib\\utils\\editor.js"}],"C:\\Temp\\emmet\\lib\\action\\main.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){function r(e,t,n){e=e.toLowerCase(),n=n||{},"string"==typeof n&&(n={label:n}),n.label||(n.label=i(e)),o[e]={name:e,fn:t,options:n}}function i(e){return s.trim(e.charAt(0).toUpperCase()+e.substring(1).replace(/_[a-z]/g,function(e){return" "+e.charAt(1).toUpperCase()}))}var s=e("../utils/common"),o={},a={base64:e("./base64"),editPoints:e("./editPoints"),evaluateMath:e("./evaluateMath"),expandAbbreviation:e("./expandAbbreviation"),incrementDecrement:e("./incrementDecrement"),lineBreaks:e("./lineBreaks"),balance:e("./balance"),mergeLines:e("./mergeLines"),reflectCSSValue:e("./reflectCSSValue"),removeTag:e("./removeTag"),selectItem:e("./selectItem"),selectLine:e("./selectLine"),splitJoinTag:e("./splitJoinTag"),toggleComment:e("./toggleComment"),updateImageSize:e("./updateImageSize"),wrapWithAbbreviation:e("./wrapWithAbbreviation"),updateTag:e("./updateTag")},l=function(e,t){var n=a[e];return n[t].bind(n)};return r("encode_decode_data_url",l("base64","encodeDecodeDataUrlAction"),"Encode\\Decode data:URL image"),r("prev_edit_point",l("editPoints","previousEditPointAction"),"Previous Edit Point"),r("next_edit_point",l("editPoints","nextEditPointAction"),"Next Edit Point"),r("evaluate_math_expression",l("evaluateMath","evaluateMathAction"),"Numbers/Evaluate Math Expression"),r("expand_abbreviation_with_tab",l("expandAbbreviation","expandAbbreviationWithTabAction"),{hidden:!0}),r("expand_abbreviation",l("expandAbbreviation","expandAbbreviationAction"),"Expand Abbreviation"),r("insert_formatted_line_break_only",l("lineBreaks","insertLineBreakOnlyAction"),{hidden:!0}),r("insert_formatted_line_break",l("lineBreaks","insertLineBreakAction"),{hidden:!0}),r("balance_inward",l("balance","balanceInwardAction"),"Balance (inward)"),r("balance_outward",l("balance","balanceOutwardAction"),"Balance (outward)"),r("matching_pair",l("balance","goToMatchingPairAction"),"HTML/Go To Matching Tag Pair"),r("merge_lines",l("mergeLines","mergeLinesAction"),"Merge Lines"),r("reflect_css_value",l("reflectCSSValue","reflectCSSValueAction"),"CSS/Reflect Value"),r("remove_tag",l("removeTag","removeTagAction"),"HTML/Remove Tag"),r("select_next_item",l("selectItem","selectNextItemAction"),"Select Next Item"),r("select_previous_item",l("selectItem","selectPreviousItemAction"),"Select Previous Item"),r("split_join_tag",l("splitJoinTag","splitJoinTagAction"),"HTML/Split\\Join Tag Declaration"),r("toggle_comment",l("toggleComment","toggleCommentAction"),"Toggle Comment"),r("update_image_size",l("updateImageSize","updateImageSizeAction"),"Update Image Size"),r("wrap_with_abbreviation",l("wrapWithAbbreviation","wrapWithAbbreviationAction"),"Wrap With Abbreviation"),r("update_tag",l("updateTag","updateTagAction"),"HTML/Update Tag"),[1,-1,10,-10,.1,-.1].forEach(function(e){var t=e>0?"increment":"decrement",n=String(Math.abs(e)).replace(".","").substring(0,2),i=t+"_number_by_"+n,s=t+n+"Action",o="Numbers/"+t.charAt(0).toUpperCase()+t.substring(1)+" number by "+Math.abs(e);r(i,l("incrementDecrement",s),o)}),{add:r,get:function(e){return o[e.toLowerCase()]},run:function(e,t){Array.isArray(t)||(t=s.toArray(arguments,1));var n=this.get(e);if(!n)throw new Error('Action "'+e+'" is not defined');return n.fn.apply(n,t)},getAll:function(){return o},getList:function(){var e=this.getAll();return Object.keys(e).map(function(t){return e[t]})},getMenu:function(e){var t=[];return e=e||[],this.getList().forEach(function(n){if(!n.options.hidden&&!~e.indexOf(n.name)){var r=i(n.name),o=t;if(n.options.label){var a=n.options.label.split("/");r=a.pop();for(var l,c;l=a.shift();)c=s.find(o,function(e){return"submenu"==e.type&&e.name==l}),c||(c={name:l,type:"submenu",items:[]},o.push(c)),o=c.items}o.push({type:"action",name:n.name,label:r})}}),t},getActionNameForMenuTitle:function(e,t){return s.find(t||this.getMenu(),function(t){return"action"!=t.type?this.getActionNameForMenuTitle(e,t.items):t.label==e||t.name==e?t.name:void 0},this)}}})},{"../utils/common":"C:\\Temp\\emmet\\lib\\utils\\common.js","./balance":"C:\\Temp\\emmet\\lib\\action\\balance.js","./base64":"C:\\Temp\\emmet\\lib\\action\\base64.js","./editPoints":"C:\\Temp\\emmet\\lib\\action\\editPoints.js","./evaluateMath":"C:\\Temp\\emmet\\lib\\action\\evaluateMath.js","./expandAbbreviation":"C:\\Temp\\emmet\\lib\\action\\expandAbbreviation.js","./incrementDecrement":"C:\\Temp\\emmet\\lib\\action\\incrementDecrement.js","./lineBreaks":"C:\\Temp\\emmet\\lib\\action\\lineBreaks.js","./mergeLines":"C:\\Temp\\emmet\\lib\\action\\mergeLines.js","./reflectCSSValue":"C:\\Temp\\emmet\\lib\\action\\reflectCSSValue.js","./removeTag":"C:\\Temp\\emmet\\lib\\action\\removeTag.js","./selectItem":"C:\\Temp\\emmet\\lib\\action\\selectItem.js","./selectLine":"C:\\Temp\\emmet\\lib\\action\\selectLine.js","./splitJoinTag":"C:\\Temp\\emmet\\lib\\action\\splitJoinTag.js","./toggleComment":"C:\\Temp\\emmet\\lib\\action\\toggleComment.js","./updateImageSize":"C:\\Temp\\emmet\\lib\\action\\updateImageSize.js","./updateTag":"C:\\Temp\\emmet\\lib\\action\\updateTag.js","./wrapWithAbbreviation":"C:\\Temp\\emmet\\lib\\action\\wrapWithAbbreviation.js"}],"C:\\Temp\\emmet\\lib\\action\\mergeLines.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){var r=e("../assets/htmlMatcher"),i=e("../utils/common"),s=e("../utils/editor"),o=e("../assets/range");return{mergeLinesAction:function(e){var t=s.outputInfo(e),n=o(e.getSelectionRange());if(!n.length()){var a=r.find(t.content,e.getCaretPos());a&&(n=a.outerRange)}if(n.length()){for(var l=n.substring(t.content),c=i.splitByLines(l),u=1;u<c.length;u++)c[u]=c[u].replace(/^\s+/,"");l=c.join("").replace(/\s{2,}/," ");var f=l.length;return l=i.escapeText(l),e.replaceContent(l,n.start,n.end),e.createSelection(n.start,n.start+f),!0}return!1}}})},{"../assets/htmlMatcher":"C:\\Temp\\emmet\\lib\\assets\\htmlMatcher.js","../assets/range":"C:\\Temp\\emmet\\lib\\assets\\range.js","../utils/common":"C:\\Temp\\emmet\\lib\\utils\\common.js","../utils/editor":"C:\\Temp\\emmet\\lib\\utils\\editor.js"}],"C:\\Temp\\emmet\\lib\\action\\reflectCSSValue.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){function r(e){var t=d.outputInfo(e),n=e.getCaretPos(),r=f.parseFromPosition(t.content,n);if(r){var i=r.itemFromPosition(n,!0);if(i){var s=r.source,o=r.options.offset,a=n-o-i.range().start;return b.exec(!1,[i]),s!==r.source?{data:r.source,start:o,end:o+s.length,caret:o+i.range().start+a}:void 0}}}function i(e){e=f.baseName(e);var t,n="^(?:\\-\\w+\\-)?";return"opacity"!=e&&"filter"!=e||!c.get("css.reflect.oldIEOpacity")?(t=e.match(/^border-radius-(top|bottom)(left|right)/))?new RegExp(n+"(?:"+e+"|border-"+t[1]+"-"+t[2]+"-radius)$"):(t=e.match(/^border-(top|bottom)-(left|right)-radius/))?new RegExp(n+"(?:"+e+"|border-radius-"+t[1]+t[2]+")$"):new RegExp(n+e+"$"):new RegExp(n+"(?:opacity|filter)$")}function s(e,t){var n=/^\-(\w+)\-/,r=n.test(e)?RegExp.$1.toLowerCase():"",i=f.findParts(t);return i.reverse(),i.forEach(function(e){var i=e.substring(t).replace(n,""),s=u.vendorPrefixes(i);s&&(r&&~s.indexOf(r)&&(i="-"+r+"-"+i),t=p.replaceSubstring(t,i,e))}),t}function o(e,t){var n=a(e.name(),e.value(),t.name(),t.value());n=s(t.name(),n),t.value(n)}function a(e,t,n,r){if(e=f.baseName(e),n=f.baseName(n),"opacity"==e&&"filter"==n)return r.replace(/opacity=[^)]*/i,"opacity="+Math.floor(100*parseFloat(t)));if("filter"==e&&"opacity"==n){var i=t.match(/opacity=([^)]*)/i);return i?p.prettifyNumber(parseInt(i[1],10)/100):r}return t}var l=e("../assets/handlerList"),c=e("../assets/preferences"),u=e("../resolver/css"),f=e("../editTree/css"),p=e("../utils/common"),m=e("../utils/action"),d=e("../utils/editor"),h=e("../resolver/cssGradient");c.define("css.reflect.oldIEOpacity",!1,"Support IE6/7/8 opacity notation, e.g. <code>filter:alpha(opacity=...)</code>.\t\tNote that CSS3 and SVG also provides <code>filter</code> property so this option is disabled by default.");var b=l.create();return n=n||{},n.exports={reflectCSSValueAction:function(e){return"css"==e.getSyntax()&&m.compoundUpdate(e,r(e))},_defaultHandler:function(e){var t=i(e.name());e.parent.list().forEach(function(n){t.test(n.name())&&o(e,n)})},addHandler:function(e,t){b.add(e,t)},removeHandler:function(e){b.remove(e)}},b.add(n.exports._defaultHandler.bind(n.exports),{order:-1}),b.add(h.reflectValueHandler.bind(h)),n.exports})},{"../assets/handlerList":"C:\\Temp\\emmet\\lib\\assets\\handlerList.js","../assets/preferences":"C:\\Temp\\emmet\\lib\\assets\\preferences.js","../editTree/css":"C:\\Temp\\emmet\\lib\\editTree\\css.js","../resolver/css":"C:\\Temp\\emmet\\lib\\resolver\\css.js","../resolver/cssGradient":"C:\\Temp\\emmet\\lib\\resolver\\cssGradient.js","../utils/action":"C:\\Temp\\emmet\\lib\\utils\\action.js","../utils/common":"C:\\Temp\\emmet\\lib\\utils\\common.js","../utils/editor":"C:\\Temp\\emmet\\lib\\utils\\editor.js"}],"C:\\Temp\\emmet\\lib\\action\\removeTag.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){var r=e("../utils/common"),i=e("../utils/editor"),s=e("../assets/htmlMatcher");return{removeTagAction:function(e){var t=i.outputInfo(e),n=s.tag(t.content,e.getCaretPos());if(n){if(n.close){var o=r.narrowToNonSpace(t.content,n.innerRange),a=r.findNewlineBounds(t.content,o.start),l=r.getLinePadding(a.substring(t.content)),c=o.substring(t.content);c=r.unindentString(c,l),e.replaceContent(r.getCaretPlaceholder()+r.escapeText(c),n.outerRange.start,n.outerRange.end)}else e.replaceContent(r.getCaretPlaceholder(),n.range.start,n.range.end);return!0}return!1}}})},{"../assets/htmlMatcher":"C:\\Temp\\emmet\\lib\\assets\\htmlMatcher.js","../utils/common":"C:\\Temp\\emmet\\lib\\utils\\common.js","../utils/editor":"C:\\Temp\\emmet\\lib\\utils\\editor.js"}],"C:\\Temp\\emmet\\lib\\action\\selectItem.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){function r(e,t,n,r){for(var i,s,o=C.outputInfo(e).content,a=o.length,l=x(-1,0),c=x(e.getSelectionRange()),u=c.start,f=1e5;u>=0&&u<a&&--f>0;){if(i=n(o,u,t)){if(l.equal(i))break;if(l=i.clone(),s=r(i.substring(o),i.start,c.clone()))return e.createSelection(s.start,s.end),!0;u=t?i.start:i.end-1}u+=t?-1:1}return!1}function i(e){var t=!0;return r(e,!1,function(e,n){return t?(t=!1,c(e,n)):u(e,n)},function(e,t,n){return l(e,t,n,!1)})}function s(e){return r(e,!0,u,function(e,t,n){return l(e,t,n,!0)})}function o(e,t,n){n=n||0;var r,i,s=[],o=-1,l="",c="";return t.forEach(function(t){switch(t.type){case"tag":i=e.substring(t.start,t.end),/^<[\w\:\-]/.test(i)&&s.push(x({start:t.start+1,end:t.end}));break;case"attribute":o=t.start,l=e.substring(t.start,t.end);break;case"string":s.push(x(o,t.end-o)),r=x(t),c=r.substring(e),f(c.charAt(0))&&r.start++,f(c.charAt(c.length-1))&&r.end--,s.push(r),"class"==l&&(s=s.concat(a(r.substring(e),r.start)))}}),s=s.filter(function(e){if(e.length())return e.shift(n),!0}),y.unique(s,function(e){return e.toString()})}function a(e,t){t=t||0;var n=[],r=T.create(e);r.eatSpace(),r.start=r.pos;for(var i;i=r.next();)/[\s\u00a0]/.test(i)&&(n.push(x(r.start+t,r.pos-r.start-1)),r.eatSpace(),r.start=r.pos);return n.push(x(r.start+t,r.pos-r.start)),n}function l(e,t,n,r){var i=o(e,j.parse(e),t);r&&i.reverse();var s=y.find(i,function(e){return e.equal(n)});if(s){var a=i.indexOf(s);return a<i.length-1?i[a+1]:null}if(r)return y.find(i,function(e){return e.start<n.start});if(!s){var l=i.filter(function(e){return e.inside(n.end)});if(l.length>1)return l[1]}return y.find(i,function(e){return e.end>n.end})}function c(e,t){for(var n;t>=0;){if(n=u(e,t))return n;t--}return null}function u(e,t){var n;if("<"==e.charAt(t)&&(n=e.substring(t,e.length).match(_)))return x(t,n[0])}function f(e){return'"'==e||"'"==e}function p(e){var t=[e.nameRange(!0)],n=S.nestedSectionsInRule(e);return n.forEach(function(e){t.push(x.create2(e.start,e._selectorEnd))}),e.list().forEach(function(e){t=t.concat(m(e))}),t=x.sort(t),t=t.filter(function(e){return!!e.length()}),y.unique(t,function(e){return e.toString()})}function m(e){var t=e.valueRange(!0),n=[e.range(!0),t],r=e.value();return e.valueParts().forEach(function(e){var i=e.clone();n.push(i.shift(t.start));var s=T.create(e.substring(r));if(s.match(/^[\w\-]+\(/,!0)){s.start=s.pos,s.backUp(1),s.skipToPair("(",")"),s.backUp(1);var o=s.current();n.push(x(i.start+s.start,o)),k.findParts(o).forEach(function(e){n.push(x(i.start+s.start+e.start,e.substring(o)))})}}),n}function d(e,t,n){var r=p(e);n&&r.reverse();var i=y.find(r,function(e){return e.equal(t)});if(i)return r[r.indexOf(i)+1];var s=r.filter(function(e){return e.inside(t.end)});if(s.length)return s.sort(function(e,t){return e.length()-t.length()})[0];i=y.find(r,n?function(e){return e.end<t.start}:function(e){return e.end>t.start});return i||(i=r[0]),i}function h(e){return r(e,!1,S.locateRule.bind(S),g)}function b(e){return r(e,!0,S.locateRule.bind(S),v)}function g(e,t,n){var r=k.parse(e,{offset:t});return d(r,n,!1)}function v(e,t,n){var r=k.parse(e,{offset:t});return d(r,n,!0)}var x=e("../assets/range"),y=e("../utils/common"),C=e("../utils/editor"),w=e("../utils/action"),T=e("../assets/stringStream"),j=e("../parser/xml"),k=e("../editTree/css"),S=e("../utils/cssSections"),_=/^<([\w\:\-]+)((?:\s+[\w\-:]+(?:\s*=\s*(?:(?:"[^"]*")|(?:'[^']*')|[^>\s]+))?)*)\s*(\/?)>/;return{selectNextItemAction:function(e){return w.isSupportedCSS(e.getSyntax())?h(e):i(e)},selectPreviousItemAction:function(e){return w.isSupportedCSS(e.getSyntax())?b(e):s(e)}}})},{"../assets/range":"C:\\Temp\\emmet\\lib\\assets\\range.js","../assets/stringStream":"C:\\Temp\\emmet\\lib\\assets\\stringStream.js","../editTree/css":"C:\\Temp\\emmet\\lib\\editTree\\css.js","../parser/xml":"C:\\Temp\\emmet\\lib\\parser\\xml.js","../utils/action":"C:\\Temp\\emmet\\lib\\utils\\action.js","../utils/common":"C:\\Temp\\emmet\\lib\\utils\\common.js","../utils/cssSections":"C:\\Temp\\emmet\\lib\\utils\\cssSections.js",
-"../utils/editor":"C:\\Temp\\emmet\\lib\\utils\\editor.js"}],"C:\\Temp\\emmet\\lib\\action\\selectLine.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){return{selectLineAction:function(e){var t=e.getCurrentLineRange();return e.createSelection(t.start,t.end),!0}}})},{}],"C:\\Temp\\emmet\\lib\\action\\splitJoinTag.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){function r(e,t,n){var r=t.selfClosing()||" /",i=n.open.range.substring(n.source).replace(/\s*>$/,r+">"),o=e.getCaretPos();return i.length+n.outerRange.start<o&&(o=i.length+n.outerRange.start),i=s.escapeText(i),e.replaceContent(i,n.outerRange.start,n.outerRange.end),e.setCaretPos(o),!0}function i(e,t,n){var r=e.getCaretPos(),i=t.tag_nl===!0?"\n\t\n":"",o=n.outerContent().replace(/\s*\/>$/,">");return r=n.outerRange.start+o.length,o+=i+"</"+n.open.name+">",o=s.escapeText(o),e.replaceContent(o,n.outerRange.start,n.outerRange.end),e.setCaretPos(r),!0}var s=e("../utils/common"),o=(e("../assets/resources"),e("../assets/htmlMatcher")),a=e("../utils/editor"),l=e("../assets/profile");return{splitJoinTagAction:function(e,t){var n=a.outputInfo(e,null,t),s=l.get(n.profile),c=o.tag(n.content,e.getCaretPos());return!!c&&(c.close?r(e,s,c):i(e,s,c))}}})},{"../assets/htmlMatcher":"C:\\Temp\\emmet\\lib\\assets\\htmlMatcher.js","../assets/profile":"C:\\Temp\\emmet\\lib\\assets\\profile.js","../assets/resources":"C:\\Temp\\emmet\\lib\\assets\\resources.js","../utils/common":"C:\\Temp\\emmet\\lib\\utils\\common.js","../utils/editor":"C:\\Temp\\emmet\\lib\\utils\\editor.js"}],"C:\\Temp\\emmet\\lib\\action\\toggleComment.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){function r(e){var t=c(e.getSelectionRange()),n=p.outputInfo(e);if(!t.length()){var r=m.tag(n.content,e.getCaretPos());r&&(t=r.outerRange)}return a(e,"<!--","-->",t)}function i(e){var t=c(e.getSelectionRange()),n=p.outputInfo(e);if(!t.length()){var r=d.parseFromPosition(n.content,e.getCaretPos());if(r){var i=s(r,e.getCaretPos());t=i?i.range(!0):c(r.nameRange(!0).start,r.source)}}return t.length()||(t=c(e.getCurrentLineRange()),u.narrowToNonSpace(n.content,t)),a(e,"/*","*/",t)}function s(e,t){var n=t-(e.options.offset||0),r=/^[\s\n\r]/;return u.find(e.list(),function(t){return t.range().end===n?r.test(e.source.charAt(n)):t.range().inside(n)})}function o(e,t,n,r){for(var i=-1,s=-1,o=function(t,n){return e.substr(n,t.length)==t};t--;)if(o(n,t)){i=t;break}if(i!=-1){t=i;for(var a=e.length;a>=t++;)if(o(r,t)){s=t+r.length;break}}return i!=-1&&s!=-1?c(i,s-i):null}function a(e,t,n,r){function i(e){return e.replace(new RegExp("^"+u.escapeForRegexp(t)+"\\s*"),function(e){return a-=e.length,""}).replace(new RegExp("\\s*"+u.escapeForRegexp(n)+"$"),"")}var s=p.outputInfo(e).content,a=e.getCaretPos(),l=null,c=o(s,a,t,n);return c&&c.overlap(r)?(r=c,l=i(r.substring(s))):(l=t+" "+r.substring(s).replace(new RegExp(u.escapeForRegexp(t)+"\\s*|\\s*"+u.escapeForRegexp(n),"g"),"")+" "+n,a+=t.length+1),null!==l&&(l=u.escapeText(l),e.setCaretPos(r.start),e.replaceContent(p.unindent(e,l),r.start,r.end),e.setCaretPos(a),!0)}var l=e("../assets/preferences"),c=e("../assets/range"),u=e("../utils/common"),f=e("../utils/action"),p=e("../utils/editor"),m=e("../assets/htmlMatcher"),d=e("../editTree/css");return{toggleCommentAction:function(e){var t=p.outputInfo(e);if(f.isSupportedCSS(t.syntax)){var n=e.getCaretPos(),s=m.tag(t.content,n);s&&s.open.range.inside(n)&&(t.syntax="html")}var o=l.getArray("css.syntaxes");return~o.indexOf(t.syntax)?i(e):r(e)}}})},{"../assets/htmlMatcher":"C:\\Temp\\emmet\\lib\\assets\\htmlMatcher.js","../assets/preferences":"C:\\Temp\\emmet\\lib\\assets\\preferences.js","../assets/range":"C:\\Temp\\emmet\\lib\\assets\\range.js","../editTree/css":"C:\\Temp\\emmet\\lib\\editTree\\css.js","../utils/action":"C:\\Temp\\emmet\\lib\\utils\\action.js","../utils/common":"C:\\Temp\\emmet\\lib\\utils\\common.js","../utils/editor":"C:\\Temp\\emmet\\lib\\utils\\editor.js"}],"C:\\Temp\\emmet\\lib\\action\\updateImageSize.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){function r(e){var t=e.getCaretPos(),n=a.outputInfo(e),r=c.parseFromPosition(n.content,t,!0);r&&"img"==(r.name()||"").toLowerCase()&&s(e,r.value("src"),function(n){if(n){var i=r.range(!0);r.value("width",n.width),r.value("height",n.height,r.indexOf("width")+1),l.compoundUpdate(e,o.extend(i,{data:r.toString(),caret:t}))}})}function i(e){var t=e.getCaretPos(),n=a.outputInfo(e),r=u.parseFromPosition(n.content,t,!0);if(r){var i,c=r.itemFromPosition(t,!0);c&&(i=/url\((["']?)(.+?)\1\)/i.exec(c.value()||""))&&s(e,i[2],function(n){if(n){var i=r.range(!0);r.value("width",n.width+"px"),r.value("height",n.height+"px",r.indexOf("width")+1),l.compoundUpdate(e,o.extend(i,{data:r.toString(),caret:t}))}})}}function s(e,t,n){var r;if(t){if(/^data:/.test(t))return r=f.decode(t.replace(/^data\:.+?;.+?,/,"")),n(l.getImageSize(r));var i=e.getFilePath();p.locateFile(i,t,function(e){if(null===e)throw"Can't find "+t+" file";p.read(e,function(t,r){if(t)throw"Unable to read "+e+": "+t;r=String(r),n(l.getImageSize(r))})})}}var o=e("../utils/common"),a=e("../utils/editor"),l=e("../utils/action"),c=e("../editTree/xml"),u=e("../editTree/css"),f=e("../utils/base64"),p=e("../plugin/file");return{updateImageSizeAction:function(e){return l.isSupportedCSS(e.getSyntax())?i(e):r(e),!0}}})},{"../editTree/css":"C:\\Temp\\emmet\\lib\\editTree\\css.js","../editTree/xml":"C:\\Temp\\emmet\\lib\\editTree\\xml.js","../plugin/file":"C:\\Temp\\emmet\\lib\\plugin\\file.js","../utils/action":"C:\\Temp\\emmet\\lib\\utils\\action.js","../utils/base64":"C:\\Temp\\emmet\\lib\\utils\\base64.js","../utils/common":"C:\\Temp\\emmet\\lib\\utils\\common.js","../utils/editor":"C:\\Temp\\emmet\\lib\\utils\\editor.js"}],"C:\\Temp\\emmet\\lib\\action\\updateTag.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){function r(e,t,n){var r=(t.attribute("class")||"").split(/\s+/g);n&&r.push("+"+t.name());var i=function(e){return o.replaceCounter(e,t.counter)};r.forEach(function(t){if(t){t=i(t);var n=t.charAt(0);"+"==n?e.addClass(t.substr(1)):"-"==n?e.removeClass(t.substr(1)):e.value("class",t)}}),t.attributeList().forEach(function(t){if("class"!=t.name.toLowerCase()){var n=t.name.charAt(0);if("+"==n){var r=t.name.substr(1),s=e.get(r);s?s.value(s.value()+i(t.value)):e.value(r,i(t.value))}else"-"==n?e.remove(t.name.substr(1)):e.value(t.name,i(t.value))}})}var i=e("../editTree/xml"),s=(e("../utils/editor"),e("../utils/action")),o=e("../utils/common"),a=e("../parser/abbreviation");return{updateTagAction:function(e,t){if(t=t||e.prompt("Enter abbreviation"),!t)return!1;var n=e.getContent(),r=s.captureContext(e),i=this.getUpdatedTag(t,r,n);return!!i&&(i.name()!=r.name&&r.match.close&&e.replaceContent("</"+i.name()+">",r.match.close.range.start,r.match.close.range.end,!0),e.replaceContent(i.source,r.match.open.range.start,r.match.open.range.end,!0),!0)},getUpdatedTag:function(e,t,n,s){if(!t)return null;var o=a.parse(e,s||{}),l=i.parse(t.match.open.range.substring(n),{offset:t.match.outerRange.start});o.children.forEach(function(e,t){r(l,e,t)});var c=o.children[0];return c.data("nameResolved")||l.name(c.name()),l}}})},{"../editTree/xml":"C:\\Temp\\emmet\\lib\\editTree\\xml.js","../parser/abbreviation":"C:\\Temp\\emmet\\lib\\parser\\abbreviation.js","../utils/action":"C:\\Temp\\emmet\\lib\\utils\\action.js","../utils/common":"C:\\Temp\\emmet\\lib\\utils\\common.js","../utils/editor":"C:\\Temp\\emmet\\lib\\utils\\editor.js"}],"C:\\Temp\\emmet\\lib\\action\\wrapWithAbbreviation.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){var r=e("../assets/range"),i=e("../assets/htmlMatcher"),s=e("../utils/common"),o=e("../utils/editor"),a=e("../utils/action"),l=e("../parser/abbreviation");return{wrapWithAbbreviationAction:function(e,t,n,c){var u=o.outputInfo(e,n,c);if(t=t||e.prompt("Enter abbreviation"),!t)return null;t=String(t);var f=r(e.getSelectionRange());if(!f.length()){var p=i.tag(u.content,f.start);if(!p)return!1;f=s.narrowToNonSpace(u.content,p.range)}var m=s.escapeText(f.substring(u.content)),d=l.expand(t,{pastedContent:o.unindent(e,m),syntax:u.syntax,profile:u.profile,contextNode:a.captureContext(e)});return!!d&&(e.replaceContent(d,f.start,f.end),!0)}}})},{"../assets/htmlMatcher":"C:\\Temp\\emmet\\lib\\assets\\htmlMatcher.js","../assets/range":"C:\\Temp\\emmet\\lib\\assets\\range.js","../parser/abbreviation":"C:\\Temp\\emmet\\lib\\parser\\abbreviation.js","../utils/action":"C:\\Temp\\emmet\\lib\\utils\\action.js","../utils/common":"C:\\Temp\\emmet\\lib\\utils\\common.js","../utils/editor":"C:\\Temp\\emmet\\lib\\utils\\editor.js"}],"C:\\Temp\\emmet\\lib\\assets\\caniuse.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){function i(e,t){var n=[],r=e,i=t;return r.length>i.length&&(r=t,i=e),i.forEach(function(e){~r.indexOf(e)&&n.push(e)}),n}function s(e,t){"string"==typeof e&&(e=JSON.parse(e)),t||(e=o(e)),b=e.vendors,h=e.css,g=e.era}function o(e){return"string"==typeof e&&(e=JSON.parse(e)),{vendors:a(e),css:l(e),era:c(e)}}function a(e){var t={};return Object.keys(e.agents).forEach(function(n){var r=e.agents[n];t[n]={prefix:r.prefix,versions:r.versions}}),t}function l(e){var t={};e.cats.CSS;return Object.keys(e.data).forEach(function(n){var r=e.data[n];n in d&&d[n].forEach(function(e){t[e]=r.stats})}),t}function c(e){return Object.keys(e.eras).sort(function(e,t){return parseInt(e.substr(1))-parseInt(t.substr(1))})}function u(){var e=Object.keys(b),t=p.getArray("caniuse.vendors");return t&&"all"!=t[0]?i(e,t):e}function f(){var e=p.get("caniuse.era"),t=g.indexOf(e);return~t||(t=g.indexOf("e-2")),t}var p=e("./preferences"),m=e("../utils/common");p.define("caniuse.enabled",!0,"Enable support of Can I Use database. When enabled,\t\tCSS abbreviation resolver will look at Can I Use database first before detecting\t\tCSS properties that should be resolved"),p.define("caniuse.vendors","all","A comma-separated list vendor identifiers\t\t(as described in Can I Use database) that should be supported\t\twhen resolving vendor-prefixed properties. Set value to <code>all</code>\t\tto support all available properties"),p.define("caniuse.era","e-2","Browser era, as defined in Can I Use database.\t\tExamples: <code>e0</code> (current version), <code>e1</code> (near future)\t\t<code>e-2</code> (2 versions back) and so on.");var d={"border-image":["border-image"],"css-boxshadow":["box-shadow"],"css3-boxsizing":["box-sizing"],multicolumn:["column-width","column-count","columns","column-gap","column-rule-color","column-rule-style","column-rule-width","column-rule","column-span","column-fill"],"border-radius":["border-radius","border-top-left-radius","border-top-right-radius","border-bottom-right-radius","border-bottom-left-radius"],transforms2d:["transform"],"css-hyphens":["hyphens"],"css-transitions":["transition","transition-property","transition-duration","transition-timing-function","transition-delay"],"font-feature":["font-feature-settings"],"css-animation":["animation","animation-name","animation-duration","animation-timing-function","animation-iteration-count","animation-direction","animation-play-state","animation-delay","animation-fill-mode","@keyframes"],"css-gradients":["linear-gradient"],"css-masks":["mask-image","mask-source-type","mask-repeat","mask-position","mask-clip","mask-origin","mask-size","mask","mask-type","mask-box-image-source","mask-box-image-slice","mask-box-image-width","mask-box-image-outset","mask-box-image-repeat","mask-box-image","clip-path","clip-rule"],"css-featurequeries":["@supports"],flexbox:["flex","inline-flex","flex-direction","flex-wrap","flex-flow","order","flex"],calc:["calc"],"object-fit":["object-fit","object-position"],"css-grid":["grid","inline-grid","grid-template-rows","grid-template-columns","grid-template-areas","grid-template","grid-auto-rows","grid-auto-columns"," grid-auto-flow","grid-auto-position","grid"," grid-row-start","grid-column-start","grid-row-end","grid-column-end","grid-column","grid-row","grid-area","justify-self","justify-items","align-self","align-items"],"css-repeating-gradients":["repeating-linear-gradient"],"css-filters":["filter"],"user-select-none":["user-select"],"intrinsic-width":["min-content","max-content","fit-content","fill-available"],"css3-tabsize":["tab-size"]},h=null,b=null,g=null,v=null;return function(e){if("undefined"==typeof r||!r.amd)try{v=e("caniuse-db/data.json")}catch(t){}}(e),v&&s(v),{load:s,optimize:o,resolvePrefixes:function(e){if(!(p.get("caniuse.enabled")&&h&&e in h))return null;var t=[],n=h[e],r=f();return u().forEach(function(e){for(var i,s=b[e].versions.slice(r),o=0;o<s.length;o++)if(i=s[o],i&&~n[e][i].indexOf("x")){t.push(b[e].prefix);break}}),m.unique(t).sort(function(e,t){return t.length-e.length})}}})},{"../utils/common":"C:\\Temp\\emmet\\lib\\utils\\common.js","./preferences":"C:\\Temp\\emmet\\lib\\assets\\preferences.js"}],"C:\\Temp\\emmet\\lib\\assets\\elements.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){function r(e){return{data:e}}var i={},s=/([@\!]?)([\w\-:]+)\s*=\s*(['"])(.*?)\3/g;return n=n||{},n.exports={add:function(e,t){var n=this;i[e]=function(){var r=t.apply(n,arguments);return r&&(r.type=e),r}},get:function(e){return i[e]},create:function(e){var t=[].slice.call(arguments,1),n=this.get(e);return n?n.apply(this,t):null},is:function(e,t){return this.type(e)===t},type:function(e){return e&&e.type}},n.exports.add("element",function(e,t,n){var r={name:e,is_empty:!!n};if(t)if(r.attributes=[],Array.isArray(t))r.attributes=t;else if("string"==typeof t)for(var i;i=s.exec(t);)r.attributes.push({name:i[2],value:i[4],isDefault:"@"==i[1],isImplied:"!"==i[1]});else r.attributes=Object.keys(t).map(function(e){return{name:e,value:t[e]}});return r}),n.exports.add("snippet",r),n.exports.add("reference",r),n.exports.add("empty",function(){return{}}),n.exports})},{}],"C:\\Temp\\emmet\\lib\\assets\\handlerList.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){function r(){this._list=[]}var i=e("../utils/common");return r.prototype={add:function(e,t){var n=this._list.length;t&&"order"in t&&(n=1e4*t.order),this._list.push(i.extend({},t,{order:n,fn:e}))},remove:function(e){var t=i.find(this._list,function(t){return t.fn===e});t&&this._list.splice(this._list.indexOf(t),1)},list:function(){return this._list.sort(function(e,t){return t.order-e.order})},listFn:function(){return this.list().map(function(e){return e.fn})},exec:function(e,t){t=t||[];var n=null;return i.find(this.list(),function(r){if(n=r.fn.apply(r,t),n!==e)return!0}),n}},{create:function(){return new r}}})},{"../utils/common":"C:\\Temp\\emmet\\lib\\utils\\common.js"}],"C:\\Temp\\emmet\\lib\\assets\\htmlMatcher.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){function r(e,t){return{name:t[1],selfClose:!!t[3],range:c(e,t[0]),type:"open"}}function i(e,t){return{name:t[1],range:c(e,t[0]),type:"close"}}function s(e,t){return{range:c(e,"number"==typeof t?t-e:t[0]),type:"comment"}}function o(e){var t,n={};return{open:function(e){var t=this.matches(e);return t&&"open"==t.type?t:null},close:function(e){var t=this.matches(e);return t&&"close"==t.type?t:null},matches:function(s){var o="p"+s;if(!(o in n)&&(n[o]=!1,"<"==e.charAt(s))){var a=e.slice(s);(t=a.match(u))?n[o]=r(s,t):(t=a.match(f))&&(n[o]=i(s,t))}return n[o]},text:function(){return e},clean:function(){n=e=t=null}}}function a(e,t,n){return e.substring(t,t+n.length)==n}function l(e,t){for(var n=[],r=null,i=t.text(),s=e.range.end,o=i.length;s<o;s++){if(a(i,s,"<!--"))for(var l=s;l<o;l++)if(a(i,l,"-->")){s=l+3;break}if(r=t.matches(s)){if("open"!=r.type||r.selfClose){if("close"==r.type){if(!n.length)return r.name==e.name?r:null;if(n[n.length-1]==r.name)n.pop();else{for(var c=!1;n.length&&!c;){var u=n.pop();u==r.name&&(c=!0)}if(!n.length&&!c)return r.name==e.name?r:null}}}else n.push(r.name);s=r.range.end-1}}}var c=e("./range"),u=/^<([\w\:\-]+)((?:\s+[\w\-:]+(?:\s*=\s*(?:(?:"[^"]*")|(?:'[^']*')|[^>\s]+))?)*)\s*(\/?)>/,f=/^<\/([\w\:\-]+)[^>]*>/;return{find:function(e,t){for(var n,r,i=o(e),u=null,f=null,p=t;p>=0;p--)if(u=i.open(p)){if(u.selfClose){if(u.range.cmp(t,"lt","gt"))break;continue}if(f=l(u,i)){var m=c.create2(u.range.start,f.range.end);if(m.contains(t))break}else if(u.range.contains(t))break;u=null}else if(a(e,p,"-->")){for(n=p-1;n>=0&&!a(e,n,"-->");n--)if(a(e,n,"<!--")){p=n;break}}else if(a(e,p,"<!--")){for(n=p+4,r=e.length;n<r;n++)if(a(e,n,"-->")){n+=3;break}u=s(p,n);break}if(i.clean(),u){var d=null,h=null;if(f?(d=c.create2(u.range.start,f.range.end),h=c.create2(u.range.end,f.range.start)):d=h=c.create2(u.range.start,u.range.end),"comment"==u.type){var b=d.substring(e);h.start+=b.length-b.replace(/^<\!--\s*/,"").length,h.end-=b.length-b.replace(/\s*-->$/,"").length}return{open:u,close:f,type:"comment"==u.type?"comment":"tag",innerRange:h,innerContent:function(){return this.innerRange.substring(e)},outerRange:d,outerContent:function(){return this.outerRange.substring(e)},range:h.length()&&h.cmp(t,"lte","gte")?h:d,content:function(){return this.range.substring(e)},source:e}}},tag:function(e,t){var n=this.find(e,t);if(n&&"tag"==n.type)return n}}})},{"./range":"C:\\Temp\\emmet\\lib\\assets\\range.js"}],"C:\\Temp\\emmet\\lib\\assets\\logger.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){return{log:function(){"undefined"!=typeof console&&console.log&&console.log.apply(console,arguments)}}})},{}],"C:\\Temp\\emmet\\lib\\assets\\preferences.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){function r(e){return"string"==typeof e?(e=e.toLowerCase(),"yes"==e||"true"==e||"1"==e):!!e}function i(e){return"object"==typeof e&&!Array.isArray(e)&&"value"in e&&Object.keys(e).length<3}var s=e("../utils/common"),o={},a={},l=null,c=null;return{define:function(e,t,n){var r=e;"string"==typeof e&&(r={},r[e]={value:t,description:n}),Object.keys(r).forEach(function(e){var t=r[e];a[e]=i(t)?t:{value:t}})},set:function(e,t){var n=e;"string"==typeof e&&(n={},n[e]=t),Object.keys(n).forEach(function(e){var t=n[e];if(!(e in a))throw new Error('Property "'+e+'" is not defined. You should define it first with `define` method of current module');if(t!==a[e].value){switch(typeof a[e].value){case"boolean":t=r(t);break;case"number":t=parseInt(t+"",10)||0;break;default:null!==t&&(t+="")}o[e]=t}else e in o&&delete o[e]})},get:function(e){return e in o?o[e]:e in a?a[e].value:void 0},getArray:function(e){var t=this.get(e);return"undefined"==typeof t||null===t||""===t?null:(t=t.split(",").map(s.trim),t.length?t:null)},getDict:function(e){var t={};return this.getArray(e).forEach(function(e){var n=e.split(":");t[n[0]]=n[1]}),t},description:function(e){return e in a?a[e].description:void 0},remove:function(e){Array.isArray(e)||(e=[e]),e.forEach(function(e){e in o&&delete o[e],e in a&&delete a[e]})},list:function(){return Object.keys(a).sort().map(function(e){return{name:e,value:this.get(e),type:typeof a[e].value,description:a[e].description}},this)},load:function(e){Object.keys(e).forEach(function(t){this.set(t,e[t])},this)},exportModified:function(){return s.extend({},o)},reset:function(){o={}},_startTest:function(){l=a,c=o,a={},o={}},_stopTest:function(){a=l,o=c}}})},{"../utils/common":"C:\\Temp\\emmet\\lib\\utils\\common.js"}],"C:\\Temp\\emmet\\lib\\assets\\profile.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){function r(e){a.extend(this,f,e)}function i(e,t){switch(String(t||"").toLowerCase()){case"lower":return e.toLowerCase();case"upper":return e.toUpperCase()}return e}function s(e,t){return u[e.toLowerCase()]=new r(t)}function o(){s("xhtml"),s("html",{self_closing_tag:!1,compact_bool:!0}),s("xml",{self_closing_tag:!0,tag_nl:!0}),s("plain",{tag_nl:!1,indent:!1,place_cursor:!1}),s("line",{tag_nl:!1,indent:!1,extraFilters:"s"}),s("css",{tag_nl:!0}),s("css_line",{tag_nl:!1})}var a=e("../utils/common"),l=e("./resources"),c=e("./preferences");c.define("profile.allowCompactBoolean",!0,'This option can be used to globally disable compact form of boolean attribues (attributes where name and value are equal). With compactform enabled, HTML tags can be outputted as <code>&lt;div contenteditable&gt;</code> instead of <code>&lt;div contenteditable="contenteditable"&gt;</code>'),c.define("profile.booleanAttributes","^contenteditable|seamless|async|autofocus|autoplay|checked|controls|defer|disabled|formnovalidate|hidden|ismap|loop|multiple|muted|novalidate|readonly|required|reversed|selected|typemustmatch$","A regular expression for attributes that should be boolean by default.If attribute name matches this expression, you don’t have to write dot after attribute name in Emmet abbreviation to mark it as boolean.");var u={},f={tag_case:"asis",attr_case:"asis",attr_quotes:"double",tag_nl:"decide",tag_nl_leaf:!1,place_cursor:!0,indent:!0,inline_break:3,compact_bool:!1,self_closing_tag:"xhtml",filters:"",extraFilters:""};return r.prototype={tagName:function(e){return i(e,this.tag_case)},attributeName:function(e){return i(e,this.attr_case)},attributeQuote:function(){return"single"==this.attr_quotes?"'":'"'},selfClosing:function(){return"xhtml"==this.self_closing_tag?" /":this.self_closing_tag===!0?"/":""},cursor:function(){return this.place_cursor?a.getCaretPlaceholder():""},isBoolean:function(e,t){if(e==t)return!0;var n=c.get("profile.booleanAttributes");return!(t||!n)&&(n=new RegExp(n,"i"),n.test(e))},allowCompactBoolean:function(){return this.compact_bool&&c.get("profile.allowCompactBoolean")}},o(),{create:function(e,t){return 2==arguments.length?s(e,t):new r(a.defaults(e||{},f))},get:function(e,t){if(!e&&t){var n=l.findItem(t,"profile");n&&(e=n)}return e?e instanceof r?e:"string"==typeof e&&e.toLowerCase()in u?u[e.toLowerCase()]:this.create(e):u.plain},remove:function(e){e=(e||"").toLowerCase(),e in u&&delete u[e]},reset:function(){u={},o()},stringCase:i}})},{"../utils/common":"C:\\Temp\\emmet\\lib\\utils\\common.js","./preferences":"C:\\Temp\\emmet\\lib\\assets\\preferences.js","./resources":"C:\\Temp\\emmet\\lib\\assets\\resources.js"}],"C:\\Temp\\emmet\\lib\\assets\\range.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){function r(e,t,n){switch(n){case"eq":case"==":return e===t;case"lt":case"<":return e<t;case"lte":case"<=":return e<=t;case"gt":case">":return e>t;case"gte":case">=":return e>=t}}function i(e,t){"object"==typeof e&&"start"in e?(this.start=Math.min(e.start,e.end),this.end=Math.max(e.start,e.end)):Array.isArray(e)?(this.start=e[0],this.end=e[1]):(t="string"==typeof t?t.length:+t,this.start=e,this.end=e+t)}return i.prototype={length:function(){return Math.abs(this.end-this.start)},equal:function(e){return this.cmp(e,"eq","eq")},shift:function(e){return this.start+=e,this.end+=e,this},overlap:function(e){return e.start<=this.end&&e.end>=this.start},intersection:function(e){if(this.overlap(e)){var t=Math.max(e.start,this.start),n=Math.min(e.end,this.end);return new i(t,n-t)}return null},union:function(e){if(this.overlap(e)){var t=Math.min(e.start,this.start),n=Math.max(e.end,this.end);return new i(t,n-t)}return null},inside:function(e){return this.cmp(e,"lte","gt")},contains:function(e){return this.cmp(e,"lt","gt")},include:function(e){return this.cmp(e,"lte","gte")},cmp:function(e,t,n){var s,o;return e instanceof i?(s=e.start,o=e.end):s=o=e,r(this.start,s,t||"<=")&&r(this.end,o,n||">")},substring:function(e){return this.length()>0?e.substring(this.start,this.end):""},clone:function(){return new i(this.start,this.length())},toArray:function(){return[this.start,this.end]},toString:function(){return this.valueOf()},valueOf:function(){return"{"+this.start+", "+this.length()+"}"}},n.exports=function(e,t){return"undefined"==typeof e||null===e?null:e instanceof i?e:("object"==typeof e&&"start"in e&&"end"in e&&(t=e.end-e.start,e=e.start),new i(e,t))},n.exports.create=n.exports,n.exports.isRange=function(e){return e instanceof i},n.exports.create2=function(e,t){return"number"==typeof e&&"number"==typeof t&&(t-=e),this.create(e,t)},n.exports.sort=function(e,t){return e=e.sort(function(e,t){return e.start===t.start?t.end-e.end:e.start-t.start}),t&&e.reverse(),e},n.exports})},{}],"C:\\Temp\\emmet\\lib\\assets\\resources.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){function i(e,t){e&&Object.keys(e).forEach(function(n){t(e[n],n)})}function s(e){return f.replaceUnescapedSymbol(e,"|",f.getCaretPlaceholder())}function o(e,t,n){return t=s(t),"snippets"==n?p.create("snippet",t):"abbreviations"==n?a(e,t):void 0}function a(e,t){e=f.trim(e);var n;return(n=v.exec(t))?p.create("element",n[1],n[2],"/"==n[4]):p.create("reference",t)}function l(e){return e.replace(/:$/,"").replace(/:/g,"-")}function c(e){var t={};return i(e,function(e,n){for(var r=n.split("|"),i=r.length-1;i>=0;i--)t[r[i]]=e}),t}var u=e("./handlerList"),f=e("../utils/common"),p=e("./elements"),m=(e("../assets/logger"),e("../vendor/stringScore")),d=e("../resolver/css"),h="system",b="user",g={},v=/^<(\w+\:?[\w\-]*)((?:\s+[@\!]?[\w\:\-]+\s*=\s*(['"]).*?\3)*)\s*(\/?)>/,x={},y={},C=u.create();return f.extend(t,{setVocabulary:function(e,t){g={};var n={};i(e,function(e,t){var r={};i(e,function(e,t){"abbreviations"!=t&&"snippets"!=t||(e=c(e)),r[t]=e}),n[t]=r}),t==h?x=n:y=n},getVocabulary:function(e){return e==h?x:y},getMatchedResource:function(e,t){return C.exec(null,f.toArray(arguments))||this.findSnippet(t,e.name())},getVariable:function(e){return(this.getSection("variables")||{})[e]},setVariable:function(e,t){var n=this.getVocabulary("user")||{};"variables"in n||(n.variables={}),n.variables[e]=t,this.setVocabulary(n,"user")},hasSyntax:function(e){return e in this.getVocabulary(b)||e in this.getVocabulary(h)},addResolver:function(e,t){C.add(e,t)},removeResolver:function(e){C.remove(e)},getSection:function(e){if(!e)return null;e in g||(g[e]=f.deepMerge({},x[e],y[e]));for(var t,n=g[e],r=f.toArray(arguments,1);n&&(t=r.shift());){if(!(t in n))return null;n=n[t]}return n},findItem:function(e,t){for(var n=this.getSection(e);n;){if(t in n)return n[t];n=this.getSection(n["extends"])}},findSnippet:function(e,t,n){if(!e||!t)return null;n=n||[];var r=[t];~t.indexOf("-")&&r.push(t.replace(/\-/g,":"));var i=this.getSection(e),s=null;return["snippets","abbreviations"].some(function(t){var n=this.getSection(e,t);if(n)return r.some(function(e){if(n[e])return s=o(e,n[e],t)})},this),n.push(e),s||!i["extends"]||~n.indexOf(i["extends"])?s:this.findSnippet(i["extends"],t,n)},fuzzyFindSnippet:function(e,t,n){var r=this.fuzzyFindMatches(e,t,n)[0];if(r)return r.value.parsedValue},fuzzyFindMatches:function(e,t,n){n=n||.3,t=l(t);var r=this.getAllSnippets(e);return Object.keys(r).map(function(e){var n=r[e];return{key:e,score:m.score(n.nk,t,.1),value:n}}).filter(function(e){return e.score>=n}).sort(function(e,t){return e.score-t.score}).reverse()},getAllSnippets:function(e){var t="all-"+e;if(!g[t]){var n=[],r=e,s=[];do{var a=this.getSection(r);if(!a)break;["snippets","abbreviations"].forEach(function(e){var t={};i(a[e]||null,function(n,r){t[r]={nk:l(r),value:n,parsedValue:o(r,n,e),type:e}}),n.push(t)}),s.push(r),r=a["extends"]}while(r&&!~s.indexOf(r));g[t]=f.extend.apply(f,n.reverse())}return g[t]},getNewline:function(){var e=this.getVariable("newline");return"string"==typeof e?e:"\n"},setNewline:function(e){this.setVariable("newline",e),this.setVariable("nl",e)}}),t.addResolver(d.resolve.bind(d)),function(e){if("undefined"==typeof r||!r.amd)try{t.setVocabulary(e("../snippets.json"),h)}catch(n){}}(e),t})},{"../assets/logger":"C:\\Temp\\emmet\\lib\\assets\\logger.js","../resolver/css":"C:\\Temp\\emmet\\lib\\resolver\\css.js","../utils/common":"C:\\Temp\\emmet\\lib\\utils\\common.js","../vendor/stringScore":"C:\\Temp\\emmet\\lib\\vendor\\stringScore.js","./elements":"C:\\Temp\\emmet\\lib\\assets\\elements.js","./handlerList":"C:\\Temp\\emmet\\lib\\assets\\handlerList.js"}],"C:\\Temp\\emmet\\lib\\assets\\stringStream.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){function r(e){this.pos=this.start=0,this.string=e,this._length=e.length}return r.prototype={eol:function(){return this.pos>=this._length},sol:function(){return 0===this.pos},peek:function(){return this.string.charAt(this.pos)},next:function(){if(this.pos<this._length)return this.string.charAt(this.pos++)},eat:function(e){var t,n=this.string.charAt(this.pos);if(t="string"==typeof e?n==e:n&&(e.test?e.test(n):e(n)))return++this.pos,n},eatWhile:function(e){for(var t=this.pos;this.eat(e););return this.pos>t},eatSpace:function(){for(var e=this.pos;/[\s\u00a0]/.test(this.string.charAt(this.pos));)++this.pos;return this.pos>e},skipToEnd:function(){this.pos=this._length},skipTo:function(e){var t=this.string.indexOf(e,this.pos);if(t>-1)return this.pos=t,!0},skipToPair:function(e,t,n){for(var r,i=0,s=this.pos,o=this._length;s<o;)if(r=this.string.charAt(s++),r==e)i++;else if(r==t){if(i--,i<1)return this.pos=s,!0}else!n||'"'!=r&&"'"!=r||this.skipString(r);return!1},skipQuoted:function(e){var t=this.string.charAt(e?this.pos:this.pos-1);if('"'===t||"'"===t)return e&&this.pos++,this.skipString(t)},skipString:function(e){for(var t,n=this.pos,r=this._length;n<r;)if(t=this.string.charAt(n++),"\\"!=t&&t==e)return this.pos=n,!0;return!1},backUp:function(e){this.pos-=e},match:function(e,t,n){if("string"!=typeof e){var r=this.string.slice(this.pos).match(e);return r&&t!==!1&&(this.pos+=r[0].length),r}var i=n?function(e){return e.toLowerCase()}:function(e){return e};if(i(this.string).indexOf(i(e),this.pos)==this.pos)return t!==!1&&(this.pos+=e.length),!0},current:function(e){return this.string.slice(this.start,this.pos-(e?1:0))}},n.exports=function(e){return new r(e)},n.exports.create=n.exports,n.exports})},{}],"C:\\Temp\\emmet\\lib\\assets\\tabStops.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){var r=e("../utils/common"),i=e("./stringStream"),s=e("./resources"),o=100,a=0,l={replaceCarets:!1,escape:function(e){return"\\"+e},tabstop:function(e){return e.token},variable:function(e){return e.token}};return{extract:function(e,t){var n={carets:""},i=[];t=r.extend({},l,t,{tabstop:function(e){var t=e.token,r="";return"cursor"==e.placeholder?i.push({start:e.start,end:e.start+t.length,group:"carets",value:""}):("placeholder"in e&&(n[e.group]=e.placeholder),e.group in n&&(r=n[e.group]),i.push({start:e.start,end:e.start+t.length,group:e.group,value:r})),t}}),t.replaceCarets&&(e=e.replace(new RegExp(r.escapeForRegexp(r.getCaretPlaceholder()),"g"),"${0:cursor}")),e=this.processText(e,t);var s="",o=0,a=i.map(function(t){s+=e.substring(o,t.start);var r=s.length,i=n[t.group]||"";return s+=i,o=t.end,{group:t.group,start:r,end:r+i.length}});return s+=e.substring(o),{text:s,tabstops:a.sort(function(e,t){return e.start-t.start})}},processText:function(e,t){t=r.extend({},l,t);for(var n,s,o,a="",c=i.create(e);n=c.next();)if("\\"!=n||c.eol()){if(o=n,"$"==n)if(c.start=c.pos-1,s=c.match(/^[0-9]+/))o=t.tabstop({start:a.length,group:c.current().substr(1),token:c.current()});else if(s=c.match(/^\{([a-z_\-][\w\-]*)\}/))o=t.variable({start:a.length,name:s[1],token:c.current()
-});else if(s=c.match(/^\{([0-9]+)(:.+?)?\}/,!1)){c.skipToPair("{","}");var u={start:a.length,group:s[1],token:c.current()},f=u.token.substring(u.group.length+2,u.token.length-1);f&&(u.placeholder=f.substr(1)),o=t.tabstop(u)}a+=o}else a+=t.escape(c.next());return a},upgrade:function(e,t){var n=0,r={tabstop:function(e){var r=parseInt(e.group,10);return r>n&&(n=r),e.placeholder?"${"+(r+t)+":"+e.placeholder+"}":"${"+(r+t)+"}"}};return["start","end","content"].forEach(function(t){e[t]=this.processText(e[t],r)},this),n},variablesResolver:function(e){var t={};return function(n,i){if("child"==i)return n;if("cursor"==i)return r.getCaretPlaceholder();var a=e.attribute(i);if("undefined"!=typeof a&&a!==n)return a;var l=s.getVariable(i);return l?l:(t[i]||(t[i]=o++),"${"+t[i]+":"+i+"}")}},replaceVariables:function(e,t){t=t||{};var n="function"==typeof t?t:function(e,n){return n in t?t[n]:null};return this.processText(e,{variable:function(e){var t=n(e.token,e.name,e);return null===t&&(t=s.getVariable(e.name)),null!==t&&"undefined"!=typeof t||(t=e.token),t}})},resetTabstopIndex:function(){a=0,o=100},abbrOutputProcessor:function(e,t,n){var r=0,i=this,s={tabstop:function(e){var t=parseInt(e.group,10);if(0===t)return"${0}";if(t>r&&(r=t),e.placeholder){var n=t+a,o=i.processText(e.placeholder,s);return"${"+n+":"+o+"}"}return"${"+(t+a)+"}"}};return e=this.processText(e,s),e=this.replaceVariables(e,this.variablesResolver(t)),a+=r+1,e}}})},{"../utils/common":"C:\\Temp\\emmet\\lib\\utils\\common.js","./resources":"C:\\Temp\\emmet\\lib\\assets\\resources.js","./stringStream":"C:\\Temp\\emmet\\lib\\assets\\stringStream.js"}],"C:\\Temp\\emmet\\lib\\assets\\tokenIterator.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){function r(e){this.tokens=e,this._position=0,this.reset()}return r.prototype={next:function(){if(this.hasNext()){var e=this.tokens[++this._i];return this._position=e.start,e}return this._i=this._il,null},current:function(){return this.tokens[this._i]},peek:function(){return this.tokens[this._i+i]},position:function(){return this._position},hasNext:function(){return this._i<this._il-1},reset:function(){this._i=0,this._il=this.tokens.length},item:function(){return this.tokens[this._i]},itemNext:function(){return this.tokens[this._i+1]},itemPrev:function(){return this.tokens[this._i-1]},nextUntil:function(e,t){for(var n,r="string"==typeof e?function(t){return t.type==e}:e;(n=this.next())&&(t&&t.call(this,n),!r.call(this,n)););}},{create:function(e){return new r(e)}}})},{}],"C:\\Temp\\emmet\\lib\\editTree\\base.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){function r(e,t){this.options=o.extend({offset:0},t),this.source=e,this._children=[],this._positions={name:0},this.initialize.apply(this,arguments)}function i(e,t,n){this.parent=e,this._name=t.value,this._value=n?n.value:"",this._positions={name:t.start,value:n?n.start:-1},this.initialize.apply(this,arguments)}var s=e("../assets/range"),o=e("../utils/common"),a=e("../vendor/klass");return r.extend=a.extend,r.prototype={type:"container",initialize:function(){},_pos:function(e,t){return e+(t?this.options.offset:0)},_updateSource:function(e,t,n){var r=s.create(t,"undefined"==typeof n?0:n-t),i=e.length-r.length(),a=function(e){Object.keys(e).forEach(function(t){e[t]>=r.end&&(e[t]+=i)})};a(this._positions);var l=function(e){e.forEach(function(e){a(e._positions),"container"==e.type&&l(e.list())})};l(this.list()),this.source=o.replaceSubstring(this.source,e,r)},add:function(e,t,n){var r=new i(e,t);return this._children.push(r),r},get:function(e){return"number"==typeof e?this.list()[e]:"string"==typeof e?o.find(this.list(),function(t){return t.name()===e}):e},getAll:function(e){Array.isArray(e)||(e=[e]);var t=[],n=[];return e.forEach(function(e){"string"==typeof e?t.push(e):"number"==typeof e&&n.push(e)}),this.list().filter(function(e,r){return~n.indexOf(r)||~t.indexOf(e.name())})},list:function(){return this._children},remove:function(e){var t=this.get(e);if(t){this._updateSource("",t.fullRange());var n=this._children.indexOf(t);~n&&this._children.splice(n,1)}},indexOf:function(e){return this.list().indexOf(this.get(e))},value:function(e,t,n){var r=this.get(e);return r?r.value(t):"undefined"!=typeof t?this.add(e,t,n):void 0},values:function(e){return this.getAll(e).map(function(e){return e.value()})},name:function(e){return"undefined"!=typeof e&&this._name!==(e=String(e))&&(this._updateSource(e,this._positions.name,this._positions.name+this._name.length),this._name=e),this._name},nameRange:function(e){return s.create(this._positions.name+(e?this.options.offset:0),this.name())},range:function(e){return s.create(e?this.options.offset:0,this.valueOf())},itemFromPosition:function(e,t){return o.find(this.list(),function(n){return n.range(t).inside(e)})},toString:function(){return this.valueOf()},valueOf:function(){return this.source}},i.extend=a.extend,i.prototype={type:"element",initialize:function(){},_pos:function(e,t){return e+(t?this.parent.options.offset:0)},value:function(e){return"undefined"!=typeof e&&this._value!==(e=String(e))&&(this.parent._updateSource(e,this.valueRange()),this._value=e),this._value},name:function(e){return"undefined"!=typeof e&&this._name!==(e=String(e))&&(this.parent._updateSource(e,this.nameRange()),this._name=e),this._name},namePosition:function(e){return this._pos(this._positions.name,e)},valuePosition:function(e){return this._pos(this._positions.value,e)},range:function(e){return s.create(this.namePosition(e),this.valueOf())},fullRange:function(e){return this.range(e)},nameRange:function(e){return s.create(this.namePosition(e),this.name())},valueRange:function(e){return s.create(this.valuePosition(e),this.value())},toString:function(){return this.valueOf()},valueOf:function(){return this.name()+this.value()}},{EditContainer:r,EditElement:i,createToken:function(e,t,n){var r={start:e||0,value:t||"",type:n};return r.end=r.start+r.value.length,r}}})},{"../assets/range":"C:\\Temp\\emmet\\lib\\assets\\range.js","../utils/common":"C:\\Temp\\emmet\\lib\\utils\\common.js","../vendor/klass":"C:\\Temp\\emmet\\lib\\vendor\\klass.js"}],"C:\\Temp\\emmet\\lib\\editTree\\css.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){function r(e,t,n){n=n||v|x,t=e.substring(t);var r;return n&v&&(r=t.match(b))&&(e.start+=r[0].length),n&x&&(r=t.match(g))&&(e.end-=r[0].length),e.end<e.start&&(e.end=e.start),e}function i(e,t){var n,i,s,o=e.current();if(!o)return null;for(var a={white:1,line:1,comment:1};(o=e.current())&&o.type in a;)e.next();if(!e.hasNext())return null;o=e.current(),n=p(o.start,o.value);for(var l="@"==o.value.charAt(0);o=e.next();)if(n.end=o.end,":"==o.type||"white"==o.type){if(n.end=o.start,e.next(),":"==o.type||l)break}else if(";"==o.type||"line"==o.type){n.end=o.start,i=p(o.start,0),e.next();break}if(o=e.current(),!i&&o){"line"==o.type&&(c=o),i=p(o.start,o.value);for(var c;o=e.next();)if(i.end=o.end,"line"==o.type)c=o;else{if("}"==o.type||";"==o.type){i.end=o.start,";"==o.type&&(s=p(o.start,o.value)),e.next();break}if(":"==o.type&&c){i.end=c.start,e._i=e.tokens.indexOf(c);break}}}return i||(i=p(n.end,0)),{name:r(n,t),value:r(i,t,v|(s?x:0)),end:s||p(i.end,0)}}function s(e){var t,n=m.create(e),r=[],i=/[\s\u00a0,;]/,s=function(){n.next(),r.push(p(n.start,n.current())),n.start=n.pos};for(n.eatSpace(),n.start=n.pos;t=n.next();)if('"'==t||"'"==t){if(n.next(),!n.skipTo(t))break;s()}else if("("==t){if(n.backUp(1),!n.skipToPair("(",")"))break;n.backUp(1),s()}else i.test(t)&&(r.push(p(n.start,n.current().length-1)),n.eatWhile(i),n.start=n.pos);return s(),l.unique(r.filter(function(e){return!!e.length()}))}function o(e,t,n){var r=a(t,n);r.forEach(function(t){e._children.push(new C(e,c.createToken(t.name.start,t.nameText),c.createToken(t.value.start,t.valueText),c.createToken(t.end.start,t.endText)))})}function a(e,t){t=t||0,e=e.replace(g,"");var n=[];if(!e)return n;for(var r,s=u.parse(e),o=d.create(s);r=i(o,e);)n.push({nameText:r.name.substring(e),name:r.name.shift(t),valueText:r.value.substring(e),value:r.value.shift(t),endText:r.end.substring(e),end:r.end.shift(t)});return n}var l=e("../utils/common"),c=e("./base"),u=e("../parser/css"),f=e("../utils/cssSections"),p=e("../assets/range"),m=e("../assets/stringStream"),d=e("../assets/tokenIterator"),h={styleBefore:"\n\t",styleSeparator:": ",offset:0},b=/^\s+/,g=/\s+$/,v=1,x=2,y=c.EditContainer.extend({initialize:function(e,t){l.extend(this.options,h,t),Array.isArray(e)&&(e=u.toSource(e));var n=f.findAllRules(e),r=n.shift(),i=[];n.forEach(function(e){var t=!l.find(i,function(t){return t.contains(e)});t&&i.push(e)});var s=p.create2(r.start,r._selectorEnd);this._name=s.substring(e),this._positions.name=s.start,this._positions.contentStart=r._contentStart+1;var a=r._contentStart+1,c=(r.end-1,this);i.forEach(function(t){o(c,e.substring(a,t.start),a);l.extend({},c.options,{offset:t.start+c.options.offset});a=t.end}),o(this,e.substring(a,r.end-1),a),this._saveStyle()},_saveStyle:function(){var e=this._positions.contentStart,t=this.source;this.list().forEach(function(n){if("container"!==n.type){n.styleBefore=t.substring(e,n.namePosition());var r=l.splitByLines(n.styleBefore);r.length>1&&(n.styleBefore="\n"+r[r.length-1]),n.styleSeparator=t.substring(n.nameRange().end,n.valuePosition());var i=n.styleBefore.split("*/");n.styleBefore=i[i.length-1],n.styleSeparator=n.styleSeparator.replace(/\/\*.*?\*\//g,""),e=n.range().end}})},namePosition:function(e){return this._pos(this._positions.name,e)},valuePosition:function(e){return this._pos(this._positions.contentStart,e)},valueRange:function(e){return p.create2(this.valuePosition(e),this._pos(this.valueOf().length,e)-1)},add:function(e,t,n){var r=this.list(),i=this._positions.contentStart,s=l.pick(this.options,"styleBefore","styleSeparator");"undefined"==typeof n&&(n=r.length);var o=r[n];o?i=o.fullRange().start:(o=r[n-1])&&(o.end(";"),i=o.range().end),o&&(s=l.pick(o,"styleBefore","styleSeparator"));var a=c.createToken(i+s.styleBefore.length,e),u=c.createToken(a.end+s.styleSeparator.length,t),f=new C(this,a,u,c.createToken(u.end,";"));return l.extend(f,s),this._updateSource(f.styleBefore+f.toString(),i),this._children.splice(n,0,f),f}}),C=c.EditElement.extend({initialize:function(e,t,n,r){this.styleBefore=e.options.styleBefore,this.styleSeparator=e.options.styleSeparator,this._end=r.value,this._positions.end=r.start},valueParts:function(e){var t=s(this.value());if(e){var n=this.valuePosition(!0);t.forEach(function(e){e.shift(n)})}return t},value:function(e){var t="undefined"!=typeof e,n=this.parent.list();if(t&&this.isIncomplete()){var r=this,i=l.find(n,function(e){return e!==r&&!e.isIncomplete()});this.styleSeparator=i?i.styleSeparator:this.parent.options.styleSeparator,this.parent._updateSource(this.styleSeparator,p(this.valueRange().start,0))}var s=this.constructor.__super__.value.apply(this,arguments);if(t){var o=n.indexOf(this);o===n.length-1||this.end()||this.end(";")}return s},isIncomplete:function(){return this.nameRange().end===this.valueRange().start},end:function(e){return"undefined"!=typeof e&&this._end!==e&&(this.parent._updateSource(e,this._positions.end,this._positions.end+this._end.length),this._end=e),this._end},fullRange:function(e){var t=this.range(e);return t.start-=this.styleBefore.length,t},valueOf:function(){return this.name()+this.styleSeparator+this.value()+this.end()}});return{parse:function(e,t){return new y(e,t)},parseFromPosition:function(e,t,n){var r=f.locateRule(e,t,n);return r&&r.inside(t)?this.parse(r.substring(e),{offset:r.start}):null},propertyFromPosition:function(e,t){var n=null,r="string"==typeof e?this.parseFromPosition(e,t,!0):e;return r&&(n=r.itemFromPosition(t,!0),n||(n=l.find(r.list(),function(e){return e.range(!0).end==t}))),n},baseName:function(e){return e.replace(/^\s*\-\w+\-/,"")},findParts:s,extractPropertiesFromSource:a}})},{"../assets/range":"C:\\Temp\\emmet\\lib\\assets\\range.js","../assets/stringStream":"C:\\Temp\\emmet\\lib\\assets\\stringStream.js","../assets/tokenIterator":"C:\\Temp\\emmet\\lib\\assets\\tokenIterator.js","../parser/css":"C:\\Temp\\emmet\\lib\\parser\\css.js","../utils/common":"C:\\Temp\\emmet\\lib\\utils\\common.js","../utils/cssSections":"C:\\Temp\\emmet\\lib\\utils\\cssSections.js","./base":"C:\\Temp\\emmet\\lib\\editTree\\base.js"}],"C:\\Temp\\emmet\\lib\\editTree\\xml.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){var r=e("./base"),i=e("../parser/xml"),s=e("../assets/range"),o=e("../utils/common"),a={styleBefore:" ",styleSeparator:"=",styleQuote:'"',offset:0},l=/^<([\w\:\-]+)((?:\s+[\w\-:]+(?:\s*=\s*(?:(?:"[^"]*")|(?:'[^']*')|[^>\s]+))?)*)\s*(\/?)>/m,c=r.EditContainer.extend({initialize:function(e,t){o.defaults(this.options,a),this._positions.name=1;var n=null,r=i.parse(e);r.forEach(function(t){switch(t.value=s.create(t).substring(e),t.type){case"tag":/^<[^\/]+/.test(t.value)&&(this._name=t.value.substring(1));break;case"attribute":n&&this._children.push(new u(this,n)),n=t;break;case"string":this._children.push(new u(this,n,t)),n=null}},this),n&&this._children.push(new u(this,n)),this._saveStyle()},_saveStyle:function(){var e=this.nameRange().end,t=this.source;this.list().forEach(function(n){n.styleBefore=t.substring(e,n.namePosition()),n.valuePosition()!==-1&&(n.styleSeparator=t.substring(n.namePosition()+n.name().length,n.valuePosition()-n.styleQuote.length)),e=n.range().end})},add:function(e,t,n){var i=this.list(),s=this.nameRange().end,a=o.pick(this.options,"styleBefore","styleSeparator","styleQuote");"undefined"==typeof n&&(n=i.length);var l=i[n];l?s=l.fullRange().start:(l=i[n-1])&&(s=l.range().end),l&&(a=o.pick(l,"styleBefore","styleSeparator","styleQuote")),t=a.styleQuote+t+a.styleQuote;var c=new u(this,r.createToken(s+a.styleBefore.length,e),r.createToken(s+a.styleBefore.length+e.length+a.styleSeparator.length,t));return o.extend(c,a),this._updateSource(c.styleBefore+c.toString(),s),this._children.splice(n,0,c),c},addClass:function(e){var t=this.get("class");if(e=o.trim(e),!t)return this.add("class",e);var n=t.value(),r=" "+n.replace(/\n/g," ")+" ";~r.indexOf(" "+e+" ")||t.value(n+" "+e)},removeClass:function(e){var t=this.get("class");if(e=o.trim(e),t){var n=new RegExp("(^|\\s+)"+o.escapeForRegexp(e)),r=t.value().replace(n,"");o.trim(r)?t.value(r):this.remove("class")}}}),u=r.EditElement.extend({initialize:function(e,t,n){this.styleBefore=e.options.styleBefore,this.styleSeparator=e.options.styleSeparator;var r="",i=e.options.styleQuote;n&&(r=n.value,i=r.charAt(0),'"'==i||"'"==i?r=r.substring(1):i="",i&&r.charAt(r.length-1)==i&&(r=r.substring(0,r.length-1))),this.styleQuote=i,this._value=r,this._positions.value=n?n.start+i.length:-1},fullRange:function(e){var t=this.range(e);return t.start-=this.styleBefore.length,t},valueOf:function(){return this.name()+this.styleSeparator+this.styleQuote+this.value()+this.styleQuote}});return{parse:function(e,t){return new c(e,t)},parseFromPosition:function(e,t,n){var r=this.extractTag(e,t,n);return r&&r.inside(t)?this.parse(r.substring(e),{offset:r.start}):null},extractTag:function(e,t,n){var r,i=e.length,o=Math.min(2e3,i),a=null,c=function(t){var n;if("<"==e.charAt(t)&&(n=e.substr(t,o).match(l)))return s.create(t,n[0])};for(r=t;r>=0&&!(a=c(r));r--);if(a&&(a.inside(t)||n))return a;if(!a&&n)return null;for(r=t;r<i;r++)if(a=c(r))return a}}})},{"../assets/range":"C:\\Temp\\emmet\\lib\\assets\\range.js","../parser/xml":"C:\\Temp\\emmet\\lib\\parser\\xml.js","../utils/common":"C:\\Temp\\emmet\\lib\\utils\\common.js","./base":"C:\\Temp\\emmet\\lib\\editTree\\base.js"}],"C:\\Temp\\emmet\\lib\\filter\\bem.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){function r(){return{element:u.get("bem.elementSeparator"),modifier:u.get("bem.modifierSeparator")}}function i(e){if(f.isSnippet(e))return e;e.__bem={block:"",element:"",modifier:""};var t=s(e.attribute("class")).split(" "),n=/^[a-z]\-/i;return e.__bem.block=p.find(t,function(e){return n.test(e)}),e.__bem.block||(n=/^[a-z]/i,e.__bem.block=p.find(t,function(e){return n.test(e)})||""),t=t.map(function(t){return o(t,e)}),t=p.unique(p.flatten(t)).join(" "),t&&e.attribute("class",t),e}function s(e){e=(" "+(e||"")+" ").replace(/\s+/g," ");var t=u.get("bem.shortElementPrefix");if(t){var n=new RegExp("\\s("+p.escapeForRegexp(t)+"+)","g");e=e.replace(n,function(e,t){return" "+p.repeatString(r().element,t.length)})}return p.trim(e)}function o(e,t){e=a(e,t,"element"),e=a(e,t,"modifier");var n="",i="",s="",o=r();if(~e.indexOf(o.element)){var l=e.split(o.element);n=l.shift();var c=l.pop().split(o.modifier);l.push(c.shift()),i=l.join(o.element),s=c.join(o.modifier)}else if(~e.indexOf(o.modifier)){var u=e.split(o.modifier);n=u.shift(),s=u.join(o.modifier)}if(n||i||s){n||(n=t.__bem.block);var f=n,p=[];return i?(f+=o.element+i,p.push(f)):p.push(f),s&&p.push(f+o.modifier+s),t.__bem.block&&!s||(t.__bem.block=n),t.__bem.element=i,t.__bem.modifier=s,p}return e}function a(e,t,n){var i=r(),s=new RegExp("^("+i[n]+")+","g");if(s.test(e)){for(var o=0,a=e.replace(s,function(e){return o=e.length/i[n].length,""}),l=t;l.parent&&o--;)l=l.parent;if(l&&l.__bem||(l=t),l&&l.__bem){var c=l.__bem.block;return"modifier"==n&&l.__bem.element&&(c+=i.element+l.__bem.element),c+i[n]+a}}return e}function l(e,t){return e.name&&i(e,t),e.children.forEach(function(e){l(e,t),!f.isSnippet(e)&&e.start&&(m=!0)}),e}var c=e("./html"),u=e("../assets/preferences"),f=e("../utils/abbreviation"),p=e("../utils/common");u.define("bem.elementSeparator","__","Class name’s element separator."),u.define("bem.modifierSeparator","_","Class name’s modifier separator."),u.define("bem.shortElementPrefix","-","Symbol for describing short “block-element” notation. Class names prefixed with this symbol will be treated as element name for parent‘s block name. Each symbol instance traverses one level up in parsed tree for block name lookup. Empty value will disable short notation.");var m=!1;return function(e,t){return m=!1,e=l(e,t),m&&(e=c(e,t)),e}})},{"../assets/preferences":"C:\\Temp\\emmet\\lib\\assets\\preferences.js","../utils/abbreviation":"C:\\Temp\\emmet\\lib\\utils\\abbreviation.js","../utils/common":"C:\\Temp\\emmet\\lib\\utils\\common.js","./html":"C:\\Temp\\emmet\\lib\\filter\\html.js"}],"C:\\Temp\\emmet\\lib\\filter\\comment.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){function r(e,t,n){var r=s.get("filter.commentTrigger");if("*"!=r){var i=o.find(r.split(","),function(t){return!!e.attribute(o.trim(t))});if(!i)return}var a={node:e,name:e.name(),padding:e.parent?e.parent.padding:"",attr:function(t,n,r){var i=e.attribute(t);return i?(n||"")+i+(r||""):""}},l=t?t(a):"",c=n?n(a):"";e.start=e.start.replace(/</,l+"<"),e.end=e.end.replace(/>/,">"+c)}function i(e,t,n){return e.children.forEach(function(e){l.isBlock(e)&&r(e,t,n),i(e,t,n)}),e}var s=e("../assets/preferences"),o=e("../utils/common"),a=e("../utils/template"),l=e("../utils/abbreviation");e("./main");return s.define("filter.commentAfter",'\n<!-- /<%= attr("id", "#") %><%= attr("class", ".") %> -->',"A definition of comment that should be placed <i>after</i> matched element when <code>comment</code> filter is applied. This definition is an ERB-style template passed to <code>_.template()</code> function (see Underscore.js docs for details). In template context, the following properties and functions are availabe:\n<ul><li><code>attr(name, before, after)</code> – a function that outputsspecified attribute value concatenated with <code>before</code> and <code>after</code> strings. If attribute doesn't exists, the empty string will be returned.</li><li><code>node</code> – current node (instance of <code>AbbreviationNode</code>)</li><li><code>name</code> – name of current tag</li><li><code>padding</code> – current string padding, can be used for formatting</li></ul>"),s.define("filter.commentBefore","","A definition of comment that should be placed <i>before</i> matched element when <code>comment</code> filter is applied. For more info, read description of <code>filter.commentAfter</code> property"),s.define("filter.commentTrigger","id, class","A comma-separated list of attribute names that should exist in abbreviatoin where comment should be added. If you wish to add comment for every element, set this option to <code>*</code>"),function(e){var t=a(s.get("filter.commentBefore")),n=a(s.get("filter.commentAfter"));return i(e,t,n)}})},{"../assets/preferences":"C:\\Temp\\emmet\\lib\\assets\\preferences.js","../utils/abbreviation":"C:\\Temp\\emmet\\lib\\utils\\abbreviation.js","../utils/common":"C:\\Temp\\emmet\\lib\\utils\\common.js","../utils/template":"C:\\Temp\\emmet\\lib\\utils\\template.js","./main":"C:\\Temp\\emmet\\lib\\filter\\main.js"}],"C:\\Temp\\emmet\\lib\\filter\\css.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){function r(e){return e.parent&&!e.parent.parent&&!e.index()}return function i(e,t,n){return n=n||0,e.children.forEach(function(e){r(e)||t.tag_nl===!1||(e.start="\n"+e.start),i(e,t,n+1)}),e}})},{}],"C:\\Temp\\emmet\\lib\\filter\\escape.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){function r(e){return e.replace(/([<>&])/g,function(e,t){return i[t]})}var i={"<":"&lt;",">":"&gt;","&":"&amp;"};return function s(e){return e.children.forEach(function(e){e.start=r(e.start),e.end=r(e.end),e.content=r(e.content),s(e)}),e}})},{}],"C:\\Temp\\emmet\\lib\\filter\\format.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){function r(e){var t=h.getArray("format.noIndentTags")||[];return~t.indexOf(e.name())?"":"\t"}function i(e){return e.parent&&d.hasBlockChildren(e.parent)}function s(e){return e.parent&&!e.parent.parent&&!e.index()}function o(e,t){return!(t.tag_nl!==!0&&!d.isBlock(e))||!(!e.parent||!t.inline_break)&&l(e.parent,t)}function a(e,t){return e.children.length&&o(e.children[0],t)}function l(e,t){var n=0;return!!m.find(e.children,function(e){if(e.isTextNode()||!d.isInline(e)?n=0:d.isInline(e)&&n++,n>=t.inline_break)return!0})}function c(e){return!e.parent}function u(e,t){return e.start=e.end="",!s(e)&&t.tag_nl!==!1&&o(e,t)&&(!c(e.parent)&&d.isInline(e.parent)||(e.start="\n"+e.start)),e}function f(e,t){var n=e.children.some(function(e){return!d.isSnippet(e)&&!d.isInline(e)});return!!n||l(e,t)}function p(e,t){e.start=e.end=b;var n=d.isUnary(e),l="\n",c=r(e);if(t.tag_nl!==!1){var u=t.tag_nl===!0&&(t.tag_nl_leaf||e.children.length);if(!u){var p=h.getArray("format.forceIndentationForTags")||[];u=~p.indexOf(e.name())}e.isTextNode()||(o(e,t)?(s(e)||d.isSnippet(e.parent)&&!e.index()||(e.start=l+e.start),(d.hasBlockChildren(e)||a(e,t)||u&&!n)&&(e.end=l+e.end),(d.hasTagsInContent(e)||u&&!e.children.length&&!n)&&(e.start+=l+c)):d.isInline(e)&&i(e)&&!s(e)?e.start=l+e.start:d.isInline(e)&&f(e,t)&&(e.end=l+e.end),e.padding=c)}return e}var m=e("../utils/common"),d=e("../utils/abbreviation"),h=e("../assets/preferences");e("../assets/resources");h.define("format.noIndentTags","html","A comma-separated list of tag names that should not get inner indentation."),h.define("format.forceIndentationForTags","body","A comma-separated list of tag names that should <em>always</em> get inner indentation.");var b="%s";return function g(e,t,n){return n=n||0,e.children.forEach(function(e){d.isSnippet(e)?u(e,t,n):p(e,t,n),g(e,t,n+1)}),e}})},{"../assets/preferences":"C:\\Temp\\emmet\\lib\\assets\\preferences.js","../assets/resources":"C:\\Temp\\emmet\\lib\\assets\\resources.js","../utils/abbreviation":"C:\\Temp\\emmet\\lib\\utils\\abbreviation.js","../utils/common":"C:\\Temp\\emmet\\lib\\utils\\common.js"}],"C:\\Temp\\emmet\\lib\\filter\\haml.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){function r(e){return l.trim(e).replace(/\s+/g,".")}function i(e){var t=[],n=null,r=/^data-/i;return e.forEach(function(e){r.test(e.name)?(n||(n=[],t.push({name:"data",value:n})),n.push(l.extend({},e,{name:e.name.replace(r,"")}))):t.push(e)}),t}function s(e,t){var n=t.attributeQuote();return"{"+e.map(function(e){var r=n+e.value+n;return Array.isArray(e.value)?r=s(e.value,t):e.isBoolean&&(r="true"),":"+e.name+" => "+r}).join(", ")+"}"}function o(e,t){var n="",o=[],a=(t.attributeQuote(),t.cursor());return e.attributeList().forEach(function(e){var i=t.attributeName(e.name);switch(i.toLowerCase()){case"id":n+="#"+(e.value||a);break;case"class":n+="."+r(e.value||a);break;default:o.push({name:i,value:e.value||a,isBoolean:t.isBoolean(e.name,e.value)})}}),o.length&&(n+=s(i(o),t)),n}function a(e,t){if(!e.parent)return e;var n=o(e,t),r=t.cursor(),i=c.isUnary(e),s=t.self_closing_tag&&i?"/":"",a="",u="%"+t.tagName(e.name());"%div"==u.toLowerCase()&&n&&n.indexOf("{")==-1&&(u=""),e.end="",a=u+n+s,e.content&&!/^\s/.test(e.content)&&(e.content=" "+e.content);var f="%s";return e.start=l.replaceSubstring(e.start,a,e.start.indexOf(f),f),e.children.length||i||(e.start+=r),e}var l=e("../utils/common"),c=e("../utils/abbreviation"),u=e("./format");return function f(e,t,n){return n=n||0,n||(e=u(e,"_format",t)),e.children.forEach(function(e){c.isSnippet(e)||a(e,t,n),f(e,t,n+1)}),e}})},{"../utils/abbreviation":"C:\\Temp\\emmet\\lib\\utils\\abbreviation.js","../utils/common":"C:\\Temp\\emmet\\lib\\utils\\common.js","./format":"C:\\Temp\\emmet\\lib\\filter\\format.js"}],"C:\\Temp\\emmet\\lib\\filter\\html.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){function r(e,t){var n=t.attributeQuote(),r=t.cursor();return e.attributeList().map(function(e){var i=t.isBoolean(e.name,e.value),s=t.attributeName(e.name),o=i?s:e.value;return i&&t.allowCompactBoolean()?" "+s:" "+s+"="+n+(o||r)+n}).join("")}function i(e,t){if(!e.parent)return e;var n=r(e,t),i=t.cursor(),l=s.isUnary(e),c="",u="";if(!e.isTextNode()){var f=t.tagName(e.name());l?(c="<"+f+n+t.selfClosing()+">",e.end=""):(c="<"+f+n+">",u="</"+f+">")}var p="%s";return e.start=o.replaceSubstring(e.start,c,e.start.indexOf(p),p),e.end=o.replaceSubstring(e.end,u,e.end.indexOf(p),p),e.children.length||l||~e.content.indexOf(i)||a.extract(e.content).tabstops.length||(e.start+=i),e}var s=e("../utils/abbreviation"),o=e("../utils/common"),a=e("../assets/tabStops"),l=e("./format");return function c(e,t,n){return n=n||0,n||(e=l(e,t,n)),e.children.forEach(function(e){s.isSnippet(e)||i(e,t,n),c(e,t,n+1)}),e}})},{"../assets/tabStops":"C:\\Temp\\emmet\\lib\\assets\\tabStops.js","../utils/abbreviation":"C:\\Temp\\emmet\\lib\\utils\\abbreviation.js","../utils/common":"C:\\Temp\\emmet\\lib\\utils\\common.js","./format":"C:\\Temp\\emmet\\lib\\filter\\format.js"}],"C:\\Temp\\emmet\\lib\\filter\\jade.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){function r(e){return l.trim(e).replace(/\s+/g,".")}function i(e,t){var n=t.attributeQuote();return"("+e.map(function(e){return e.isBoolean?e.name:e.name+"="+n+e.value+n}).join(", ")+")"}function s(e,t){var n="",s=[],o=(t.attributeQuote(),t.cursor());return e.attributeList().forEach(function(e){var i=t.attributeName(e.name);switch(i.toLowerCase()){case"id":n+="#"+(e.value||o);break;case"class":n+="."+r(e.value||o);break;default:s.push({name:i,value:e.value||o,isBoolean:t.isBoolean(e.name,e.value)})}}),s.length&&(n+=i(s,t)),n}function o(e){if(e.content){var t=f.replaceVariables(e.content,function(e,t){return"nl"===t||"newline"===t?"\n":e});if(m.test(t)&&!d.test(t)){var n="| ";e.content="\n"+n+l.padString(t,n)}else h.test(t)||(e.content=" "+t)}}function a(e,t){if(!e.parent)return e;var n=s(e,t),r=t.cursor(),i=c.isUnary(e),a=t.tagName(e.name());"div"==a.toLowerCase()&&n&&"("!=n.charAt(0)&&(a=""),e.end="";var u=a+n;o(e);var f="%s";return e.start=l.replaceSubstring(e.start,u,e.start.indexOf(f),f),e.children.length||i||(e.start+=r),e}var l=e("../utils/common"),c=e("../utils/abbreviation"),u=e("./format"),f=e("../assets/tabStops"),p=e("../assets/profile"),m=/[\n\r]/,d=/^\s*\|/,h=/^\s/;return function b(e,t,n){return n=n||0,n||(e=u(e,p.get("xml"))),e.children.forEach(function(e){c.isSnippet(e)||a(e,t,n),b(e,t,n+1)}),e}})},{"../assets/profile":"C:\\Temp\\emmet\\lib\\assets\\profile.js","../assets/tabStops":"C:\\Temp\\emmet\\lib\\assets\\tabStops.js","../utils/abbreviation":"C:\\Temp\\emmet\\lib\\utils\\abbreviation.js","../utils/common":"C:\\Temp\\emmet\\lib\\utils\\common.js","./format":"C:\\Temp\\emmet\\lib\\filter\\format.js"}],"C:\\Temp\\emmet\\lib\\filter\\jsx.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){var r={"class":"className","for":"htmlFor"};return function i(e){return e.children.forEach(function(e){e._attributes.forEach(function(e){e.name in r&&(e.name=r[e.name])}),i(e)}),e}})},{}],"C:\\Temp\\emmet\\lib\\filter\\main.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){function r(e){return e?"string"==typeof e?e.split(/[\|,]/g):e:[]}var i=e("../utils/common"),s=e("../assets/profile"),o=e("../assets/resources"),a={html:e("./html"),haml:e("./haml"),jade:e("./jade"),jsx:e("./jsx"),slim:e("./slim"),xsl:e("./xsl"),css:e("./css"),bem:e("./bem"),c:e("./comment"),e:e("./escape"),s:e("./singleLine"),t:e("./trim")},l="html";return{add:function(e,t){a[e]=t},apply:function(e,t,n){return n=s.get(n),r(t).forEach(function(t){var r=i.trim(t.toLowerCase());r&&r in a&&(e=a[r](e,n))}),e},composeList:function(e,t,n){t=s.get(t);var i=r(t.filters||o.findItem(e,"filters")||l);return t.extraFilters&&(i=i.concat(r(t.extraFilters))),n&&(i=i.concat(r(n))),i&&i.length||(i=r(l)),i},extract:function(e){var t="";return e=e.replace(/\|([\w\|\-]+)$/,function(e,n){return t=n,""}),[e,r(t)]}}})},{"../assets/profile":"C:\\Temp\\emmet\\lib\\assets\\profile.js","../assets/resources":"C:\\Temp\\emmet\\lib\\assets\\resources.js","../utils/common":"C:\\Temp\\emmet\\lib\\utils\\common.js","./bem":"C:\\Temp\\emmet\\lib\\filter\\bem.js","./comment":"C:\\Temp\\emmet\\lib\\filter\\comment.js","./css":"C:\\Temp\\emmet\\lib\\filter\\css.js","./escape":"C:\\Temp\\emmet\\lib\\filter\\escape.js","./haml":"C:\\Temp\\emmet\\lib\\filter\\haml.js","./html":"C:\\Temp\\emmet\\lib\\filter\\html.js","./jade":"C:\\Temp\\emmet\\lib\\filter\\jade.js","./jsx":"C:\\Temp\\emmet\\lib\\filter\\jsx.js","./singleLine":"C:\\Temp\\emmet\\lib\\filter\\singleLine.js","./slim":"C:\\Temp\\emmet\\lib\\filter\\slim.js","./trim":"C:\\Temp\\emmet\\lib\\filter\\trim.js","./xsl":"C:\\Temp\\emmet\\lib\\filter\\xsl.js"}],"C:\\Temp\\emmet\\lib\\filter\\singleLine.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){var r=e("../utils/abbreviation"),i=/^\s+/,s=/[\n\r]/g;return function o(e){return e.children.forEach(function(e){r.isSnippet(e)||(e.start=e.start.replace(i,""),e.end=e.end.replace(i,"")),e.start=e.start.replace(s,""),e.end=e.end.replace(s,""),e.content=e.content.replace(s,""),o(e)}),e}})},{"../utils/abbreviation":"C:\\Temp\\emmet\\lib\\utils\\abbreviation.js"}],"C:\\Temp\\emmet\\lib\\filter\\slim.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){function r(e){return c.trim(e).replace(/\s+/g,".")}function i(){var e=" ",t="";switch(m.get("slim.attributesWrapper")){case"round":e="(",t=")";break;case"square":e="[",t="]";break;case"curly":e="{",t="}"}return{start:e,end:t}}function s(e,t){var n=t.attributeQuote(),r=i();return r.start+e.map(function(e){var t=n+e.value+n;
-if(e.isBoolean){if(r.end)return e.name;t="true"}return e.name+"="+t}).join(" ")+r.end}function o(e,t){var n="",i=[],o=(t.attributeQuote(),t.cursor());return e.attributeList().forEach(function(e){var s=t.attributeName(e.name);switch(s.toLowerCase()){case"id":n+="#"+(e.value||o);break;case"class":n+="."+r(e.value||o);break;default:i.push({name:s,value:e.value||o,isBoolean:t.isBoolean(e.name,e.value)})}}),i.length&&(n+=s(i,t)),n}function a(e){if(e.content){var t=p.replaceVariables(e.content,function(e,t){return"nl"===t||"newline"===t?"\n":e});if(h.test(t)&&!b.test(t)){var n="  ";e.content="\n| "+c.padString(t,n)}else g.test(t)||(e.content=" "+t)}}function l(e,t){if(!e.parent)return e;var n=o(e,t),r=t.cursor(),i=u.isUnary(e),s=t.self_closing_tag&&i?"/":"",l=t.tagName(e.name());"div"==l.toLowerCase()&&n&&"([{".indexOf(n.charAt(0))==-1&&(l=""),e.end="";var f=l+n+s;a(e);var p="%s";return e.start=c.replaceSubstring(e.start,f,e.start.indexOf(p),p),e.children.length||i||(e.start+=r),e}var c=e("../utils/common"),u=e("../utils/abbreviation"),f=e("./format"),p=e("../assets/tabStops"),m=e("../assets/preferences"),d=e("../assets/profile"),h=/[\n\r]/,b=/^\s*\|/,g=/^\s/;return m.define("slim.attributesWrapper","none","Defines how attributes will be wrapped:<ul><li><code>none</code> – no wrapping;</li><li><code>round</code> — wrap attributes with round braces;</li><li><code>square</code> — wrap attributes with round braces;</li><li><code>curly</code> — wrap attributes with curly braces.</li></ul>"),function v(e,t,n){return n=n||0,n||(e=f(e,d.get("xml"))),e.children.forEach(function(e){u.isSnippet(e)||l(e,t,n),v(e,t,n+1)}),e}})},{"../assets/preferences":"C:\\Temp\\emmet\\lib\\assets\\preferences.js","../assets/profile":"C:\\Temp\\emmet\\lib\\assets\\profile.js","../assets/tabStops":"C:\\Temp\\emmet\\lib\\assets\\tabStops.js","../utils/abbreviation":"C:\\Temp\\emmet\\lib\\utils\\abbreviation.js","../utils/common":"C:\\Temp\\emmet\\lib\\utils\\common.js","./format":"C:\\Temp\\emmet\\lib\\filter\\format.js"}],"C:\\Temp\\emmet\\lib\\filter\\trim.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){function r(e,t){return e.children.forEach(function(e){e.content&&(e.content=e.content.replace(t,"")),r(e,t)}),e}var i=e("../assets/preferences");return i.define("filter.trimRegexp","[\\s|\\u00a0]*[\\d|#|\\-|*|\\u2022]+\\.?\\s*","Regular expression used to remove list markers (numbers, dashes, bullets, etc.) in <code>t</code> (trim) filter. The trim filter is useful for wrapping with abbreviation lists, pased from other documents (for example, Word documents)."),function(e){var t=new RegExp(i.get("filter.trimRegexp"));return r(e,t)}})},{"../assets/preferences":"C:\\Temp\\emmet\\lib\\assets\\preferences.js"}],"C:\\Temp\\emmet\\lib\\filter\\xsl.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){function r(e){e.start=e.start.replace(/\s+select\s*=\s*(['"]).*?\1/,"")}var i=e("../utils/abbreviation"),s={"xsl:variable":1,"xsl:with-param":1};return function o(e){return e.children.forEach(function(e){!i.isSnippet(e)&&(e.name()||"").toLowerCase()in s&&e.children.length&&r(e),o(e)}),e}})},{"../utils/abbreviation":"C:\\Temp\\emmet\\lib\\utils\\abbreviation.js"}],"C:\\Temp\\emmet\\lib\\generator\\lorem.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){function r(e,t){return Math.round(Math.random()*(t-e)+e)}function i(e,t){for(var n=e.length,i=Math.min(n,t),s=[];s.length<i;){var o=r(0,n-1);~s.indexOf(o)||s.push(o)}return s.map(function(t){return e[t]})}function s(e){return"string"==typeof e?e.charAt(r(0,e.length-1)):e[r(0,e.length-1)]}function o(e,t){return e.length&&(e[0]=e[0].charAt(0).toUpperCase()+e[0].substring(1)),e.join(" ")+(t||s("?!..."))}function a(e){var t=e.length;if(!(t<2)){var n=0;n=t>3&&t<=6?r(0,1):t>6&&t<=12?r(0,2):r(1,4);for(var i,s,o=0;o<n;o++)i=r(0,e.length-2),s=e[i],","!==s.charAt(s.length-1)&&(e[i]+=",")}}function l(e,t,n){var s=u[e];if(!s)return"";var l,c=[],f=0;for(t=parseInt(t,10),n&&s.common&&(l=s.common.slice(0,t),l.length>5&&(l[4]+=","),f+=l.length,c.push(o(l,".")));f<t;)l=i(s.words,Math.min(r(2,30),t-f)),f+=l.length,a(l),c.push(o(l));return c.join(" ")}var c=e("../assets/preferences"),u={en:{common:["lorem","ipsum","dolor","sit","amet","consectetur","adipisicing","elit"],words:["exercitationem","perferendis","perspiciatis","laborum","eveniet","sunt","iure","nam","nobis","eum","cum","officiis","excepturi","odio","consectetur","quasi","aut","quisquam","vel","eligendi","itaque","non","odit","tempore","quaerat","dignissimos","facilis","neque","nihil","expedita","vitae","vero","ipsum","nisi","animi","cumque","pariatur","velit","modi","natus","iusto","eaque","sequi","illo","sed","ex","et","voluptatibus","tempora","veritatis","ratione","assumenda","incidunt","nostrum","placeat","aliquid","fuga","provident","praesentium","rem","necessitatibus","suscipit","adipisci","quidem","possimus","voluptas","debitis","sint","accusantium","unde","sapiente","voluptate","qui","aspernatur","laudantium","soluta","amet","quo","aliquam","saepe","culpa","libero","ipsa","dicta","reiciendis","nesciunt","doloribus","autem","impedit","minima","maiores","repudiandae","ipsam","obcaecati","ullam","enim","totam","delectus","ducimus","quis","voluptates","dolores","molestiae","harum","dolorem","quia","voluptatem","molestias","magni","distinctio","omnis","illum","dolorum","voluptatum","ea","quas","quam","corporis","quae","blanditiis","atque","deserunt","laboriosam","earum","consequuntur","hic","cupiditate","quibusdam","accusamus","ut","rerum","error","minus","eius","ab","ad","nemo","fugit","officia","at","in","id","quos","reprehenderit","numquam","iste","fugiat","sit","inventore","beatae","repellendus","magnam","recusandae","quod","explicabo","doloremque","aperiam","consequatur","asperiores","commodi","optio","dolor","labore","temporibus","repellat","veniam","architecto","est","esse","mollitia","nulla","a","similique","eos","alias","dolore","tenetur","deleniti","porro","facere","maxime","corrupti"]},sp:{common:["mujer","uno","dolor","más","de","poder","mismo","si"],words:["ejercicio","preferencia","perspicacia","laboral","paño","suntuoso","molde","namibia","planeador","mirar","demás","oficinista","excepción","odio","consecuencia","casi","auto","chicharra","velo","elixir","ataque","no","odio","temporal","cuórum","dignísimo","facilismo","letra","nihilista","expedición","alma","alveolar","aparte","león","animal","como","paria","belleza","modo","natividad","justo","ataque","séquito","pillo","sed","ex","y","voluminoso","temporalidad","verdades","racional","asunción","incidente","marejada","placenta","amanecer","fuga","previsor","presentación","lejos","necesariamente","sospechoso","adiposidad","quindío","pócima","voluble","débito","sintió","accesorio","falda","sapiencia","volutas","queso","permacultura","laudo","soluciones","entero","pan","litro","tonelada","culpa","libertario","mosca","dictado","reincidente","nascimiento","dolor","escolar","impedimento","mínima","mayores","repugnante","dulce","obcecado","montaña","enigma","total","deletéreo","décima","cábala","fotografía","dolores","molesto","olvido","paciencia","resiliencia","voluntad","molestias","magnífico","distinción","ovni","marejada","cerro","torre","y","abogada","manantial","corporal","agua","crepúsculo","ataque","desierto","laboriosamente","angustia","afortunado","alma","encefalograma","materialidad","cosas","o","renuncia","error","menos","conejo","abadía","analfabeto","remo","fugacidad","oficio","en","almácigo","vos","pan","represión","números","triste","refugiado","trote","inventor","corchea","repelente","magma","recusado","patrón","explícito","paloma","síndrome","inmune","autoinmune","comodidad","ley","vietnamita","demonio","tasmania","repeler","apéndice","arquitecto","columna","yugo","computador","mula","a","propósito","fantasía","alias","rayo","tenedor","deleznable","ventana","cara","anemia","corrupto"]},ru:{common:["далеко-далеко","за","словесными","горами","в стране","гласных","и согласных","живут","рыбные","тексты"],words:["вдали","от всех","они","буквенных","домах","на берегу","семантика","большого","языкового","океана","маленький","ручеек","даль","журчит","по всей","обеспечивает","ее","всеми","необходимыми","правилами","эта","парадигматическая","страна","которой","жаренные","предложения","залетают","прямо","рот","даже","всемогущая","пунктуация","не","имеет","власти","над","рыбными","текстами","ведущими","безорфографичный","образ","жизни","однажды","одна","маленькая","строчка","рыбного","текста","имени","lorem","ipsum","решила","выйти","большой","мир","грамматики","великий","оксмокс","предупреждал","о","злых","запятых","диких","знаках","вопроса","коварных","точках","запятой","но","текст","дал","сбить","себя","толку","он","собрал","семь","своих","заглавных","букв","подпоясал","инициал","за","пояс","пустился","дорогу","взобравшись","первую","вершину","курсивных","гор","бросил","последний","взгляд","назад","силуэт","своего","родного","города","буквоград","заголовок","деревни","алфавит","подзаголовок","своего","переулка","грустный","реторический","вопрос","скатился","его","щеке","продолжил","свой","путь","дороге","встретил","рукопись","она","предупредила","моей","все","переписывается","несколько","раз","единственное","что","меня","осталось","это","приставка","возвращайся","ты","лучше","свою","безопасную","страну","послушавшись","рукописи","наш","продолжил","свой","путь","вскоре","ему","повстречался","коварный","составитель","рекламных","текстов","напоивший","языком","речью","заманивший","свое","агентство","которое","использовало","снова","снова","своих","проектах","если","переписали","то","живет","там","до","сих","пор"]}};return c.define("lorem.defaultLang","en",'Default language of generated dummy text. Currently, <code>en</code>\t\tand <code>ru</code> are supported, but users can add their own syntaxes\t\tsee <a href="http://docs.emmet.io/abbreviations/lorem-ipsum/">docs</a>.'),c.define("lorem.omitCommonPart",!1,"Omit commonly used part (e.g. “Lorem ipsum dolor sit amet“) from generated text."),{addLang:function(e,t){"string"==typeof t?t={words:t.split(" ").filter(function(e){return!!e})}:Array.isArray(t)&&(t={words:t}),u[e]=t},preprocessor:function(e){var t,n=/^(?:lorem|lipsum)([a-z]{2})?(\d*)$/i,r=!c.get("lorem.omitCommonPart");e.findAll(function(e){if(e._name&&(t=e._name.match(n))){var i=t[2]||30,s=t[1]||c.get("lorem.defaultLang")||"en";e._name="",e.data("forceNameResolving",e.isRepeating()||e.attributeList().length),e.data("pasteOverwrites",!0),e.data("paste",function(e){return l(s,i,!e&&r)})}})}}})},{"../assets/preferences":"C:\\Temp\\emmet\\lib\\assets\\preferences.js"}],"C:\\Temp\\emmet\\lib\\parser\\abbreviation.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){function r(e){this.parent=null,this.children=[],this._attributes=[],this.abbreviation="",this.counter=1,this._name=null,this._text="",this.repeatCount=1,this.hasImplicitRepeat=!1,this._data={},this.start="",this.end="",this.content="",this.padding=""}function i(e){return e.substring(1,e.length-1)}function s(e){e=v.trim(e);for(var t,n,o=new r,a=o.addChild(),l=y.create(e),c=1e3,u=function(e){a.addChild(e)},f=function(){l.start=l.pos,l.eatWhile(function(e){if("["==e||"{"==e){if(l.skipToPair(e,E[e]))return l.backUp(1),!0;throw new Error('Invalid abbreviation: mo matching "'+E[e]+'" found for character at '+l.pos)}if("+"==e){l.next();var t=l.eol()||~"+>^*".indexOf(l.peek());return l.backUp(1),t}return"("!=e&&d(e)})};!l.eol()&&--c>0;)switch(t=l.peek()){case"(":if(l.start=l.pos,!l.skipToPair("(",")"))throw new Error('Invalid abbreviation: mo matching ")" found for character at '+l.pos);var p=s(i(l.current()));(n=l.match(/^\*(\d+)?/,!0))&&a._setRepeat(n[1]),p.children.forEach(u);break;case">":a=a.addChild(),l.next();break;case"+":a=a.parent.addChild(),l.next();break;case"^":var m=a.parent||a;a=(m.parent||m).addChild(),l.next();break;default:f(),a.setAbbreviation(l.current()),l.start=l.pos}if(c<1)throw new Error("Endless loop detected");return o}function o(e){e=v.trim(e);for(var t,n=[],r=y(e);t=r.next();)if(" "==t){for(n.push(v.trim(r.current()));" "==r.peek();)r.next();r.start=r.pos}else if(('"'==t||"'"==t)&&!r.skipString(t))throw new Error("Invalid attribute set");return n.push(v.trim(r.current())),n}function a(e){var t=e.charAt(0);if('"'==t||"'"==t){e=e.substr(1);var n=e.charAt(e.length-1);n===t&&(e=e.substr(0,e.length-1))}return e}function l(e){var t=/^[\w\-:\$@]+\.?$/;return o(e).map(function(e){if(t.test(e)){var n="";return"."==e.charAt(e.length-1)&&(e=e.substr(0,e.length-1),n=e),{name:e,value:n}}if(~e.indexOf("=")){var r=e.split("=");return{name:r.shift(),value:a(r.join("="))}}return{name:$,value:a(e)}})}function c(e){for(var t=[],n={"#":"id",".":"class"},r=null,s=y.create(e);!s.eol();)switch(s.peek()){case"#":case".":null===r&&(r=s.pos);var o=n[s.peek()];s.next(),s.start=s.pos,s.eatWhile(A),t.push({name:o,value:s.current()});break;case"[":if(null===r&&(r=s.pos),s.start=s.pos,!s.skipToPair("[","]"))throw new Error("Invalid attribute set definition");t=t.concat(l(i(s.current())));break;default:s.next()}return t.length?{element:e.substring(0,r),attributes:u(t)}:null}function u(e){e=e.map(function(e){return v.clone(e)});var t={};return e.filter(function(e){if(!(e.name in t))return t[e.name]=e;var n=t[e.name];return"class"==e.name.toLowerCase()?n.value+=(n.value.length?" ":"")+e.value:(n.value=e.value,n.isImplied=!!e.isImplied),!1})}function f(e){if(!~e.indexOf("{"))return null;for(var t=y.create(e);!t.eol();)switch(t.peek()){case"[":case"(":t.skipToPair(t.peek(),E[t.peek()]);break;case"{":return t.start=t.pos,t.skipToPair("{","}"),{element:e.substring(0,t.start),text:i(t.current())};default:t.next()}}function p(e){for(var t,n,r,i=e.children.length-1;i>=0;i--)if(n=e.children[i],n.isRepeating())for(r=t=n.repeatCount,n.repeatCount=1,n.updateProperty("counter",1),n.updateProperty("maxCount",r);--t>0;)n.parent.addChild(n.clone(),i+1).updateProperty("counter",t+1).updateProperty("maxCount",r);return e.children.forEach(p),e}function m(e){for(var t=e.children.length-1;t>=0;t--){var n=e.children[t];n.isGroup()?n.replace(m(n).children):n.isEmpty()&&n.remove()}return e.children.forEach(m),e}function d(e){var t=e.charCodeAt(0),n="#.*:$-_!@|%";return t>64&&t<91||t>96&&t<123||t>47&&t<58||n.indexOf(e)!=-1}var h=e("../assets/tabStops"),b=e("../assets/profile"),g=e("../filter/main"),v=e("../utils/common"),x=e("../utils/abbreviation"),y=e("../assets/stringStream"),C=e("../generator/lorem"),w=e("./processor/pastedContent"),T=e("./processor/tagName"),j=e("./processor/resourceMatcher"),k=e("./processor/attributes"),S=e("./processor/href"),_=/^[\w\-\$\:@\!%]+\+?$/i,A=/[\w\-:\$@]/,$="%default",E={"[":"]","(":")","{":"}"},P=Array.prototype.splice,z=[],O=[],R=[];return r.prototype={addChild:function(e,t){return e=e||new r,e.parent=this,"undefined"==typeof t?this.children.push(e):this.children.splice(t,0,e),e},clone:function(){var e=new r,t=["abbreviation","counter","_name","_text","repeatCount","hasImplicitRepeat","start","end","content","padding"];return t.forEach(function(t){e[t]=this[t]},this),e._attributes=this._attributes.map(function(e){return v.extend({},e)}),e._data=v.extend({},this._data),e.children=this.children.map(function(t){return t=t.clone(),t.parent=e,t}),e},remove:function(){if(this.parent){var e=this.parent.children.indexOf(this);~e&&this.parent.children.splice(e,1)}return this},replace:function(){var e=this.parent,t=e.children.indexOf(this),n=v.flatten(arguments);P.apply(e.children,[t,1].concat(n)),n.forEach(function(t){t.parent=e})},updateProperty:function(e,t){return this[e]=t,this.children.forEach(function(n){n.updateProperty(e,t)}),this},find:function(e){return this.findAll(e,{amount:1})[0]},findAll:function(e,t){if(t=v.extend({amount:0,found:0},t||{}),"function"!=typeof e){var n=e.toLowerCase();e=function(e){return e.name().toLowerCase()==n}}var r=[];return this.children.forEach(function(n){e(n)&&(r.push(n),t.found++,t.amount&&t.found>=t.amount)||(r=r.concat(n.findAll(e)))}),r.filter(function(e){return!!e})},data:function(e,t){return 2==arguments.length&&(this._data[e]=t),this._data[e]},name:function(){return this._name},attributeList:function(){return u(this._attributes.slice(0))},attribute:function(e,t){if(2==arguments.length){if(null===t){var n=this._attributes.filter(function(t){return t.name===e}),r=this;return void n.forEach(function(e){var t=r._attributes.indexOf(e);~t&&r._attributes.splice(t,1)})}var i=this._attributes.map(function(e){return e.name}),s=i.indexOf(e.toLowerCase());~s?this._attributes[s].value=t:this._attributes.push({name:e,value:t})}return(v.find(this.attributeList(),function(t){return t.name==e})||{}).value},index:function(){return this.parent?this.parent.children.indexOf(this):-1},_setRepeat:function(e){e?this.repeatCount=parseInt(e,10)||1:this.hasImplicitRepeat=!0},setAbbreviation:function(e){e=e||"";var t=this;e=e.replace(/\*(\d+)?$/,function(e,n){return t._setRepeat(n),""}),this.abbreviation=e;var n=f(e);n&&(e=n.element,this.content=this._text=n.text);var r=c(e);if(r&&(e=r.element,this._attributes=r.attributes),this._name=e,this._name&&!_.test(this._name))throw new Error("Invalid abbreviation")},valueOf:function(){var e=this.start,t=this.end,n=this.content,r=this;R.forEach(function(i){e=i(e,r,"start"),n=i(n,r,"content"),t=i(t,r,"end")});var i=this.children.map(function(e){return e.valueOf()}).join("");return n=x.insertChildContent(n,i,{keepVariable:!1}),e+v.padString(n,this.padding)+t},toString:function(){return this.valueOf()},hasEmptyChildren:function(){return!!v.find(this.children,function(e){return e.isEmpty()})},hasImplicitName:function(){return!this._name&&!this.isTextNode()},isGroup:function(){return!this.abbreviation},isEmpty:function(){return!this.abbreviation&&!this.children.length},isRepeating:function(){return this.repeatCount>1||this.hasImplicitRepeat},isTextNode:function(){return!this.name()&&!this.attributeList().length},isElement:function(){return!this.isEmpty()&&!this.isTextNode()},deepestChild:function(){if(!this.children.length)return null;for(var e=this;e.children.length;)e=e.children[e.children.length-1];return e}},R.push(function(e,t){return v.replaceCounter(e,t.counter,t.maxCount)}),R.push(h.abbrOutputProcessor.bind(h)),[C,j,k,w,T,S].forEach(function(e){e.preprocessor&&z.push(e.preprocessor.bind(e)),e.postprocessor&&O.push(e.postprocessor.bind(e))}),{DEFAULT_ATTR_NAME:$,parse:function(e,t){t=t||{};var n=s(e),r=this;if(t.contextNode){n._name=t.contextNode.name;var i={};n._attributes.forEach(function(e){i[e.name]=e}),t.contextNode.attributes.forEach(function(e){e.name in i?i[e.name].value=e.value:(e=v.clone(e),n._attributes.push(e),i[e.name]=e)})}return z.forEach(function(e){e(n,t,r)}),"counter"in t&&n.updateProperty("counter",t.counter),n=m(p(n)),O.forEach(function(e){e(n,t,r)}),n},expand:function(e,t){if(!e)return"";if("string"==typeof t)throw new Error("Deprecated use of `expand` method: `options` must be object");t=t||{},t.syntax||(t.syntax=v.defaultSyntax());var n=b.get(t.profile,t.syntax);h.resetTabstopIndex();var r=g.extract(e),i=this.parse(r[0],t),s=g.composeList(t.syntax,n,r[1]);return g.apply(i,s,n),i.valueOf()},AbbreviationNode:r,addPreprocessor:function(e){~z.indexOf(e)||z.push(e)},removeFilter:function(e){var t=z.indexOf(e);~t&&z.splice(t,1)},addPostprocessor:function(e){~O.indexOf(e)||O.push(e)},removePostprocessor:function(e){var t=O.indexOf(e);~t&&O.splice(t,1)},addOutputProcessor:function(e){~R.indexOf(e)||R.push(e)},removeOutputProcessor:function(e){var t=R.indexOf(e);~t&&R.splice(t,1)},isAllowedChar:function(e){return e=String(e),d(e)||~">+^[](){}".indexOf(e)}}})},{"../assets/profile":"C:\\Temp\\emmet\\lib\\assets\\profile.js","../assets/stringStream":"C:\\Temp\\emmet\\lib\\assets\\stringStream.js","../assets/tabStops":"C:\\Temp\\emmet\\lib\\assets\\tabStops.js","../filter/main":"C:\\Temp\\emmet\\lib\\filter\\main.js","../generator/lorem":"C:\\Temp\\emmet\\lib\\generator\\lorem.js","../utils/abbreviation":"C:\\Temp\\emmet\\lib\\utils\\abbreviation.js","../utils/common":"C:\\Temp\\emmet\\lib\\utils\\common.js","./processor/attributes":"C:\\Temp\\emmet\\lib\\parser\\processor\\attributes.js","./processor/href":"C:\\Temp\\emmet\\lib\\parser\\processor\\href.js","./processor/pastedContent":"C:\\Temp\\emmet\\lib\\parser\\processor\\pastedContent.js","./processor/resourceMatcher":"C:\\Temp\\emmet\\lib\\parser\\processor\\resourceMatcher.js","./processor/tagName":"C:\\Temp\\emmet\\lib\\parser\\processor\\tagName.js"}],"C:\\Temp\\emmet\\lib\\parser\\css.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){function r(e,t){return t=t||e.charCodeAt(0),t>=97&&t<=122||t>=65&&t<=90||t>=1024&&t<=1279||"&"===e||"_"===e||"<"===e||">"===e||"="===e||"-"===e}function i(e,t){return t=t||e.charCodeAt(0),t>=48&&t<=57}function s(e,t){v.tokens.push({value:e,type:t||e,start:null,end:null})}function o(e){for(var t=e.chnum,n=e.source.replace(/\r\n?/g,"\n"),r=e.source.substring(0,t+1).replace(/\r\n?/g,"\n"),i=r.split("\n"),s=(i[i.length-1]||"").length,o=n.split("\n")[i.length-1]||"",a=100,l=Math.max(0,s-a),c=o.substr(l,2*a)+"\n",u=0;u<s-l-1;u++)c+="-";return c+="^",{line:i.length,ch:s,text:o,hint:c}}function a(e){var t=l(e),n=new Error(t.message,"",t.line);throw n.line=t.line,n.ch=t.ch,n.name=t.name,n.hint=t.hint,n}function l(e){var t=o(x);v.tokens;v.tokens=null;var n="CSS parsing error at line "+t.line+", char "+t.ch+": "+e;return n+="\n"+t.hint,{name:"ParseError",message:n,hint:t.hint,line:t.line,ch:t.ch}}function c(){for(var e=x.ch,t="";" "===e||"\t"===e;)t+=e,e=x.nextChar();s(t,"white")}function u(){var e,t=x,n=t.ch,r=n;if(e=t.nextChar(),"/"===e)for(;n&&"\n"!==e&&"\r"!==e;)r+=e,n=e,e=t.nextChar();else{if("*"!==e)return s(r,r);for(;n&&("*"!==n||"/"!==e);)r+=e,n=e,e=t.nextChar()}r+=e,t.nextChar(),s(r,"comment")}function f(){var e,t=x,n=t.ch,r=n,i=n;for(n=t.nextChar();n!==r;)"\n"===n?(e=t.nextChar(),"\\"===e?i+=n+e:a("Unterminated string")):""===n?a("Unterminated string"):i+="\\"===n?n+t.nextChar():n,n=t.nextChar();return i+=n}function p(){var e=f();x.nextChar(),s(e,"string")}function m(){var e=x,t=e.ch,n=1,r=t,i=!1;for(t=e.nextChar();t&&!i;)"("===t?n++:")"===t?(n--,n||(i=!0)):'"'===t||"'"===t?t=f():""===t&&a("Unterminated brace"),r+=t,t=e.nextChar();s(r,"brace")}function d(e){var t=x.ch,n=e?e+t:t;t=x.nextChar();for(var o=t.charCodeAt(0);r(t,o)||i(t,o);)n+=t,t=x.nextChar(),o=t.charCodeAt(0);s(n,"identifier")}function h(){var e,t=x,n=t.ch,r=n,o="."===r;if(n=t.nextChar(),e=!i(n),o&&e)return s(r,".");if("-"===r&&e)return d("-");for(;""!==n&&(i(n)||!o&&"."===n);)"."===n&&(o=!0),r+=n,n=t.nextChar();s(r,"number")}function b(){var e=x,t=e.ch,n=t,r=e.nextChar();return"="===r&&y(n,!0)?(n+=r,s(n,"match"),void e.nextChar()):void s(n,n)}function g(){var e=x.ch;return" "===e||"\t"===e?c():"/"===e?u():'"'===e||"'"===e?p():"("===e?m():"-"===e||"."===e||i(e)?h():r(e)?d():y(e)?b():"\r"===e?("\n"===x.peek()&&(e+=x.nextChar()),s(e,"line"),void x.nextChar()):"\n"===e?(s(e,"line"),void x.nextChar()):void a("Unrecognized character '"+e+"'")}var v={tokens:null},x={init:function(e){this.source=e,this.ch="",this.chnum=-1,this.nextChar()},nextChar:function(){return this.ch=this.source.charAt(++this.chnum)},peek:function(){return this.source.charAt(this.chnum+1)}},y=function(){for(var e="{}[]()+*=.,;:>~|\\%$#@^!".split(""),t="*^|$~".split(""),n={},r={},i=0;i<e.length;i+=1)n[e[i]]=!0;for(i=0;i<t.length;i+=1)r[t[i]]=!0;return function(e,t){return t?e in r:e in n}}();return{lex:function(e){if(x.init(e),v.tokens=[],e)for(;""!==x.ch;)g();else v.tokens.push(this.white());var t=v.tokens;return v.tokens=null,t},parse:function(e){for(var t,n=this.lex(e),r=0,i=0,s=n.length;i<s;i++)t=n[i],t.start=r,t.end=r+=t.value.length;return n},white:function(){return{value:"",type:"white",start:0,end:0}},toSource:function(e){for(var t=0,n=e.length,r="";t<n;t++)r+=e[t].value;return r}}})},{}],"C:\\Temp\\emmet\\lib\\parser\\processor\\attributes.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){function r(e,t){e.children.forEach(function(e){var n=e.attributeList(),l=e.attribute(t.DEFAULT_ATTR_NAME);if("undefined"!=typeof l){if(e.attribute(t.DEFAULT_ATTR_NAME,null),n.length){var c=i.find(n,s)||i.find(n,o)||i.find(n,a);if(c){var u=e.attribute(c.name),f=i.replaceUnescapedSymbol(u,"|",l);u==f&&(f=l),e.attribute(c.name,f)}}}else n.forEach(function(t){t.isImplied&&e.attribute(t.name,null)});r(e,t)})}var i=e("../../utils/common"),s=function(e){return e.isDefault},o=function(e){return e.isImplied},a=function(e){return!e.value};return{preprocessor:function(e,t,n){r(e,n)}}})},{"../../utils/common":"C:\\Temp\\emmet\\lib\\utils\\common.js"}],"C:\\Temp\\emmet\\lib\\parser\\processor\\href.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){var r=e("../../assets/preferences"),i=e("../../utils/common"),s=e("./pastedContent");return r.define("href.autodetect",!0,"Enables or disables automatic URL recognition when wrapping\t\ttext with <code>&lt;a&gt;</code> tag. With this option enabled,\t\tif wrapped text matches URL or e-mail pattern it will be automatically\t\tinserted into <code>href</code> attribute."),r.define("href.urlPattern","^(?:(?:https?|ftp|file)://|www\\.|ftp\\.)(?:\\([-A-Z0-9+&@#/%=~_|$?!:,.]*\\)|[-A-Z0-9+&@#/%=~_|$?!:,.])*(?:\\([-A-Z0-9+&@#/%=~_|$?!:,.]*\\)|[A-Z0-9+&@#/%=~_|$])","RegExp pattern to match wrapped URLs. Matched content will be inserts\t\tas-is into <code>href</code> attribute, only whitespace will be trimmed."),r.define("href.emailPattern","^[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,5}$","RegExp pattern to match wrapped e-mails. Unlike <code>href.urlPattern</code>,\t\twrapped content will be prefixed with <code>mailto:</code> in <code>href</code>\t\tattribute"),{postprocessor:function(e,t){if(r.get("href.autodetect")){var n=new RegExp(r.get("href.urlPattern"),"i"),o=new RegExp(r.get("href.emailPattern"),"i"),a=/^([a-z]+:)?\/\//i;e.findAll(function(e){if("a"==e.name().toLowerCase()&&!e.attribute("href")){var r=i.trim(s.pastedContent(e)||t.pastedContent);r&&(n.test(r)?(a.test(r)||(r="http://"+r),e.attribute("href",r)):o.test(r)&&e.attribute("href","mailto:"+r))}})}}}})},{"../../assets/preferences":"C:\\Temp\\emmet\\lib\\assets\\preferences.js","../../utils/common":"C:\\Temp\\emmet\\lib\\utils\\common.js","./pastedContent":"C:\\Temp\\emmet\\lib\\parser\\processor\\pastedContent.js"}],"C:\\Temp\\emmet\\lib\\parser\\processor\\pastedContent.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){function r(e){for(var t=[],n=c.create(e);!n.eol();){if("\\"==n.peek())n.next();else if(n.start=n.pos,n.match(f,!0)){t.push(u.create(n.start,f));continue}n.next()}return t}function i(e,t){var n=r(e);return n.reverse().forEach(function(n){e=a.replaceSubstring(e,t,n)}),e}function s(e){return!!r(e.content).length||!!a.find(e.attributeList(),function(e){return!!r(e.value).length})}function o(e,t,n){var r=e.findAll(function(e){return s(e)});if(s(e)&&r.unshift(e),r.length)r.forEach(function(e){e.content=i(e.content,t),e._attributes.forEach(function(e){e.value=i(e.value,t)})});else{var o=e.deepestChild()||e;n?o.content=t:o.content=l.insertChildContent(o.content,t)}}var a=e("../../utils/common"),l=e("../../utils/abbreviation"),c=e("../../assets/stringStream"),u=e("../../assets/range"),f="$#";return{pastedContent:function(e){var t=e.data("paste");return Array.isArray(t)?t[e.counter-1]:"function"==typeof t?t(e.counter-1,e.content):t?t:void 0},preprocessor:function(e,t){if(t.pastedContent){var n=a.splitByLines(t.pastedContent,!0).map(a.trim);e.findAll(function(e){if(e.hasImplicitRepeat)return e.data("paste",n),e.repeatCount=n.length})}},postprocessor:function(e,t){var n=this,r=e.findAll(function(e){var t=n.pastedContent(e);return t&&o(e,t,!!e.data("pasteOverwrites")),!!t});!r.length&&t.pastedContent&&o(e,t.pastedContent)}}})},{"../../assets/range":"C:\\Temp\\emmet\\lib\\assets\\range.js","../../assets/stringStream":"C:\\Temp\\emmet\\lib\\assets\\stringStream.js","../../utils/abbreviation":"C:\\Temp\\emmet\\lib\\utils\\abbreviation.js","../../utils/common":"C:\\Temp\\emmet\\lib\\utils\\common.js"}],"C:\\Temp\\emmet\\lib\\parser\\processor\\resourceMatcher.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){function r(e,t,n){e.children.slice(0).forEach(function(e){var o=i.getMatchedResource(e,t);"string"==typeof o&&(o=s.create("snippet",o)),e.data("resource",o);var l=s.type(o);if("snippet"==l){var c=o.data,u=e._text||e.content;u&&(c=a.insertChildContent(c,u)),e.content=c}else if("element"==l)e._name=o.name,Array.isArray(o.attributes)&&(e._attributes=[].concat(o.attributes,e._attributes));else if("reference"==l){var f=n.parse(o.data,{syntax:t});if(e.repeatCount>1){var p=f.findAll(function(e){return e.hasImplicitRepeat});p.length||(p=f.children),p.forEach(function(t){t.repeatCount=e.repeatCount,t.hasImplicitRepeat=!1})}var m=f.deepestChild();m&&(e.children.forEach(function(e){m.addChild(e)}),m.content=e.content),f.children.forEach(function(t){e.attributeList().forEach(function(e){t.attribute(e.name,e.value)})}),e.replace(f.children)}r(e,t,n)})}var i=e("../../assets/resources"),s=e("../../assets/elements"),o=e("../../utils/common"),a=e("../../utils/abbreviation");return{preprocessor:function(e,t,n){var i=t.syntax||o.defaultSyntax();r(e,i,n)}}})},{"../../assets/elements":"C:\\Temp\\emmet\\lib\\assets\\elements.js","../../assets/resources":"C:\\Temp\\emmet\\lib\\assets\\resources.js","../../utils/abbreviation":"C:\\Temp\\emmet\\lib\\utils\\abbreviation.js","../../utils/common":"C:\\Temp\\emmet\\lib\\utils\\common.js"}],"C:\\Temp\\emmet\\lib\\parser\\processor\\tagName.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){function r(e){return e.children.forEach(function(e){(e.hasImplicitName()||e.data("forceNameResolving"))&&(e._name=i.resolve(e.parent.name()),e.data("nameResolved",!0)),r(e)}),e}var i=e("../../resolver/tagName");return{postprocessor:r}})},{"../../resolver/tagName":"C:\\Temp\\emmet\\lib\\resolver\\tagName.js"}],"C:\\Temp\\emmet\\lib\\parser\\xml.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){function r(e,t){function n(n){return t.tokenize=n,n(e,t)}var r=e.next();if("<"==r){if(e.eat("!"))return e.eat("[")?e.match("CDATA[")?n(o("atom","]]>")):null:e.match("--")?n(o("comment","-->")):e.match("DOCTYPE",!0,!0)?(e.eatWhile(/[\w\._\-]/),n(a(1))):null;if(e.eat("?"))return e.eatWhile(/[\w\._\-]/),t.tokenize=o("meta","?>"),"meta";S=e.eat("/")?"closeTag":"openTag",e.eatSpace(),k="";for(var s;s=e.eat(/[^\s\u00a0=<>\"\'\/?]/);)k+=s;return t.tokenize=i,"tag"}if("&"==r){var l;return l=e.eat("#")?e.eat("x")?e.eatWhile(/[a-fA-F\d]/)&&e.eat(";"):e.eatWhile(/[\d]/)&&e.eat(";"):e.eatWhile(/[\w\.\-:]/)&&e.eat(";"),l?"atom":"error"}return e.eatWhile(/[^&<]/),"text"}function i(e,t){var n=e.next();return">"==n||"/"==n&&e.eat(">")?(t.tokenize=r,S=">"==n?"endTag":"selfcloseTag","tag"):"="==n?(S="equals",null):/[\'\"]/.test(n)?(t.tokenize=s(n),t.tokenize(e,t)):(e.eatWhile(/[^\s\u00a0=<>\"\'\/?]/),"word")}function s(e){return function(t,n){for(;!t.eol();)if(t.next()==e){n.tokenize=i;break}return"string"}}function o(e,t){return function(n,i){for(;!n.eol();){if(n.match(t)){i.tokenize=r;break}n.next()}return e}}function a(e){return function(t,n){for(var i;null!==(i=t.next());){if("<"==i)return n.tokenize=a(e+1),n.tokenize(t,n);if(">"==i){if(1==e){n.tokenize=r;break}return n.tokenize=a(e-1),n.tokenize(t,n)}}return"meta";
-}}function l(){for(var e=arguments.length-1;e>=0;e--)_.cc.push(arguments[e])}function c(){return l.apply(null,arguments),!0}function u(e,t){var n=j.doNotIndent.hasOwnProperty(e)||_.context&&_.context.noIndent;_.context={prev:_.context,tagName:e,indent:_.indented,startOfLine:t,noIndent:n}}function f(){_.context&&(_.context=_.context.prev)}function p(e){if("openTag"==e)return _.tagName=k,c(b,m(_.startOfLine));if("closeTag"==e){var t=!1;return _.context?_.context.tagName!=k&&(j.implicitlyClosed.hasOwnProperty(_.context.tagName.toLowerCase())&&f(),t=!_.context||_.context.tagName!=k):t=!0,t&&(w="error"),c(d(t))}return c()}function m(e){return function(t){return"selfcloseTag"==t||"endTag"==t&&j.autoSelfClosers.hasOwnProperty(_.tagName.toLowerCase())?(h(_.tagName.toLowerCase()),c()):"endTag"==t?(h(_.tagName.toLowerCase()),u(_.tagName,e),c()):c()}}function d(e){return function(t){return e&&(w="error"),"endTag"==t?(f(),c()):(w="error",c(arguments.callee))}}function h(e){for(var t;;){if(!_.context)return;if(t=_.context.tagName.toLowerCase(),!j.contextGrabbers.hasOwnProperty(t)||!j.contextGrabbers[t].hasOwnProperty(e))return;f()}}function b(e){return"word"==e?(w="attribute",c(g,b)):"endTag"==e||"selfcloseTag"==e?l():(w="error",c(b))}function g(e){return"equals"==e?c(v,b):(j.allowMissing||(w="error"),"endTag"==e||"selfcloseTag"==e?l():c())}function v(e){return"string"==e?c(x):"word"==e&&j.allowUnquoted?(w="string",c()):(w="error","endTag"==e||"selfCloseTag"==e?l():c())}function x(e){return"string"==e?c(x):l()}function y(){return{tokenize:r,cc:[],indented:0,startOfLine:!0,tagName:null,context:null}}function C(e,t){if(e.sol()&&(t.startOfLine=!0,t.indented=0),e.eatSpace())return null;w=S=k=null;var n=t.tokenize(e,t);if(t.type=S,(n||S)&&"comment"!=n)for(_=t;;){var r=t.cc.pop()||p;if(r(S||n))break}return t.startOfLine=!1,w||n}var w,T=e("../assets/stringStream"),j={autoSelfClosers:{},implicitlyClosed:{},contextGrabbers:{},doNotIndent:{},allowUnquoted:!0,allowMissing:!0},k=null,S=null,_=null;return{parse:function(e,t){t=t||0;for(var n=y(),r=T.create(e),i=[];!r.eol();)i.push({type:C(r,n),start:r.start+t,end:r.pos+t}),r.start=r.pos;return i}}})},{"../assets/stringStream":"C:\\Temp\\emmet\\lib\\assets\\stringStream.js"}],"C:\\Temp\\emmet\\lib\\plugin\\file.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){function i(e){for(var t=[],n=0,r=e.length;n<r;n++)t.push(String.fromCharCode(e[n]));return t.join("")}function s(e){var t=/^https?:\/\//;return t.test(e)}var o=e("../utils/common"),a={};return function(e){if("undefined"==typeof r||!r.amd)try{fs=e("fs"),path=e("path"),a.http=e("http"),a.https=e("https")}catch(t){}}(e),n.exports=function(e){e&&o.extend(n.exports,e)},o.extend(n.exports,{_parseParams:function(e){var t={path:e[0],size:0};return e=o.toArray(e,1),t.callback=e[e.length-1],e=e.slice(0,e.length-1),e.length&&(t.size=e[0]),t},_read:function(e,t){if(s(e.path))var n=a[/^https:/.test(e.path)?"https":"http"].get(e.path,function(r){var i=[],s=0,o=!1;r.on("data",function(r){s+=r.length,i.push(r),e.size&&s>=e.size&&(o=!0,t(null,Buffer.concat(i)),n.abort())}).on("end",function(){o||(o=!0,t(null,Buffer.concat(i)))})}).on("error",t);else if(e.size){var r=fs.openSync(e.path,"r"),i=new Buffer(e.size);fs.read(r,i,0,e.size,null,function(e,n){t(e,i)})}else t(null,fs.readFileSync(e.path))},read:function(e,t,n){var r=this._parseParams(arguments);this._read(r,function(e,t){r.callback(e,e?"":i(t))})},readText:function(e,t,n){var r=this._parseParams(arguments);this._read(r,function(e,t){r.callback(e,e?"":t.toString())})},locateFile:function(e,t,n){if(s(t))return n(t);var r,i=e;for(t=t.replace(/^\/+/,"");i&&i!==path.dirname(i);)if(i=path.dirname(i),r=path.join(i,t),fs.existsSync(r))return n(r);n(null)},createPath:function(e,t,n){fs.stat(e,function(r,i){if(r)return n(r);i.isFile()&&(e=path.dirname(e));var s=path.resolve(e,t);n(null,s)})},save:function(e,t,n){fs.writeFile(e,t,"ascii",function(e){n(e?e:null)})},getExt:function(e){var t=(e||"").match(/\.([\w\-]+)$/);return t?t[1].toLowerCase():""}})})},{"../utils/common":"C:\\Temp\\emmet\\lib\\utils\\common.js"}],"C:\\Temp\\emmet\\lib\\resolver\\css.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){function r(e){var t=e&&e.charCodeAt(0);return e&&"."==e||t>47&&t<58}function i(e){return e=j.trim(e),!/\/\*|\n|\r/.test(e)&&(!!/^[a-z0-9\-]+\s*\:/i.test(e)&&2==e.replace(/\$\{.+?\}/g,"").split(":").length)}function s(e){"-"!=e.charAt(0)||/^\-[\.\d]/.test(e)||(e=e.replace(/^\-+/,""));var t=e.charAt(0);return"#"==t?o(e):"$"==t?j.escapeText(e):l(e)}function o(e){var t=e.replace(/^#+/,"")||"0";if("t"==t.toLowerCase())return"transparent";var n="";t=t.replace(/\.(\d+)$/,function(e){return n="0"+e,""});var r=j.repeatString,i=null;switch(t.length){case 1:i=r(t,6);break;case 2:i=r(t,3);break;case 3:i=t.charAt(0)+t.charAt(0)+t.charAt(1)+t.charAt(1)+t.charAt(2)+t.charAt(2);break;case 4:i=t+t.substr(0,2);break;case 5:i=t+t.charAt(0);break;default:i=t.substr(0,6)}if(n)return a(i,n);if(y.get("css.color.short")){var s=i.split("");s[0]==s[1]&&s[2]==s[3]&&s[4]==s[5]&&(i=s[0]+s[2]+s[4])}switch(y.get("css.color.case")){case"upper":i=i.toUpperCase();break;case"lower":i=i.toLowerCase()}return"#"+i}function a(e,t){var n=parseInt(e.substr(0,2),16),r=parseInt(e.substr(2,2),16),i=parseInt(e.substr(4,2),16);return"rgba("+[n,r,i,t].join(", ")+")"}function l(e){var t=y.getDict("css.keywordAliases");return e in t?t[e]:e}function c(e){var t=y.getDict("css.unitAliases");return e in t?t[e]:e}function u(e){return~y.getArray("css.keywords").indexOf(l(e))}function f(e,t){var n=A[t];return n||(n=j.find(A,function(e){return e.prefix==t})),n&&n.supports(e)}function p(e){var t=T.resolvePrefixes(e);return t||(t=[],Object.keys(A).forEach(function(n){f(e,n)&&t.push(A[n].prefix)}),t.length||(t=null)),t}function m(e,t){var n=[],r=p(e);if(r){var i={};Object.keys(A).forEach(function(e){i[A[e].prefix]=e}),n=r.map(function(e){return i[e]})}return n.length||t||Object.keys(A).forEach(function(e){A[e].obsolete||n.push(e)}),n}function d(e,t){"string"==typeof t&&(t={prefix:t}),A[e]=j.extend({},_,t)}function h(e,t){if(t){"styl"==t&&(t="stylus");var n=y.get(t+"."+e);if("undefined"!=typeof n)return n}return y.get("css."+e)}function b(e,t){var n=e.indexOf(":");return e=e.substring(0,n).replace(/\s+$/,"")+h("valueSeparator",t)+j.trim(e.substring(n+1)),e.replace(/\s*;\s*$/,h("propertyEnd",t))}function g(e,t,n){return"string"!=typeof e&&(e=e.data),i(e)?(t&&(~e.indexOf(";")?e=e.split(";").join(" !important;"):e+=" !important"),b(e,n)):e}function v(e){var t=y.getArray(e),n=y.getArray(e+"Addon");return n&&n.forEach(function(e){"-"==e.charAt(0)?t=j.without(t,e.substr(1)):("+"==e.charAt(0)&&(e=e.substr(1)),t.push(e))}),t}function x(e,t,n){var r=[],i={},s=S.findParts(e.value);return s.reverse(),s.forEach(function(t){var n=t.substring(e.value);(p(n)||[]).forEach(function(s){i[s]||(i[s]=e.value,r.push(s)),i[s]=j.replaceSubstring(i[s],"-"+s+"-"+n,t)})}),r.map(function(r){return g(e.name+":"+i[r],t,n)})}var y=e("../assets/preferences"),C=e("../assets/resources"),w=e("../assets/stringStream"),T=e("../assets/caniuse"),j=e("../utils/common"),k=e("../utils/template"),S=e("../editTree/css"),_={prefix:"emmet",obsolete:!1,transformName:function(e){return"-"+this.prefix+"-"+e},properties:function(){return v("css."+this.prefix+"Properties")||[]},supports:function(e){return~this.properties().indexOf(e)}},A={},$="${1};";y.define("css.valueSeparator",": ","Defines a symbol that should be placed between CSS property and value when expanding CSS abbreviations."),y.define("css.propertyEnd",";","Defines a symbol that should be placed at the end of CSS property  when expanding CSS abbreviations."),y.define("stylus.valueSeparator"," ","Defines a symbol that should be placed between CSS property and value when expanding CSS abbreviations in Stylus dialect."),y.define("stylus.propertyEnd","","Defines a symbol that should be placed at the end of CSS property  when expanding CSS abbreviations in Stylus dialect."),y.define("sass.propertyEnd","","Defines a symbol that should be placed at the end of CSS property  when expanding CSS abbreviations in SASS dialect."),y.define("css.syntaxes","css, less, sass, scss, stylus, styl","List of syntaxes that should be treated as CSS dialects."),y.define("css.autoInsertVendorPrefixes",!0,"Automatically generate vendor-prefixed copies of expanded CSS property. By default, Emmet will generate vendor-prefixed properties only when you put dash before abbreviation (e.g. <code>-bxsh</code>). With this option enabled, you don’t need dashes before abbreviations: Emmet will produce vendor-prefixed properties for you."),y.define("less.autoInsertVendorPrefixes",!1,"Same as <code>css.autoInsertVendorPrefixes</code> but for LESS syntax"),y.define("scss.autoInsertVendorPrefixes",!1,"Same as <code>css.autoInsertVendorPrefixes</code> but for SCSS syntax"),y.define("sass.autoInsertVendorPrefixes",!1,"Same as <code>css.autoInsertVendorPrefixes</code> but for SASS syntax"),y.define("stylus.autoInsertVendorPrefixes",!1,"Same as <code>css.autoInsertVendorPrefixes</code> but for Stylus syntax");var E=k("A comma-separated list of CSS properties that may have <code><%= vendor %></code> vendor prefix. This list is used to generate a list of prefixed properties when expanding <code>-property</code> abbreviations. Empty list means that all possible CSS values may have <code><%= vendor %></code> prefix."),P=k("A comma-separated list of <em>additional</em> CSS properties for <code>css.<%= vendor %>Preperties</code> preference. You should use this list if you want to add or remove a few CSS properties to original set. To add a new property, simply write its name, to remove it, precede property with hyphen.<br>For example, to add <em>foo</em> property and remove <em>border-radius</em> one, the preference value will look like this: <code>foo, -border-radius</code>."),z={webkit:"animation, animation-delay, animation-direction, animation-duration, animation-fill-mode, animation-iteration-count, animation-name, animation-play-state, animation-timing-function, appearance, backface-visibility, background-clip, background-composite, background-origin, background-size, border-fit, border-horizontal-spacing, border-image, border-vertical-spacing, box-align, box-direction, box-flex, box-flex-group, box-lines, box-ordinal-group, box-orient, box-pack, box-reflect, box-shadow, color-correction, column-break-after, column-break-before, column-break-inside, column-count, column-gap, column-rule-color, column-rule-style, column-rule-width, column-span, column-width, dashboard-region, font-smoothing, highlight, hyphenate-character, hyphenate-limit-after, hyphenate-limit-before, hyphens, line-box-contain, line-break, line-clamp, locale, margin-before-collapse, margin-after-collapse, marquee-direction, marquee-increment, marquee-repetition, marquee-style, mask-attachment, mask-box-image, mask-box-image-outset, mask-box-image-repeat, mask-box-image-slice, mask-box-image-source, mask-box-image-width, mask-clip, mask-composite, mask-image, mask-origin, mask-position, mask-repeat, mask-size, nbsp-mode, perspective, perspective-origin, rtl-ordering, text-combine, text-decorations-in-effect, text-emphasis-color, text-emphasis-position, text-emphasis-style, text-fill-color, text-orientation, text-security, text-stroke-color, text-stroke-width, transform, transition, transform-origin, transform-style, transition-delay, transition-duration, transition-property, transition-timing-function, user-drag, user-modify, user-select, writing-mode, svg-shadow, box-sizing, border-radius",moz:"animation-delay, animation-direction, animation-duration, animation-fill-mode, animation-iteration-count, animation-name, animation-play-state, animation-timing-function, appearance, backface-visibility, background-inline-policy, binding, border-bottom-colors, border-image, border-left-colors, border-right-colors, border-top-colors, box-align, box-direction, box-flex, box-ordinal-group, box-orient, box-pack, box-shadow, box-sizing, column-count, column-gap, column-rule-color, column-rule-style, column-rule-width, column-width, float-edge, font-feature-settings, font-language-override, force-broken-image-icon, hyphens, image-region, orient, outline-radius-bottomleft, outline-radius-bottomright, outline-radius-topleft, outline-radius-topright, perspective, perspective-origin, stack-sizing, tab-size, text-blink, text-decoration-color, text-decoration-line, text-decoration-style, text-size-adjust, transform, transform-origin, transform-style, transition, transition-delay, transition-duration, transition-property, transition-timing-function, user-focus, user-input, user-modify, user-select, window-shadow, background-clip, border-radius",ms:"accelerator, backface-visibility, background-position-x, background-position-y, behavior, block-progression, box-align, box-direction, box-flex, box-line-progression, box-lines, box-ordinal-group, box-orient, box-pack, content-zoom-boundary, content-zoom-boundary-max, content-zoom-boundary-min, content-zoom-chaining, content-zoom-snap, content-zoom-snap-points, content-zoom-snap-type, content-zooming, filter, flow-from, flow-into, font-feature-settings, grid-column, grid-column-align, grid-column-span, grid-columns, grid-layer, grid-row, grid-row-align, grid-row-span, grid-rows, high-contrast-adjust, hyphenate-limit-chars, hyphenate-limit-lines, hyphenate-limit-zone, hyphens, ime-mode, interpolation-mode, layout-flow, layout-grid, layout-grid-char, layout-grid-line, layout-grid-mode, layout-grid-type, line-break, overflow-style, perspective, perspective-origin, perspective-origin-x, perspective-origin-y, scroll-boundary, scroll-boundary-bottom, scroll-boundary-left, scroll-boundary-right, scroll-boundary-top, scroll-chaining, scroll-rails, scroll-snap-points-x, scroll-snap-points-y, scroll-snap-type, scroll-snap-x, scroll-snap-y, scrollbar-arrow-color, scrollbar-base-color, scrollbar-darkshadow-color, scrollbar-face-color, scrollbar-highlight-color, scrollbar-shadow-color, scrollbar-track-color, text-align-last, text-autospace, text-justify, text-kashida-space, text-overflow, text-size-adjust, text-underline-position, touch-action, transform, transform-origin, transform-origin-x, transform-origin-y, transform-origin-z, transform-style, transition, transition-delay, transition-duration, transition-property, transition-timing-function, user-select, word-break, wrap-flow, wrap-margin, wrap-through, writing-mode",o:"dashboard-region, animation, animation-delay, animation-direction, animation-duration, animation-fill-mode, animation-iteration-count, animation-name, animation-play-state, animation-timing-function, border-image, link, link-source, object-fit, object-position, tab-size, table-baseline, transform, transform-origin, transition, transition-delay, transition-duration, transition-property, transition-timing-function, accesskey, input-format, input-required, marquee-dir, marquee-loop, marquee-speed, marquee-style"};return Object.keys(z).forEach(function(e){y.define("css."+e+"Properties",z[e],E({vendor:e})),y.define("css."+e+"PropertiesAddon","",P({vendor:e}))}),y.define("css.unitlessProperties","z-index, line-height, opacity, font-weight, zoom","The list of properties whose values ​​must not contain units."),y.define("css.intUnit","px","Default unit for integer values"),y.define("css.floatUnit","em","Default unit for float values"),y.define("css.keywords","auto, inherit, all","A comma-separated list of valid keywords that can be used in CSS abbreviations."),y.define("css.keywordAliases","a:auto, i:inherit, s:solid, da:dashed, do:dotted, t:transparent","A comma-separated list of keyword aliases, used in CSS abbreviation. Each alias should be defined as <code>alias:keyword_name</code>."),y.define("css.unitAliases","e:em, p:%, x:ex, r:rem","A comma-separated list of unit aliases, used in CSS abbreviation. Each alias should be defined as <code>alias:unit_value</code>."),y.define("css.color.short",!0,"Should color values like <code>#ffffff</code> be shortened to <code>#fff</code> after abbreviation with color was expanded."),y.define("css.color.case","keep","Letter case of color values generated by abbreviations with color (like <code>c#0</code>). Possible values are <code>upper</code>, <code>lower</code> and <code>keep</code>."),y.define("css.fuzzySearch",!0,"Enable fuzzy search among CSS snippet names. When enabled, every <em>unknown</em> snippet will be scored against available snippet names (not values or CSS properties!). The match with best score will be used to resolve snippet value. For example, with this preference enabled, the following abbreviations are equal: <code>ov:h</code> == <code>ov-h</code> == <code>o-h</code> == <code>oh</code>"),y.define("css.fuzzySearchMinScore",.3,"The minium score (from 0 to 1) that fuzzy-matched abbreviation should achive. Lower values may produce many false-positive matches, higher values may reduce possible matches."),y.define("css.alignVendor",!1,"If set to <code>true</code>, all generated vendor-prefixed properties will be aligned by real property name."),d("w",{prefix:"webkit"}),d("m",{prefix:"moz"}),d("s",{prefix:"ms"}),d("o",{prefix:"o"}),n=n||{},n.exports={addPrefix:d,supportsPrefix:f,resolve:function(e,t){var n=y.getArray("css.syntaxes");return n&&~n.indexOf(t)&&e.isElement()?this.expandToSnippet(e.abbreviation,t):null},prefixed:function(e,t){return f(e,t)?"-"+t+"-"+e:e},listPrefixes:function(){return A.map(function(e){return e.prefix})},getPrefix:function(e){return A[e]},removePrefix:function(e){e in A&&delete A[e]},extractPrefixes:function(e){if("-"!=e.charAt(0))return{property:e,prefixes:null};for(var t,n=1,r=e.length,i=[];n<r;){if(t=e.charAt(n),"-"==t){n++;break}if(!(t in A)){i.length=0,n=1;break}i.push(t),n++}return n==r-1&&(n=1,i.length=1),{property:e.substring(n),prefixes:i.length?i:"all"}},findValuesInAbbreviation:function(e,t){t=t||"css";for(var n,i=0,s=e.length,o="";i<s;){if(n=e.charAt(i),r(n)||"#"==n||"$"==n||"-"==n&&r(e.charAt(i+1))){o=e.substring(i);break}i++}for(var a=e.substring(0,e.length-o.length),l=[];~a.indexOf("-")&&!C.findSnippet(t,a);){var c=a.split("-"),f=c.pop();if(!u(f))break;l.unshift(f),a=c.join("-")}return l.join("-")+o},parseValues:function(e){for(var t=w.create(e),n=[],i=null;i=t.next();)"$"==i?(t.match(/^[^\$]+/,!0),n.push(t.current())):"#"==i?(t.match(/^t|[0-9a-f]+(\.\d+)?/i,!0),n.push(t.current())):"-"==i?((u(j.last(n))||t.start&&r(e.charAt(t.start-1)))&&(t.start=t.pos),t.match(/^\-?[0-9]*(\.[0-9]+)?[a-z%\.]*/,!0),n.push(t.current())):(t.match(/^[0-9]*(\.[0-9]*)?[a-z%]*/,!0),n.push(t.current())),t.start=t.pos;return n.filter(function(e){return!!e}).map(s)},extractValues:function(e){var t=this.findValuesInAbbreviation(e);return t?{property:e.substring(0,e.length-t.length).replace(/-$/,""),values:this.parseValues(t)}:{property:e,values:null}},normalizeValue:function(e,t){t=(t||"").toLowerCase();var n=y.getArray("css.unitlessProperties");return e.replace(/^(\-?[0-9\.]+)([a-z]*)$/,function(e,r,i){return i||"0"!=r&&!~n.indexOf(t)?i?r+c(i):r.replace(/\.$/,"")+y.get(~r.indexOf(".")?"css.floatUnit":"css.intUnit"):r})},expand:function(e,t,n){n=n||"css";var r=y.get(n+".autoInsertVendorPrefixes"),s=/^(.+)\!$/.test(e);s&&(e=RegExp.$1);var o=C.findSnippet(n,e);if(o&&!r)return g(o,s,n);var a=this.extractPrefixes(e),l=this.extractValues(a.property),c=j.extend(a,l);if(o?c.values=null:o=C.findSnippet(n,c.property),!o&&y.get("css.fuzzySearch")&&(o=C.fuzzyFindSnippet(n,c.property,parseFloat(y.get("css.fuzzySearchMinScore")))),o)"string"!=typeof o&&(o=o.data);else{if(!c.property||c.property.endsWith(":"))return null;o=c.property+":"+$}if(!i(o))return o;var u=this.splitSnippet(o),f=[];!t&&c.values&&(t=c.values.map(function(e){return this.normalizeValue(e,u.name)},this).join(" ")+";"),u.value=t||u.value;var p,d="all"==c.prefixes||!c.prefixes&&r?m(u.name,r&&"all"!=c.prefixes):c.prefixes,h=[];if((d||[]).forEach(function(e){e in A&&(p=A[e].transformName(u.name),h.push(p),f.push(g(p+":"+u.value,s,n)))}),f.push(g(u.name+":"+u.value,s,n)),h.push(u.name),f=x(u,s,n).concat(f),y.get("css.alignVendor")){var b=j.getStringsPads(h);f=f.map(function(e,t){return b[t]+e})}return f},expandToSnippet:function(e,t){var n=this.expand(e,null,t);return null===n?null:Array.isArray(n)?n.join("\n"):"string"!=typeof n?n.data:n+""},splitSnippet:function(e){if(e=j.trim(e),e.indexOf(":")==-1)return{name:e,value:$};var t=e.split(":");return{name:j.trim(t.shift()),value:j.trim(t.join(":")).replace(/^(\$\{0\}|\$0)(\s*;?)$/,"${1}$2")}},getSyntaxPreference:h,transformSnippet:g,vendorPrefixes:p},n.exports})},{"../assets/caniuse":"C:\\Temp\\emmet\\lib\\assets\\caniuse.js","../assets/preferences":"C:\\Temp\\emmet\\lib\\assets\\preferences.js","../assets/resources":"C:\\Temp\\emmet\\lib\\assets\\resources.js","../assets/stringStream":"C:\\Temp\\emmet\\lib\\assets\\stringStream.js","../editTree/css":"C:\\Temp\\emmet\\lib\\editTree\\css.js","../utils/common":"C:\\Temp\\emmet\\lib\\utils\\common.js","../utils/template":"C:\\Temp\\emmet\\lib\\utils\\template.js"}],"C:\\Temp\\emmet\\lib\\resolver\\cssGradient.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){function r(e,t){var n=f.findSnippet(t,e);if(!n&&u.get("css.fuzzySearch")){var r=parseFloat(u.get("css.fuzzySearchMinScore"));n=f.fuzzyFindSnippet(t,e,r)}if(n)return"string"!=typeof n&&(n=n.data),m.splitSnippet(n).name}function i(e){var t=m.vendorPrefixes(e);return t||(t=u.getArray("css.gradient.prefixes")),t||[]}function s(e,t){var n=[],r=t.name(),s=u.get("css.gradient.omitDefaultDirection");u.get("css.gradient.fallback")&&~r.toLowerCase().indexOf("background")&&n.push({name:"background-color",value:"${1:"+e[0].gradient.colorStops[0].color+"}"});var a=t.value();return i("linear-gradient").forEach(function(t){var i=m.prefixed(r,t);if("webkit"==t&&u.get("css.gradient.oldWebkit"))try{n.push({name:i,value:o(e,a,{prefix:t,oldWebkit:!0,omitDefaultDirection:s})})}catch(l){}n.push({name:i,value:o(e,a,{prefix:t,omitDefaultDirection:s})})}),n.sort(function(e,t){return t.name.length-e.name.length})}function o(e,t,n){return n=n||{},e=p.clone(e),e.reverse().forEach(function(e,r){var i=!r&&n.placeholder?n.placeholder:"",s=n.oldWebkit?e.gradient.stringifyOldWebkit(n):e.gradient.stringify(n);t=p.replaceSubstring(t,s+i,e.matchedPart)}),t}function a(e){"string"!=typeof e&&(e=e.name());var t=(m.vendorPrefixes(e)||[]).map(function(t){return"-"+t+"-"+e});return t.push(e),t}function l(e,t){var n=e.parent,r=u.get("css.alignVendor"),i=u.get("css.gradient.omitDefaultDirection"),l=e.styleSeparator,c=e.styleBefore;if(n.getAll(a(e)).forEach(function(t){t!=e&&/gradient/i.test(t.value())&&(t.styleSeparator.length<l.length&&(l=t.styleSeparator),t.styleBefore.length<c.length&&(c=t.styleBefore),n.remove(t))}),r){if(c!=e.styleBefore){var f=e.fullRange();n._updateSource(c,f.start,f.start+e.styleBefore.length),e.styleBefore=c}l!=e.styleSeparator&&(n._updateSource(l,e.nameRange().end,e.valueRange().start),e.styleSeparator=l)}var m=e.value(),d=s(t,e);if(r){var h=[],b=[];d.forEach(function(e){h.push(e.name),b.push(e.value)}),b.push(e.value()),h.push(e.name());var g=p.getStringsPads(b.map(function(e){return e.substring(0,e.indexOf("("))})),v=p.getStringsPads(h);e.name(v[v.length-1]+e.name()),d.forEach(function(e,t){e.name=v[t]+e.name,e.value=g[t]+e.value}),e.value(g[g.length-1]+e.value())}d.forEach(function(t){n.add(t.name,t.value,n.indexOf(e))}),e.value(o(t,m,{placeholder:"${2}",omitDefaultDirection:i}))}function c(e,t,n){if(n=n||"css","css"==n||"less"==n||"scss"==n)return!0;for(var r=e.property.valueRange(!0).start,i=e.gradients,s=i.length-1;s>=0;s--)if(i[s].matchedPart.start+r>=t)return!1;return!0}var u=e("../assets/preferences"),f=e("../assets/resources"),p=e("../utils/common"),m=(e("../assets/stringStream"),e("./css")),d=e("../assets/range"),h=e("../editTree/css"),b=e("../utils/editor"),g=e("./gradient/linear"),v=["css","less","sass","scss","stylus","styl"];return u.define("css.gradient.prefixes","webkit, moz, o","A comma-separated list of vendor-prefixes for which values should be generated."),u.define("css.gradient.oldWebkit",!1,"Generate gradient definition for old Webkit implementations"),u.define("css.gradient.omitDefaultDirection",!0,"Do not output default direction definition in generated gradients."),u.define("css.gradient.defaultProperty","background-image","When gradient expanded outside CSS value context, it will produce properties with this name."),u.define("css.gradient.fallback",!1,"With this option enabled, CSS gradient generator will produce <code>background-color</code> property with gradient first color as fallback for old browsers."),n=n||{},n.exports={findGradients:function(e){var t=e.value(),n=[];return e.valueParts().forEach(function(e){var r=e.substring(t);if(g.isLinearGradient(r)){var i=g.parse(r);i&&n.push({gradient:i,matchedPart:e})}}),n.length?n:null},gradientsFromCSSProperty:function(e,t){var n=h.propertyFromPosition(e,t);if(n){var r=this.findGradients(n);if(r)return{property:n,gradients:r}}return null},expandAbbreviationHandler:function(e,t,n){var i=b.outputInfo(e,t,n);if(!~v.indexOf(i.syntax))return!1;var s=e.getCaretPos(),o=i.content,a=this.gradientsFromCSSProperty(o,s);if(a){if(!c(a,s,i.syntax))return!1;var u=a.property,f=u.parent,m=f.options.offset||0,d=m+f.toString().length;if(/[\n\r]/.test(u.value())){var h=u.valueRange(!0).start+p.last(a.gradients).matchedPart.end;o=p.replaceSubstring(o,";",h);var g=this.gradientsFromCSSProperty(o,s);g&&(a=g,u=a.property,f=u.parent)}u.end(";");var x=r(u.name(),t);return x&&u.name(x),l(u,a.gradients),e.replaceContent(f.toString(),m,d,!0),!0}return this.expandGradientOutsideValue(e,t)},expandGradientOutsideValue:function(e,t){var n=u.get("css.gradient.defaultProperty"),r=u.get("css.gradient.omitDefaultDirection");if(!n)return!1;var i=String(e.getContent()),a=d.create(e.getCurrentLineRange()),l=a.substring(i).replace(/^\s+/,function(e){return a.start+=e.length,""}).replace(/\s+$/,function(e){return a.end-=e.length,""}),c="a{"+n+": "+l+";}",f=this.gradientsFromCSSProperty(c,c.length-2);if(f){var h=s(f.gradients,f.property);h.push({name:f.property.name(),value:o(f.gradients,f.property.value(),{placeholder:"${2}",omitDefaultDirection:r})});var b=m.getSyntaxPreference("valueSeparator",t),g=m.getSyntaxPreference("propertyEnd",t);if(u.get("css.alignVendor")){var v=p.getStringsPads(h.map(function(e){return e.value.substring(0,e.value.indexOf("("))}));h.forEach(function(e,t){e.value=v[t]+e.value})}return h=h.map(function(e){return e.name+b+e.value+g}),e.replaceContent(h.join("\n"),a.start,a.end),!0}return!1},reflectValueHandler:function(e){var t=u.get("css.gradient.omitDefaultDirection"),n=this.findGradients(e);if(!n)return!1;var r=this,i=e.value();return e.parent.getAll(a(e)).forEach(function(s){if(s!==e){var a=r.findGradients(s);if(a){var l=s.value(),c=a[0].matchedPart.substring(l),u="";/^\s*\-([a-z]+)\-/.test(c)&&(u=RegExp.$1),s.value(o(n,i,{prefix:u,omitDefaultDirection:t}))}}}),!0}}})},{"../assets/preferences":"C:\\Temp\\emmet\\lib\\assets\\preferences.js","../assets/range":"C:\\Temp\\emmet\\lib\\assets\\range.js","../assets/resources":"C:\\Temp\\emmet\\lib\\assets\\resources.js","../assets/stringStream":"C:\\Temp\\emmet\\lib\\assets\\stringStream.js","../editTree/css":"C:\\Temp\\emmet\\lib\\editTree\\css.js","../utils/common":"C:\\Temp\\emmet\\lib\\utils\\common.js","../utils/editor":"C:\\Temp\\emmet\\lib\\utils\\editor.js","./css":"C:\\Temp\\emmet\\lib\\resolver\\css.js","./gradient/linear":"C:\\Temp\\emmet\\lib\\resolver\\gradient\\linear.js"}],"C:\\Temp\\emmet\\lib\\resolver\\gradient\\linear.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){function r(e){this.colorStops=[],this.direction=180;for(var t,n,r=l.create(c.trim(e));t=r.next();)","==r.peek()?(n=r.current(),this.colorStops.length||!m.test(n)&&!d.test(n)?this.addColorStop(n):this.direction=s(n),r.next(),r.eatSpace(),r.start=r.pos):"("==t&&r.skipTo(")");this.addColorStop(r.current())}function i(e){return c.trim(e).replace(/\s+/g," ")}function s(e){if("number"==typeof e)return e;if(e=i(e).toLowerCase(),m.test(e))return+RegExp.$1;var t=/^to\s/.test(e)?"to ":"",n=~e.indexOf("left")&&"left",r=~e.indexOf("right")&&"right",s=~e.indexOf("top")&&"top",o=~e.indexOf("bottom")&&"bottom",a=i(t+(s||o||"")+" "+(n||r||""));return u[a]||0}function o(e,t){for(var n=/^to\s/,r=Object.keys(u).filter(function(e){var r=n.test(e);return t?!r:r}),i=0;i<r.length;i++)if(u[r[i]]==e)return r[i];return t&&(e=(e+270)%360),e+"deg"}function a(e){if(e=o(e,!0),m.test(e))throw"The direction is an angle that can’t be converted.";var t=function(t){return~e.indexOf(t)?"100%":"0"};return t("left")+" "+t("top")+", "+t("right")+" "+t("bottom")}var l=e("../../assets/stringStream"),c=e("../../utils/common"),u={bottom:0,"bottom left":45,left:90,"top left":135,top:180,"top right":225,right:270,"bottom right":315,"to top":0,"to top right":45,"to right":90,"to bottom right":135,"to bottom":180,"to bottom left":225,"to left":270,"to top left":315},f=["top","to bottom","0deg"],p=/^\s*(\-[a-z]+\-)?(lg|linear\-gradient)\s*\(/i,m=/(\d+)deg/i,d=/top|bottom|left|right/i;return r.prototype={type:"linear-gradient",addColorStop:function(e,t){e=i(e||""),e&&(e=this.parseColorStop(e),"undefined"==typeof t?this.colorStops.push(e):this.colorStops.splice(t,0,e))},parseColorStop:function(e){e=i(e);var t=null;if(e=e.replace(/^(\w+\(.+?\))\s*/,function(e,n){return t=n,""}),!t){var n=e.split(" ");t=n[0],e=n[1]||""}var r={color:t};return e&&e.replace(/^(\-?[\d\.]+)([a-z%]+)?$/,function(e,t,n){r.position=t,~t.indexOf(".")?n="":n||(n="%"),n&&(r.unit=n)}),r},stringify:function(e){e=e||{};var t="linear-gradient";e.prefix&&(t="-"+e.prefix+"-"+t);var n=this.colorStops.map(function(e){var t=e.position?" "+e.position+(e.unit||""):"";return e.color+t}),r=o(this.direction,!!e.prefix);return e.omitDefaultDirection&&~f.indexOf(r)||n.unshift(r),t+"("+n.join(", ")+")"},stringifyOldWebkit:function(){var e=this.colorStops.map(function(e){return c.clone(e)});return e.forEach(function(e){if("position"in e){if(!~e.position.indexOf(".")&&"%"!=e.unit)throw"Can't convert color stop '"+(e.position+(e.unit||""))+"'";e.position=parseFloat(e.position)/("%"==e.unit?100:1)}}),this._fillImpliedPositions(e),e=e.map(function(t,n){return t.position||n?1==t.position&&n==e.length-1?"to("+t.color+")":"color-stop("+t.position.toFixed(2).replace(/\.?0+$/,"")+", "+t.color+")":"from("+t.color+")"}),"-webkit-gradient(linear, "+a((this.direction+180)%360)+", "+e.join(", ")+")"},_fillImpliedPositions:function(e){var t=0;e.forEach(function(n,r){if(!r)return n.position=n.position||0;if(r!=e.length-1||"position"in n||(n.position=1),"position"in n){var i=e[t].position||0,s=(n.position-i)/(r-t);e.slice(t,r).forEach(function(e,t){e.position=i+s*t}),t=r}})},valueOf:function(){return this.stringify()}},{parse:function(e){if(!this.isLinearGradient(e))throw"Invalid linear gradient definition:\n"+e;return e=e.replace(/^\s*[\-a-z]+\s*\(|\)\s*$/gi,""),new r(e)},isLinearGradient:function(e){return p.test(e)},resolveDirection:s,stringifyDirection:o}})},{"../../assets/stringStream":"C:\\Temp\\emmet\\lib\\assets\\stringStream.js","../../utils/common":"C:\\Temp\\emmet\\lib\\utils\\common.js"}],"C:\\Temp\\emmet\\lib\\resolver\\tagName.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){var r=e("../utils/common"),i={empty:[],blockLevel:"address,applet,blockquote,button,center,dd,del,dir,div,dl,dt,fieldset,form,frameset,hr,iframe,ins,isindex,li,link,map,menu,noframes,noscript,object,ol,p,pre,script,table,tbody,td,tfoot,th,thead,tr,ul,h1,h2,h3,h4,h5,h6".split(","),inlineLevel:"a,abbr,acronym,applet,b,basefont,bdo,big,br,button,cite,code,del,dfn,em,font,i,iframe,img,input,ins,kbd,label,map,object,q,s,samp,select,small,span,strike,strong,sub,sup,textarea,tt,u,var".split(",")
-},s={p:"span",ul:"li",ol:"li",table:"tr",tr:"td",tbody:"tr",thead:"tr",tfoot:"tr",colgroup:"col",select:"option",optgroup:"option",audio:"source",video:"source",object:"param",map:"area"};return{resolve:function(e){return e=(e||"").toLowerCase(),e in s?this.getMapping(e):this.isInlineLevel(e)?"span":"div"},getMapping:function(e){return s[e.toLowerCase()]},isInlineLevel:function(e){return this.isTypeOf(e,"inlineLevel")},isBlockLevel:function(e){return this.isTypeOf(e,"blockLevel")},isEmptyElement:function(e){return this.isTypeOf(e,"empty")},isTypeOf:function(e,t){return~i[t].indexOf(e)},addMapping:function(e,t){s[e]=t},removeMapping:function(e){e in s&&delete s[e]},addElementToCollection:function(e,t){i[t]||(i[t]=[]);var n=this.getCollection(t);~n.indexOf(e)||n.push(e)},removeElementFromCollection:function(e,t){t in i&&(i[t]=r.without(this.getCollection(t),e))},getCollection:function(e){return i[e]}}})},{"../utils/common":"C:\\Temp\\emmet\\lib\\utils\\common.js"}],"C:\\Temp\\emmet\\lib\\snippets.json":[function(e,t,n){t.exports={variables:{lang:"en",locale:"en-US",charset:"UTF-8",indentation:"\t",newline:"\n"},css:{filters:"css",profile:"css",snippets:{"@i":"@import url(|);","@import":"@import url(|);","@m":"@media ${1:screen} {\n\t|\n}","@media":"@media ${1:screen} {\n\t|\n}","@f":"@font-face {\n\tfont-family:|;\n\tsrc:url(|);\n}","@f+":"@font-face {\n\tfont-family: '${1:FontName}';\n\tsrc: url('${2:FileName}.eot');\n\tsrc: url('${2:FileName}.eot?#iefix') format('embedded-opentype'),\n\t\t url('${2:FileName}.woff') format('woff'),\n\t\t url('${2:FileName}.ttf') format('truetype'),\n\t\t url('${2:FileName}.svg#${1:FontName}') format('svg');\n\tfont-style: ${3:normal};\n\tfont-weight: ${4:normal};\n}","@kf":"@-webkit-keyframes ${1:identifier} {\n\t${2:from} { ${3} }${6}\n\t${4:to} { ${5} }\n}\n@-o-keyframes ${1:identifier} {\n\t${2:from} { ${3} }${6}\n\t${4:to} { ${5} }\n}\n@-moz-keyframes ${1:identifier} {\n\t${2:from} { ${3} }${6}\n\t${4:to} { ${5} }\n}\n@keyframes ${1:identifier} {\n\t${2:from} { ${3} }${6}\n\t${4:to} { ${5} }\n}",anim:"animation:|;","anim-":"animation:${1:name} ${2:duration} ${3:timing-function} ${4:delay} ${5:iteration-count} ${6:direction} ${7:fill-mode};",animdel:"animation-delay:${1:time};",animdir:"animation-direction:${1:normal};","animdir:n":"animation-direction:normal;","animdir:r":"animation-direction:reverse;","animdir:a":"animation-direction:alternate;","animdir:ar":"animation-direction:alternate-reverse;",animdur:"animation-duration:${1:0}s;",animfm:"animation-fill-mode:${1:both};","animfm:f":"animation-fill-mode:forwards;","animfm:b":"animation-fill-mode:backwards;","animfm:bt":"animation-fill-mode:both;","animfm:bh":"animation-fill-mode:both;",animic:"animation-iteration-count:${1:1};","animic:i":"animation-iteration-count:infinite;",animn:"animation-name:${1:none};",animps:"animation-play-state:${1:running};","animps:p":"animation-play-state:paused;","animps:r":"animation-play-state:running;",animtf:"animation-timing-function:${1:linear};","animtf:e":"animation-timing-function:ease;","animtf:ei":"animation-timing-function:ease-in;","animtf:eo":"animation-timing-function:ease-out;","animtf:eio":"animation-timing-function:ease-in-out;","animtf:l":"animation-timing-function:linear;","animtf:cb":"animation-timing-function:cubic-bezier(${1:0.1}, ${2:0.7}, ${3:1.0}, ${3:0.1});",ap:"appearance:${none};","!":"!important",pos:"position:${1:relative};","pos:s":"position:static;","pos:a":"position:absolute;","pos:r":"position:relative;","pos:f":"position:fixed;",t:"top:|;","t:a":"top:auto;",r:"right:|;","r:a":"right:auto;",b:"bottom:|;","b:a":"bottom:auto;",l:"left:|;","l:a":"left:auto;",z:"z-index:|;","z:a":"z-index:auto;",fl:"float:${1:left};","fl:n":"float:none;","fl:l":"float:left;","fl:r":"float:right;",cl:"clear:${1:both};","cl:n":"clear:none;","cl:l":"clear:left;","cl:r":"clear:right;","cl:b":"clear:both;",colm:"columns:|;",colmc:"column-count:|;",colmf:"column-fill:|;",colmg:"column-gap:|;",colmr:"column-rule:|;",colmrc:"column-rule-color:|;",colmrs:"column-rule-style:|;",colmrw:"column-rule-width:|;",colms:"column-span:|;",colmw:"column-width:|;",d:"display:${1:block};","d:n":"display:none;","d:b":"display:block;","d:f":"display:flex;","d:if":"display:inline-flex;","d:i":"display:inline;","d:ib":"display:inline-block;","d:ib+":"display: inline-block;\n*display: inline;\n*zoom: 1;","d:li":"display:list-item;","d:ri":"display:run-in;","d:cp":"display:compact;","d:tb":"display:table;","d:itb":"display:inline-table;","d:tbcp":"display:table-caption;","d:tbcl":"display:table-column;","d:tbclg":"display:table-column-group;","d:tbhg":"display:table-header-group;","d:tbfg":"display:table-footer-group;","d:tbr":"display:table-row;","d:tbrg":"display:table-row-group;","d:tbc":"display:table-cell;","d:rb":"display:ruby;","d:rbb":"display:ruby-base;","d:rbbg":"display:ruby-base-group;","d:rbt":"display:ruby-text;","d:rbtg":"display:ruby-text-group;",v:"visibility:${1:hidden};","v:v":"visibility:visible;","v:h":"visibility:hidden;","v:c":"visibility:collapse;",ov:"overflow:${1:hidden};","ov:v":"overflow:visible;","ov:h":"overflow:hidden;","ov:s":"overflow:scroll;","ov:a":"overflow:auto;",ovx:"overflow-x:${1:hidden};","ovx:v":"overflow-x:visible;","ovx:h":"overflow-x:hidden;","ovx:s":"overflow-x:scroll;","ovx:a":"overflow-x:auto;",ovy:"overflow-y:${1:hidden};","ovy:v":"overflow-y:visible;","ovy:h":"overflow-y:hidden;","ovy:s":"overflow-y:scroll;","ovy:a":"overflow-y:auto;",ovs:"overflow-style:${1:scrollbar};","ovs:a":"overflow-style:auto;","ovs:s":"overflow-style:scrollbar;","ovs:p":"overflow-style:panner;","ovs:m":"overflow-style:move;","ovs:mq":"overflow-style:marquee;",zoo:"zoom:1;",zm:"zoom:1;",cp:"clip:|;","cp:a":"clip:auto;","cp:r":"clip:rect(${1:top} ${2:right} ${3:bottom} ${4:left});",bxz:"box-sizing:${1:border-box};","bxz:cb":"box-sizing:content-box;","bxz:bb":"box-sizing:border-box;",bxsh:"box-shadow:${1:inset }${2:hoff} ${3:voff} ${4:blur} ${5:color};","bxsh:r":"box-shadow:${1:inset }${2:hoff} ${3:voff} ${4:blur} ${5:spread }rgb(${6:0}, ${7:0}, ${8:0});","bxsh:ra":"box-shadow:${1:inset }${2:h} ${3:v} ${4:blur} ${5:spread }rgba(${6:0}, ${7:0}, ${8:0}, .${9:5});","bxsh:n":"box-shadow:none;",m:"margin:|;","m:a":"margin:auto;",mt:"margin-top:|;","mt:a":"margin-top:auto;",mr:"margin-right:|;","mr:a":"margin-right:auto;",mb:"margin-bottom:|;","mb:a":"margin-bottom:auto;",ml:"margin-left:|;","ml:a":"margin-left:auto;",p:"padding:|;",pt:"padding-top:|;",pr:"padding-right:|;",pb:"padding-bottom:|;",pl:"padding-left:|;",w:"width:|;","w:a":"width:auto;",h:"height:|;","h:a":"height:auto;",maw:"max-width:|;","maw:n":"max-width:none;",mah:"max-height:|;","mah:n":"max-height:none;",miw:"min-width:|;",mih:"min-height:|;",mar:"max-resolution:${1:res};",mir:"min-resolution:${1:res};",ori:"orientation:|;","ori:l":"orientation:landscape;","ori:p":"orientation:portrait;",ol:"outline:|;","ol:n":"outline:none;",olo:"outline-offset:|;",olw:"outline-width:|;","olw:tn":"outline-width:thin;","olw:m":"outline-width:medium;","olw:tc":"outline-width:thick;",ols:"outline-style:|;","ols:n":"outline-style:none;","ols:dt":"outline-style:dotted;","ols:ds":"outline-style:dashed;","ols:s":"outline-style:solid;","ols:db":"outline-style:double;","ols:g":"outline-style:groove;","ols:r":"outline-style:ridge;","ols:i":"outline-style:inset;","ols:o":"outline-style:outset;",olc:"outline-color:#${1:000};","olc:i":"outline-color:invert;",bfv:"backface-visibility:|;","bfv:h":"backface-visibility:hidden;","bfv:v":"backface-visibility:visible;",bd:"border:|;","bd+":"border:${1:1px} ${2:solid} ${3:#000};","bd:n":"border:none;",bdbk:"border-break:${1:close};","bdbk:c":"border-break:close;",bdcl:"border-collapse:|;","bdcl:c":"border-collapse:collapse;","bdcl:s":"border-collapse:separate;",bdc:"border-color:#${1:000};","bdc:t":"border-color:transparent;",bdi:"border-image:url(|);","bdi:n":"border-image:none;",bdti:"border-top-image:url(|);","bdti:n":"border-top-image:none;",bdri:"border-right-image:url(|);","bdri:n":"border-right-image:none;",bdbi:"border-bottom-image:url(|);","bdbi:n":"border-bottom-image:none;",bdli:"border-left-image:url(|);","bdli:n":"border-left-image:none;",bdci:"border-corner-image:url(|);","bdci:n":"border-corner-image:none;","bdci:c":"border-corner-image:continue;",bdtli:"border-top-left-image:url(|);","bdtli:n":"border-top-left-image:none;","bdtli:c":"border-top-left-image:continue;",bdtri:"border-top-right-image:url(|);","bdtri:n":"border-top-right-image:none;","bdtri:c":"border-top-right-image:continue;",bdbri:"border-bottom-right-image:url(|);","bdbri:n":"border-bottom-right-image:none;","bdbri:c":"border-bottom-right-image:continue;",bdbli:"border-bottom-left-image:url(|);","bdbli:n":"border-bottom-left-image:none;","bdbli:c":"border-bottom-left-image:continue;",bdf:"border-fit:${1:repeat};","bdf:c":"border-fit:clip;","bdf:r":"border-fit:repeat;","bdf:sc":"border-fit:scale;","bdf:st":"border-fit:stretch;","bdf:ow":"border-fit:overwrite;","bdf:of":"border-fit:overflow;","bdf:sp":"border-fit:space;",bdlen:"border-length:|;","bdlen:a":"border-length:auto;",bdsp:"border-spacing:|;",bds:"border-style:|;","bds:n":"border-style:none;","bds:h":"border-style:hidden;","bds:dt":"border-style:dotted;","bds:ds":"border-style:dashed;","bds:s":"border-style:solid;","bds:db":"border-style:double;","bds:dtds":"border-style:dot-dash;","bds:dtdtds":"border-style:dot-dot-dash;","bds:w":"border-style:wave;","bds:g":"border-style:groove;","bds:r":"border-style:ridge;","bds:i":"border-style:inset;","bds:o":"border-style:outset;",bdw:"border-width:|;",bdtw:"border-top-width:|;",bdrw:"border-right-width:|;",bdbw:"border-bottom-width:|;",bdlw:"border-left-width:|;",bdt:"border-top:|;",bt:"border-top:|;","bdt+":"border-top:${1:1px} ${2:solid} ${3:#000};","bdt:n":"border-top:none;",bdts:"border-top-style:|;","bdts:n":"border-top-style:none;",bdtc:"border-top-color:#${1:000};","bdtc:t":"border-top-color:transparent;",bdr:"border-right:|;",br:"border-right:|;","bdr+":"border-right:${1:1px} ${2:solid} ${3:#000};","bdr:n":"border-right:none;",bdrst:"border-right-style:|;","bdrst:n":"border-right-style:none;",bdrc:"border-right-color:#${1:000};","bdrc:t":"border-right-color:transparent;",bdb:"border-bottom:|;",bb:"border-bottom:|;","bdb+":"border-bottom:${1:1px} ${2:solid} ${3:#000};","bdb:n":"border-bottom:none;",bdbs:"border-bottom-style:|;","bdbs:n":"border-bottom-style:none;",bdbc:"border-bottom-color:#${1:000};","bdbc:t":"border-bottom-color:transparent;",bdl:"border-left:|;",bl:"border-left:|;","bdl+":"border-left:${1:1px} ${2:solid} ${3:#000};","bdl:n":"border-left:none;",bdls:"border-left-style:|;","bdls:n":"border-left-style:none;",bdlc:"border-left-color:#${1:000};","bdlc:t":"border-left-color:transparent;",bdrs:"border-radius:|;",bdtrrs:"border-top-right-radius:|;",bdtlrs:"border-top-left-radius:|;",bdbrrs:"border-bottom-right-radius:|;",bdblrs:"border-bottom-left-radius:|;",bg:"background:#${1:000};","bg+":"background:${1:#fff} url(${2}) ${3:0} ${4:0} ${5:no-repeat};","bg:n":"background:none;","bg:ie":"filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src='${1:x}.png',sizingMethod='${2:crop}');",bgc:"background-color:#${1:fff};","bgc:t":"background-color:transparent;",bgi:"background-image:url(|);","bgi:n":"background-image:none;",bgr:"background-repeat:|;","bgr:n":"background-repeat:no-repeat;","bgr:x":"background-repeat:repeat-x;","bgr:y":"background-repeat:repeat-y;","bgr:sp":"background-repeat:space;","bgr:rd":"background-repeat:round;",bga:"background-attachment:|;","bga:f":"background-attachment:fixed;","bga:s":"background-attachment:scroll;",bgp:"background-position:${1:0} ${2:0};",bgpx:"background-position-x:|;",bgpy:"background-position-y:|;",bgbk:"background-break:|;","bgbk:bb":"background-break:bounding-box;","bgbk:eb":"background-break:each-box;","bgbk:c":"background-break:continuous;",bgcp:"background-clip:${1:padding-box};","bgcp:bb":"background-clip:border-box;","bgcp:pb":"background-clip:padding-box;","bgcp:cb":"background-clip:content-box;","bgcp:nc":"background-clip:no-clip;",bgo:"background-origin:|;","bgo:pb":"background-origin:padding-box;","bgo:bb":"background-origin:border-box;","bgo:cb":"background-origin:content-box;",bgsz:"background-size:|;","bgsz:a":"background-size:auto;","bgsz:ct":"background-size:contain;","bgsz:cv":"background-size:cover;",c:"color:#${1:000};","c:r":"color:rgb(${1:0}, ${2:0}, ${3:0});","c:ra":"color:rgba(${1:0}, ${2:0}, ${3:0}, .${4:5});",cm:"/* |${child} */",cnt:"content:'|';","cnt:n":"content:normal;","cnt:oq":"content:open-quote;","cnt:noq":"content:no-open-quote;","cnt:cq":"content:close-quote;","cnt:ncq":"content:no-close-quote;","cnt:a":"content:attr(|);","cnt:c":"content:counter(|);","cnt:cs":"content:counters(|);",tbl:"table-layout:|;","tbl:a":"table-layout:auto;","tbl:f":"table-layout:fixed;",cps:"caption-side:|;","cps:t":"caption-side:top;","cps:b":"caption-side:bottom;",ec:"empty-cells:|;","ec:s":"empty-cells:show;","ec:h":"empty-cells:hide;",lis:"list-style:|;","lis:n":"list-style:none;",lisp:"list-style-position:|;","lisp:i":"list-style-position:inside;","lisp:o":"list-style-position:outside;",list:"list-style-type:|;","list:n":"list-style-type:none;","list:d":"list-style-type:disc;","list:c":"list-style-type:circle;","list:s":"list-style-type:square;","list:dc":"list-style-type:decimal;","list:dclz":"list-style-type:decimal-leading-zero;","list:lr":"list-style-type:lower-roman;","list:ur":"list-style-type:upper-roman;",lisi:"list-style-image:|;","lisi:n":"list-style-image:none;",q:"quotes:|;","q:n":"quotes:none;","q:ru":"quotes:'\\00AB' '\\00BB' '\\201E' '\\201C';","q:en":"quotes:'\\201C' '\\201D' '\\2018' '\\2019';",ct:"content:|;","ct:n":"content:normal;","ct:oq":"content:open-quote;","ct:noq":"content:no-open-quote;","ct:cq":"content:close-quote;","ct:ncq":"content:no-close-quote;","ct:a":"content:attr(|);","ct:c":"content:counter(|);","ct:cs":"content:counters(|);",coi:"counter-increment:|;",cor:"counter-reset:|;",va:"vertical-align:${1:top};","va:sup":"vertical-align:super;","va:t":"vertical-align:top;","va:tt":"vertical-align:text-top;","va:m":"vertical-align:middle;","va:bl":"vertical-align:baseline;","va:b":"vertical-align:bottom;","va:tb":"vertical-align:text-bottom;","va:sub":"vertical-align:sub;",ta:"text-align:${1:left};","ta:l":"text-align:left;","ta:c":"text-align:center;","ta:r":"text-align:right;","ta:j":"text-align:justify;","ta-lst":"text-align-last:|;","tal:a":"text-align-last:auto;","tal:l":"text-align-last:left;","tal:c":"text-align-last:center;","tal:r":"text-align-last:right;",td:"text-decoration:${1:none};","td:n":"text-decoration:none;","td:u":"text-decoration:underline;","td:o":"text-decoration:overline;","td:l":"text-decoration:line-through;",te:"text-emphasis:|;","te:n":"text-emphasis:none;","te:ac":"text-emphasis:accent;","te:dt":"text-emphasis:dot;","te:c":"text-emphasis:circle;","te:ds":"text-emphasis:disc;","te:b":"text-emphasis:before;","te:a":"text-emphasis:after;",th:"text-height:|;","th:a":"text-height:auto;","th:f":"text-height:font-size;","th:t":"text-height:text-size;","th:m":"text-height:max-size;",ti:"text-indent:|;","ti:-":"text-indent:-9999px;",tj:"text-justify:|;","tj:a":"text-justify:auto;","tj:iw":"text-justify:inter-word;","tj:ii":"text-justify:inter-ideograph;","tj:ic":"text-justify:inter-cluster;","tj:d":"text-justify:distribute;","tj:k":"text-justify:kashida;","tj:t":"text-justify:tibetan;",tov:"text-overflow:${ellipsis};","tov:e":"text-overflow:ellipsis;","tov:c":"text-overflow:clip;",to:"text-outline:|;","to+":"text-outline:${1:0} ${2:0} ${3:#000};","to:n":"text-outline:none;",tr:"text-replace:|;","tr:n":"text-replace:none;",tt:"text-transform:${1:uppercase};","tt:n":"text-transform:none;","tt:c":"text-transform:capitalize;","tt:u":"text-transform:uppercase;","tt:l":"text-transform:lowercase;",tw:"text-wrap:|;","tw:n":"text-wrap:normal;","tw:no":"text-wrap:none;","tw:u":"text-wrap:unrestricted;","tw:s":"text-wrap:suppress;",tsh:"text-shadow:${1:hoff} ${2:voff} ${3:blur} ${4:#000};","tsh:r":"text-shadow:${1:h} ${2:v} ${3:blur} rgb(${4:0}, ${5:0}, ${6:0});","tsh:ra":"text-shadow:${1:h} ${2:v} ${3:blur} rgba(${4:0}, ${5:0}, ${6:0}, .${7:5});","tsh+":"text-shadow:${1:0} ${2:0} ${3:0} ${4:#000};","tsh:n":"text-shadow:none;",trf:"transform:|;","trf:skx":"transform: skewX(${1:angle});","trf:sky":"transform: skewY(${1:angle});","trf:sc":"transform: scale(${1:x}, ${2:y});","trf:scx":"transform: scaleX(${1:x});","trf:scy":"transform: scaleY(${1:y});","trf:scz":"transform: scaleZ(${1:z});","trf:sc3":"transform: scale3d(${1:x}, ${2:y}, ${3:z});","trf:r":"transform: rotate(${1:angle});","trf:rx":"transform: rotateX(${1:angle});","trf:ry":"transform: rotateY(${1:angle});","trf:rz":"transform: rotateZ(${1:angle});","trf:t":"transform: translate(${1:x}, ${2:y});","trf:tx":"transform: translateX(${1:x});","trf:ty":"transform: translateY(${1:y});","trf:tz":"transform: translateZ(${1:z});","trf:t3":"transform: translate3d(${1:tx}, ${2:ty}, ${3:tz});",trfo:"transform-origin:|;",trfs:"transform-style:${1:preserve-3d};",trs:"transition:${1:prop} ${2:time};",trsde:"transition-delay:${1:time};",trsdu:"transition-duration:${1:time};",trsp:"transition-property:${1:prop};",trstf:"transition-timing-function:${1:tfunc};",lh:"line-height:|;",whs:"white-space:|;","whs:n":"white-space:normal;","whs:p":"white-space:pre;","whs:nw":"white-space:nowrap;","whs:pw":"white-space:pre-wrap;","whs:pl":"white-space:pre-line;",whsc:"white-space-collapse:|;","whsc:n":"white-space-collapse:normal;","whsc:k":"white-space-collapse:keep-all;","whsc:l":"white-space-collapse:loose;","whsc:bs":"white-space-collapse:break-strict;","whsc:ba":"white-space-collapse:break-all;",wob:"word-break:|;","wob:n":"word-break:normal;","wob:k":"word-break:keep-all;","wob:ba":"word-break:break-all;",wos:"word-spacing:|;",wow:"word-wrap:|;","wow:nm":"word-wrap:normal;","wow:n":"word-wrap:none;","wow:u":"word-wrap:unrestricted;","wow:s":"word-wrap:suppress;","wow:b":"word-wrap:break-word;",wm:"writing-mode:${1:lr-tb};","wm:lrt":"writing-mode:lr-tb;","wm:lrb":"writing-mode:lr-bt;","wm:rlt":"writing-mode:rl-tb;","wm:rlb":"writing-mode:rl-bt;","wm:tbr":"writing-mode:tb-rl;","wm:tbl":"writing-mode:tb-lr;","wm:btl":"writing-mode:bt-lr;","wm:btr":"writing-mode:bt-rl;",lts:"letter-spacing:|;","lts-n":"letter-spacing:normal;",f:"font:|;","f+":"font:${1:1em} ${2:Arial,sans-serif};",fw:"font-weight:|;","fw:n":"font-weight:normal;","fw:b":"font-weight:bold;","fw:br":"font-weight:bolder;","fw:lr":"font-weight:lighter;",fs:"font-style:${italic};","fs:n":"font-style:normal;","fs:i":"font-style:italic;","fs:o":"font-style:oblique;",fv:"font-variant:|;","fv:n":"font-variant:normal;","fv:sc":"font-variant:small-caps;",fz:"font-size:|;",fza:"font-size-adjust:|;","fza:n":"font-size-adjust:none;",ff:"font-family:|;","ff:s":"font-family:serif;","ff:ss":"font-family:sans-serif;","ff:c":"font-family:cursive;","ff:f":"font-family:fantasy;","ff:m":"font-family:monospace;","ff:a":'font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;',"ff:t":'font-family: "Times New Roman", Times, Baskerville, Georgia, serif;',"ff:v":"font-family: Verdana, Geneva, sans-serif;",fef:"font-effect:|;","fef:n":"font-effect:none;","fef:eg":"font-effect:engrave;","fef:eb":"font-effect:emboss;","fef:o":"font-effect:outline;",fem:"font-emphasize:|;",femp:"font-emphasize-position:|;","femp:b":"font-emphasize-position:before;","femp:a":"font-emphasize-position:after;",fems:"font-emphasize-style:|;","fems:n":"font-emphasize-style:none;","fems:ac":"font-emphasize-style:accent;","fems:dt":"font-emphasize-style:dot;","fems:c":"font-emphasize-style:circle;","fems:ds":"font-emphasize-style:disc;",fsm:"font-smooth:|;","fsm:a":"font-smooth:auto;","fsm:n":"font-smooth:never;","fsm:aw":"font-smooth:always;",fst:"font-stretch:|;","fst:n":"font-stretch:normal;","fst:uc":"font-stretch:ultra-condensed;","fst:ec":"font-stretch:extra-condensed;","fst:c":"font-stretch:condensed;","fst:sc":"font-stretch:semi-condensed;","fst:se":"font-stretch:semi-expanded;","fst:e":"font-stretch:expanded;","fst:ee":"font-stretch:extra-expanded;","fst:ue":"font-stretch:ultra-expanded;",op:"opacity:|;","op+":"opacity: $1;\nfilter: alpha(opacity=$2);","op:ie":"filter:progid:DXImageTransform.Microsoft.Alpha(Opacity=100);","op:ms":"-ms-filter:'progid:DXImageTransform.Microsoft.Alpha(Opacity=100)';",rsz:"resize:|;","rsz:n":"resize:none;","rsz:b":"resize:both;","rsz:h":"resize:horizontal;","rsz:v":"resize:vertical;",cur:"cursor:${pointer};","cur:a":"cursor:auto;","cur:d":"cursor:default;","cur:c":"cursor:crosshair;","cur:ha":"cursor:hand;","cur:he":"cursor:help;","cur:m":"cursor:move;","cur:p":"cursor:pointer;","cur:t":"cursor:text;",fxd:"flex-direction:|;","fxd:r":"flex-direction:row;","fxd:rr":"flex-direction:row-reverse;","fxd:c":"flex-direction:column;","fxd:cr":"flex-direction:column-reverse;",fxw:"flex-wrap: |;","fxw:n":"flex-wrap:nowrap;","fxw:w":"flex-wrap:wrap;","fxw:wr":"flex-wrap:wrap-reverse;",fxf:"flex-flow:|;",jc:"justify-content:|;","jc:fs":"justify-content:flex-start;","jc:fe":"justify-content:flex-end;","jc:c":"justify-content:center;","jc:sb":"justify-content:space-between;","jc:sa":"justify-content:space-around;",ai:"align-items:|;","ai:fs":"align-items:flex-start;","ai:fe":"align-items:flex-end;","ai:c":"align-items:center;","ai:b":"align-items:baseline;","ai:s":"align-items:stretch;",ac:"align-content:|;","ac:fs":"align-content:flex-start;","ac:fe":"align-content:flex-end;","ac:c":"align-content:center;","ac:sb":"align-content:space-between;","ac:sa":"align-content:space-around;","ac:s":"align-content:stretch;",ord:"order:|;",fxg:"flex-grow:|;",fxsh:"flex-shrink:|;",fxb:"flex-basis:|;",fx:"flex:|;",as:"align-self:|;","as:a":"align-self:auto;","as:fs":"align-self:flex-start;","as:fe":"align-self:flex-end;","as:c":"align-self:center;","as:b":"align-self:baseline;","as:s":"align-self:stretch;",pgbb:"page-break-before:|;","pgbb:au":"page-break-before:auto;","pgbb:al":"page-break-before:always;","pgbb:l":"page-break-before:left;","pgbb:r":"page-break-before:right;",pgbi:"page-break-inside:|;","pgbi:au":"page-break-inside:auto;","pgbi:av":"page-break-inside:avoid;",pgba:"page-break-after:|;","pgba:au":"page-break-after:auto;","pgba:al":"page-break-after:always;","pgba:l":"page-break-after:left;","pgba:r":"page-break-after:right;",orp:"orphans:|;",us:"user-select:${none};",wid:"widows:|;",wfsm:"-webkit-font-smoothing:${antialiased};","wfsm:a":"-webkit-font-smoothing:antialiased;","wfsm:s":"-webkit-font-smoothing:subpixel-antialiased;","wfsm:sa":"-webkit-font-smoothing:subpixel-antialiased;","wfsm:n":"-webkit-font-smoothing:none;"}},html:{filters:"html",profile:"html",snippets:{"!!!":"<!DOCTYPE html>","!!!4t":'<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">',"!!!4s":'<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">',"!!!xt":'<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">',"!!!xs":'<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">',"!!!xxs":'<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">',c:"<!-- |${child} -->","cc:ie6":"<!--[if lte IE 6]>\n\t${child}|\n<![endif]-->","cc:ie":"<!--[if IE]>\n\t${child}|\n<![endif]-->","cc:noie":"<!--[if !IE]><!-->\n\t${child}|\n<!--<![endif]-->"},abbreviations:{"!":"html:5",a:'<a href="">',"a:link":'<a href="http://|">',"a:mail":'<a href="mailto:|">',abbr:'<abbr title="">',"acr|acronym":'<acronym title="">',base:'<base href="" />',basefont:"<basefont/>",br:"<br/>",frame:"<frame/>",hr:"<hr/>",bdo:'<bdo dir="">',"bdo:r":'<bdo dir="rtl">',"bdo:l":'<bdo dir="ltr">',col:"<col/>",link:'<link rel="stylesheet" href="" />',"link:css":'<link rel="stylesheet" href="${1:style}.css" />',"link:print":'<link rel="stylesheet" href="${1:print}.css" media="print" />',"link:favicon":'<link rel="shortcut icon" type="image/x-icon" href="${1:favicon.ico}" />',"link:touch":'<link rel="apple-touch-icon" href="${1:favicon.png}" />',"link:rss":'<link rel="alternate" type="application/rss+xml" title="RSS" href="${1:rss.xml}" />',"link:atom":'<link rel="alternate" type="application/atom+xml" title="Atom" href="${1:atom.xml}" />',"link:im|link:import":'<link rel="import" href="${1:component}.html" />',meta:"<meta/>","meta:utf":'<meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />',"meta:win":'<meta http-equiv="Content-Type" content="text/html;charset=windows-1251" />',"meta:edge":'<meta http-equiv="X-UA-Compatible" content="${1:ie=edge}" />',"meta:vp":'<meta name="viewport" content="width=${1:device-width}, initial-scale=${3:1.0}" />',"meta:compat":'<meta http-equiv="X-UA-Compatible" content="${1:IE=7}" />',"meta:redirect":'<meta http-equiv="refresh" content="0; url=${1:http://example.com}" />',style:"<style>",script:'<script !src="">',"script:src":'<script src="">',img:'<img src="" alt="" />',"img:s|img:srcset":'<img srcset="" src="" alt="" />',"img:z|img:sizes":'<img sizes="" srcset="" src="" alt="" />',picture:"<picture>","src|source":"<source/>","src:sc|source:src":'<source src="" type=""/>',"src:s|source:srcset":'<source srcset=""/>',"src:m|source:media":'<source media="(${1:min-width: })" srcset=""/>',"src:t|source:type":'<source srcset="|" type="${1:image/}"/>',"src:z|source:sizes":'<source sizes="" srcset=""/>',"src:mt|source:media:type":'<source media="(${1:min-width: })" srcset="" type="${2:image/}"/>',"src:mz|source:media:sizes":'<source media="(${1:min-width: })" sizes="" srcset=""/>',"src:zt|source:sizes:type":'<source sizes="" srcset="" type="${1:image/}"/>',iframe:'<iframe src="" frameborder="0">',embed:'<embed src="" type="" />',object:'<object data="" type="">',param:'<param name="" value="" />',map:'<map name="">',area:'<area shape="" coords="" href="" alt="" />',"area:d":'<area shape="default" href="" alt="" />',"area:c":'<area shape="circle" coords="" href="" alt="" />',"area:r":'<area shape="rect" coords="" href="" alt="" />',"area:p":'<area shape="poly" coords="" href="" alt="" />',form:'<form action="">',"form:get":'<form action="" method="get">',"form:post":'<form action="" method="post">',label:'<label for="">',input:'<input type="${1:text}" />',inp:'<input type="${1:text}" name="" id="" />',"input:h|input:hidden":"input[type=hidden name]","input:t|input:text":"inp","input:search":"inp[type=search]","input:email":"inp[type=email]","input:url":"inp[type=url]","input:p|input:password":"inp[type=password]","input:datetime":"inp[type=datetime]","input:date":"inp[type=date]","input:datetime-local":"inp[type=datetime-local]","input:month":"inp[type=month]","input:week":"inp[type=week]","input:time":"inp[type=time]","input:tel":"inp[type=tel]","input:number":"inp[type=number]","input:color":"inp[type=color]","input:c|input:checkbox":"inp[type=checkbox]","input:r|input:radio":"inp[type=radio]","input:range":"inp[type=range]","input:f|input:file":"inp[type=file]","input:s|input:submit":'<input type="submit" value="" />',"input:i|input:image":'<input type="image" src="" alt="" />',"input:b|input:button":'<input type="button" value="" />',isindex:"<isindex/>","input:reset":"input:button[type=reset]",select:'<select name="" id="">',"select:d|select:disabled":"select[disabled.]","opt|option":'<option value="">',textarea:'<textarea name="" id="" cols="${1:30}" rows="${2:10}">',marquee:'<marquee behavior="" direction="">',"menu:c|menu:context":"menu[type=context]>","menu:t|menu:toolbar":"menu[type=toolbar]>",video:'<video src="">',audio:'<audio src="">',"html:xml":'<html xmlns="http://www.w3.org/1999/xhtml">',keygen:"<keygen/>",command:"<command/>","btn:s|button:s|button:submit":"button[type=submit]","btn:r|button:r|button:reset":"button[type=reset]","btn:d|button:d|button:disabled":"button[disabled.]","fst:d|fset:d|fieldset:d|fieldset:disabled":"fieldset[disabled.]",bq:"blockquote",fig:"figure",figc:"figcaption",pic:"picture",ifr:"iframe",emb:"embed",obj:"object",cap:"caption",colg:"colgroup",fst:"fieldset",btn:"button",optg:"optgroup",tarea:"textarea",leg:"legend",sect:"section",art:"article",hdr:"header",ftr:"footer",adr:"address",dlg:"dialog",str:"strong",prog:"progress",mn:"main",tem:"template",fset:"fieldset",datag:"datagrid",datal:"datalist",kg:"keygen",out:"output",det:"details",cmd:"command",doc:"html>(head>meta[charset=${charset}]+meta:vp+meta:edge+title{${1:Document}})+body",doc4:'html>(head>meta[http-equiv="Content-Type" content="text/html;charset=${charset}"]+title{${1:Document}})+body',"ri:d|ri:dpr":"img:s","ri:v|ri:viewport":"img:z","ri:a|ri:art":"pic>src:m+img","ri:t|ri:type":"pic>src:t+img","html:4t":"!!!4t+doc4[lang=${lang}]","html:4s":"!!!4s+doc4[lang=${lang}]","html:xt":"!!!xt+doc4[xmlns=http://www.w3.org/1999/xhtml xml:lang=${lang}]","html:xs":"!!!xs+doc4[xmlns=http://www.w3.org/1999/xhtml xml:lang=${lang}]","html:xxs":"!!!xxs+doc4[xmlns=http://www.w3.org/1999/xhtml xml:lang=${lang}]","html:5":"!!!+doc[lang=${lang}]","ol+":"ol>li","ul+":"ul>li","dl+":"dl>dt+dd","map+":"map>area","table+":"table>tr>td","colgroup+":"colgroup>col","colg+":"colgroup>col","tr+":"tr>td","select+":"select>option","optgroup+":"optgroup>option","optg+":"optgroup>option","pic+":"picture>source:srcset+img"}},xml:{"extends":"html",profile:"xml",filters:"html"},svg:{filters:"html",profile:"xml",snippets:{"!!!":'<?xml version="1.0" encoding="UTF-8" standalone="no"?>',svgdoc:'<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">'},abbreviations:{"!svg":"!!!+svgdoc+svg",svg:'<svg version="1.1" xmlns="http://www.w3.org/2000/svg">',a:'<a xlink:href="">',ag:"altGliph",agd:"altGliphDef",agi:"altGliphItem","anim|animate":'<animate attributeType="" attributeName="" from="" to="" dur="" repeatCount="indefinite">',ac:"<animateColor>",am:"<animateMotion>",at:"<animateTransform>",c:"circle",cp:"colorPath","c-p":"color-profile",cur:"cursor",df:"defs","e|ellipse":'<ellipse  cx="" cy="" rx="" ry=""/>',ff:"<font-face>",fff:"<font-face-format>",ffn:"<font-face-name>",ffs:"<font-face-src>",ffu:"<font-face-uri>",fo:"<foreignObject>",g:"<g>",gl:"<glyph>",glr:"<glyphRef>",hk:"<hkern>","i|image":'<image xlink:href="" x="" y="" width="" height=""/>',l:"<line>",lg:"<linearGradient>",marker:"<marker>",mask:"<mask>",md:"<metadata>",mg:"<missing-glyph>",mp:"<mpath>",path:'<path d="">',patt:"<pattern>",pg:'<polygon points="">',pl:'<polyline points="">',rg:"<radialGradient>",r:'<rect x="" y="" width="" height=""/>',scr:"<script>",sb:"<symbol>",txt:"<text>",tp:"<textPath>",ts:"<tspan>","u|use":'<use xlink:href=""/>',v:"<view>",vk:"<vkern>"}},xsl:{"extends":"html",profile:"xml",filters:"html, xsl",abbreviations:{"tm|tmatch":'<xsl:template match="" mode="">',"tn|tname":'<xsl:template name="">',call:'<xsl:call-template name=""/>',ap:'<xsl:apply-templates select="" mode=""/>',api:"<xsl:apply-imports/>",imp:'<xsl:import href=""/>',inc:'<xsl:include href=""/>',ch:"<xsl:choose>","wh|xsl:when":'<xsl:when test="">',ot:"<xsl:otherwise>","if":'<xsl:if test="">',par:'<xsl:param name="">',pare:'<xsl:param name="" select=""/>',"var":'<xsl:variable name="">',vare:'<xsl:variable name="" select=""/>',wp:'<xsl:with-param name="" select=""/>',key:'<xsl:key name="" match="" use=""/>',elem:'<xsl:element name="">',attr:'<xsl:attribute name="">',attrs:'<xsl:attribute-set name="">',cp:'<xsl:copy select=""/>',co:'<xsl:copy-of select=""/>',val:'<xsl:value-of select=""/>',"for|each":'<xsl:for-each select="">',tex:"<xsl:text></xsl:text>",com:"<xsl:comment>",msg:'<xsl:message terminate="no">',fall:"<xsl:fallback>",num:'<xsl:number value=""/>',nam:'<namespace-alias stylesheet-prefix="" result-prefix=""/>',pres:'<xsl:preserve-space elements=""/>',strip:'<xsl:strip-space elements=""/>',proc:'<xsl:processing-instruction name="">',sort:'<xsl:sort select="" order=""/>',
-"choose+":"xsl:choose>xsl:when+xsl:otherwise",xsl:"!!!+xsl:stylesheet[version=1.0 xmlns:xsl=http://www.w3.org/1999/XSL/Transform]>{\n|}"},snippets:{"!!!":'<?xml version="1.0" encoding="UTF-8"?>'}},haml:{filters:"haml","extends":"html",profile:"xml"},jade:{filters:"jade","extends":"html",profile:"xml"},jsx:{filters:"jsx, html","extends":"html",profile:"xml"},slim:{filters:"slim","extends":"html",profile:"xml"},scss:{"extends":"css"},sass:{"extends":"css"},less:{"extends":"css"},stylus:{"extends":"css"},styl:{"extends":"stylus"}}},{}],"C:\\Temp\\emmet\\lib\\utils\\abbreviation.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){var r=e("../assets/elements"),i=e("../assets/tabStops"),s=e("../utils/common"),o=e("../resolver/tagName");return{isUnary:function(e){if(e.children.length||e._text||this.isSnippet(e))return!1;var t=e.data("resource");return t&&t.is_empty},isInline:function(e){return e.isTextNode()||!e.name()||o.isInlineLevel(e.name())},isBlock:function(e){return this.isSnippet(e)||!this.isInline(e)},isSnippet:function(e){return r.is(e.data("resource"),"snippet")},hasTagsInContent:function(e){return s.matchesTag(e.content)},hasBlockChildren:function(e){return this.hasTagsInContent(e)&&this.isBlock(e)||e.children.some(function(e){return this.isBlock(e)},this)},insertChildContent:function(e,t,n){n=s.extend({keepVariable:!0,appendIfNoChild:!0},n||{});var r=!1;return e=i.replaceVariables(e,function(i,o,a){var l=i;return"child"==o&&(l=s.padString(t,s.getLinePaddingFromPosition(e,a.start)),r=!0,n.keepVariable&&(l+=i)),l}),!r&&n.appendIfNoChild&&(e+=t),e}}})},{"../assets/elements":"C:\\Temp\\emmet\\lib\\assets\\elements.js","../assets/tabStops":"C:\\Temp\\emmet\\lib\\assets\\tabStops.js","../resolver/tagName":"C:\\Temp\\emmet\\lib\\resolver\\tagName.js","../utils/common":"C:\\Temp\\emmet\\lib\\utils\\common.js"}],"C:\\Temp\\emmet\\lib\\utils\\action.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){var r=e("./common"),i=e("./cssSections"),s=e("../parser/abbreviation"),o=e("../assets/htmlMatcher"),a=e("../editTree/xml"),l=e("../assets/range"),c=e("../assets/resources");return{mimeTypes:{gif:"image/gif",png:"image/png",jpg:"image/jpeg",jpeg:"image/jpeg",svg:"image/svg+xml",html:"text/html",htm:"text/html"},extractAbbreviation:function(e){for(var t=e.length,n=-1,i=0,o=0,a=0;;){if(t--,t<0){n=0;break}var l=e.charAt(t);if("]"==l)o++;else if("["==l){if(!o){n=t+1;break}o--}else if("}"==l)a++;else if("{"==l){if(!a){n=t+1;break}a--}else if(")"==l)i++;else if("("==l){if(!i){n=t+1;break}i--}else{if(o||a)continue;if(!s.isAllowedChar(l)||">"==l&&r.endsWithTag(e.substring(0,t+1))){n=t+1;break}}}return n==-1||a||o||i?"":e.substring(n).replace(/^[\*\+\>\^]+/,"")},getImageSize:function(e){var t="PNG\r\n\n",n="ÿØ",r="GIF8",i=0,s=function(){return e.charCodeAt(i++)};if(e.substr(0,8)===t)return i=e.indexOf("IHDR")+4,{width:s()<<24|s()<<16|s()<<8|s(),height:s()<<24|s()<<16|s()<<8|s()};if(e.substr(0,4)===r)return i=6,{width:s()|s()<<8,height:s()|s()<<8};if(e.substr(0,2)===n){i=2;for(var o=e.length;i<o;){if(255!=s())return;var a=s();if(218==a)break;var l=s()<<8|s();if(!(!(a>=192&&a<=207)||4&a||8&a))return i+=1,{height:s()<<8|s(),width:s()<<8|s()};i+=l-2}}},captureContext:function(e,t){var n={html:1,xml:1,xsl:1,jsx:1},r=e.getSyntax();if(r in n){var i=e.getContent();"undefined"==typeof t&&(t=e.getCaretPos());var s=o.find(i,t);if(s&&"tag"==s.type){var l=s.open,c={name:l.name,attributes:[],match:s},u=a.parse(l.range.substring(i));return u&&(c.attributes=u.getAll().map(function(e){return{name:e.name(),value:e.value()}})),c}}return null},findExpressionBounds:function(e,t){for(var n=String(e.getContent()),r=n.length,i=e.getCaretPos()-1,s=i+1;i>=0&&t(n.charAt(i),i,n);)i--;for(;s<r&&t(n.charAt(s),s,n);)s++;if(s>i)return l([++i,s])},compoundUpdate:function(e,t){if(t){var n=e.getSelectionRange();return e.replaceContent(t.data,t.start,t.end,!0),e.createSelection(t.caret,t.caret+n.end-n.start),!0}return!1},detectSyntax:function(e,t){var n=t||"html";return c.hasSyntax(n)||(n="html"),"html"==n&&(this.isStyle(e)||this.isInlineCSS(e))&&(n="css"),"styl"==n&&(n="stylus"),n},detectProfile:function(e){var t=e.getSyntax(),n=c.findItem(t,"profile");if(n)return n;switch(t){case"xml":case"xsl":return"xml";case"css":if(this.isInlineCSS(e))return"line";break;case"html":return n=c.getVariable("profile"),n||(n=this.isXHTML(e)?"xhtml":"html"),n}return"xhtml"},isXHTML:function(e){return e.getContent().search(/<!DOCTYPE[^>]+XHTML/i)!=-1},isStyle:function(e){return!!i.styleTagRange(e.getContent(),e.getCaretPos())},isSupportedCSS:function(e){return"css"==e||"less"==e||"scss"==e},isInlineCSS:function(e){return!!i.styleAttrRange(e.getContent(),e.getCaretPos())}}})},{"../assets/htmlMatcher":"C:\\Temp\\emmet\\lib\\assets\\htmlMatcher.js","../assets/range":"C:\\Temp\\emmet\\lib\\assets\\range.js","../assets/resources":"C:\\Temp\\emmet\\lib\\assets\\resources.js","../editTree/xml":"C:\\Temp\\emmet\\lib\\editTree\\xml.js","../parser/abbreviation":"C:\\Temp\\emmet\\lib\\parser\\abbreviation.js","./common":"C:\\Temp\\emmet\\lib\\utils\\common.js","./cssSections":"C:\\Temp\\emmet\\lib\\utils\\cssSections.js"}],"C:\\Temp\\emmet\\lib\\utils\\base64.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){var r="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";return{encode:function(e){for(var t,n,i,s,o,a,l,c,u,f,p=[],m=0,d=e.length,h=r;m<d;)c=e.charCodeAt(m++),u=e.charCodeAt(m++),f=e.charCodeAt(m++),t=255&c,n=255&u,i=255&f,s=t>>2,o=(3&t)<<4|n>>4,a=(15&n)<<2|i>>6,l=63&i,isNaN(u)?a=l=64:isNaN(f)&&(l=64),p.push(h.charAt(s)+h.charAt(o)+h.charAt(a)+h.charAt(l));return p.join("")},decode:function(e){var t,n,i,s,o,a,l,c,u=0,f=0,p=[],m=r,d=e.length;if(!e)return e;e+="";do s=m.indexOf(e.charAt(u++)),o=m.indexOf(e.charAt(u++)),a=m.indexOf(e.charAt(u++)),l=m.indexOf(e.charAt(u++)),c=s<<18|o<<12|a<<6|l,t=c>>16&255,n=c>>8&255,i=255&c,64==a?p[f++]=String.fromCharCode(t):64==l?p[f++]=String.fromCharCode(t,n):p[f++]=String.fromCharCode(t,n,i);while(u<d);return p.join("")}}})},{}],"C:\\Temp\\emmet\\lib\\utils\\comments.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){var r=e("./common"),i=(e("../assets/range"),e("../assets/stringStream")),s=/\/\*|\/\//;return{strip:function(e){if(!s.test(e))return e;for(var t,n,o=i(e),a=[];t=o.next();)if("/"===t){if(n=o.peek(),"*"===n)o.start=o.pos-1,o.skipTo("*/")?o.pos+=2:o.skipToEnd(),a.push([o.start,o.pos]);else if("/"===n){for(o.start=o.pos-1;(n=o.next())&&"\n"!==n&&"\r"!=n;);a.push([o.start,o.pos])}}else o.skipQuoted();return r.replaceWith(e,a," ")}}})},{"../assets/range":"C:\\Temp\\emmet\\lib\\assets\\range.js","../assets/stringStream":"C:\\Temp\\emmet\\lib\\assets\\stringStream.js","./common":"C:\\Temp\\emmet\\lib\\utils\\common.js"}],"C:\\Temp\\emmet\\lib\\utils\\common.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){var r=e("../assets/range"),i="${0}";return{reTag:/<\/?[\w:\-]+(?:\s+[\w\-:]+(?:\s*=\s*(?:(?:"[^"]*")|(?:'[^']*')|[^>\s]+))?)*\s*(\/?)>$/,defaultSyntax:function(){return"html"},defaultProfile:function(){return"plain"},endsWithTag:function(e){return this.reTag.test(e)},isNumeric:function(e){return"string"==typeof e&&(e=e.charCodeAt(0)),e&&e>47&&e<58},trim:function(){return String.prototype.trim?function(e){return e?e.trim():""}:function(e){return(e||"").replace(/^\s+|\s+$/g,"")}}(),splitByLines:function(e,t){var n="\n",r=(e||"").replace(/\r\n/g,"\n").replace(/\n\r/g,"\n").replace(/\r/g,"\n").replace(/\n/g,n).split(n);return t&&(r=r.filter(function(e){return e.length&&!!this.trim(e)},this)),r},repeatString:function(e,t){for(var n="";t--;)n+=e;return n},getStringsPads:function(e){var t=e.map(function(e){return"string"==typeof e?e.length:+e}),n=t.reduce(function(e,t){return"undefined"==typeof e?t:Math.max(e,t)});return t.map(function(e){var t=n-e;return t?this.repeatString(" ",t):""},this)},padString:function(e,t){var n=[],r=this.splitByLines(e),i="\n";n.push(r[0]);for(var s=1;s<r.length;s++)n.push(i+t+r[s]);return n.join("")},zeroPadString:function(e,t){for(var n="",r=e.length;t>r++;)n+="0";return n+e},unindentString:function(e,t){for(var n,r=this.splitByLines(e),i=t.length,s=0,o=r.length;s<o;s++)n=r[s],n.substr(0,i)===t&&(r[s]=n.substr(i));return r.join("\n")},replaceUnescapedSymbol:function(e,t,n){for(var r=0,i=e.length,s=t.length,o=0;r<i;)if("\\"==e.charAt(r))r+=s+1;else if(e.substr(r,s)==t){var a=s;o++;var l=n;if("function"==typeof n){var c=n(e,t,r,o);c?(a=c[0].length,l=c[1]):l=!1}if(l===!1){r++;continue}e=e.substring(0,r)+l+e.substring(r+a),i=e.length,r+=l.length}else r++;return e},replaceCounter:function(e,t,n){var r="$";e=String(e),t=String(t),/^\-?\d+$/.test(t)&&(t=+t);var i=this;return this.replaceUnescapedSymbol(e,r,function(e,r,s,o){if("{"==e.charAt(s+1)||i.isNumeric(e.charAt(s+1)))return!1;for(var a=s+1;"$"==e.charAt(a)&&"{"!=e.charAt(a+1);)a++;var l,c=a-s,u=0,f=!1;return(l=e.substr(a).match(/^@(\-?)(\d*)/))&&(a+=l[0].length,l[1]&&(f=!0),u=parseInt(l[2]||1,10)-1),f&&n&&"number"==typeof t&&(t=n-t+1),t+=u,[e.substring(s,a),i.zeroPadString(t+"",c)]})},matchesTag:function(e){return this.reTag.test(e||"")},escapeText:function(e){return e.replace(/([\$\\])/g,"\\$1")},unescapeText:function(e){return e.replace(/\\(.)/g,"$1")},getCaretPlaceholder:function(){return"function"==typeof i?i.apply(this,arguments):i},setCaretPlaceholder:function(e){i=e},getLinePadding:function(e){return(e.match(/^(\s+)/)||[""])[0]},getLinePaddingFromPosition:function(e,t){var n=this.findNewlineBounds(e,t);return this.getLinePadding(n.substring(e))},escapeForRegexp:function(e){var t=new RegExp("[.*+?|()\\[\\]{}\\\\]","g");return e.replace(t,"\\$&")},prettifyNumber:function(e,t){return e.toFixed("undefined"==typeof t?2:t).replace(/\.?0+$/,"")},replaceSubstring:function(e,t,n,r){return"object"==typeof n&&"end"in n&&(r=n.end,n=n.start),"string"==typeof r&&(r=n+r.length),"undefined"==typeof r&&(r=n),n<0||n>e.length?e:e.substring(0,n)+t+e.substring(r)},replaceWith:function(e,t,n,r){if(t.length){var i=0,s=[];t.forEach(function(t){var o=r?n:this.repeatString(n,t[1]-t[0]);s.push(e.substring(i,t[0]),o),i=t[1]},this),e=s.join("")+e.substring(i)}return e},narrowToNonSpace:function(e,t,n){for(var i=r.create(t,n),s=/[\s\n\r\u00a0]/;i.start<i.end&&s.test(e.charAt(i.start));)i.start++;for(;i.end>i.start;)if(i.end--,!s.test(e.charAt(i.end))){i.end++;break}return i},findNewlineBounds:function(e,t){for(var n,i=e.length,s=0,o=i-1,a=t-1;a>0;a--)if(n=e.charAt(a),"\n"==n||"\r"==n){s=a+1;break}for(var l=t;l<i;l++)if(n=e.charAt(l),"\n"==n||"\r"==n){o=l;break}return r.create(s,o-s)},deepMerge:function(){var e,t,n,r,i,s,o=arguments[0]||{},a=1,l=arguments.length;for("object"!=typeof o&&"function"!=typeof o&&(o={});a<l;a++)if(null!==(e=arguments[a]))for(t in e)n=o[t],r=e[t],o!==r&&(r&&("object"==typeof r||(i=Array.isArray(r)))?(i?(i=!1,s=n&&Array.isArray(n)?n:[]):s=n&&"object"==typeof n?n:{},o[t]=this.deepMerge(s,r)):void 0!==r&&(o[t]=r));return o},parseJSON:function(e){if("object"==typeof e)return e;try{return JSON.parse(e)}catch(t){return{}}},unique:function(e,t){var n=[];return e.filter(function(e){var r=t?t(e):e;if(n.indexOf(r)<0)return n.push(r),!0})},pick:function(e){var t={},n=this.toArray(arguments,1);return Object.keys(e).forEach(function(r){~n.indexOf(r)&&(t[r]=e[r])}),t},find:function(e,t,n){var r;return n&&(t=t.bind(n)),Array.isArray(e)?e.some(function(e,n){if(t(e,n))return r=e}):Object.keys(e).some(function(n,i){if(t(e[n],i))return r=e[n]}),r},toArray:function(e,t){return Array.isArray(e)&&!t?e:Array.prototype.slice.call(e,t||0)},extend:function(e){for(var t,n=1,r=arguments.length;n<r;n++)t=arguments[n],t&&Object.keys(t).forEach(function(n){e[n]=t[n]});return e},defaults:function(e){for(var t,n=1,r=arguments.length;n<r;n++)t=arguments[n],t&&Object.keys(t).forEach(function(n){n in e||(e[n]=t[n])});return e},flatten:function(e,t){t=t||[];var n=this;return n.toArray(e).forEach(function(e){Array.isArray(e)?n.flatten(e,t):t.push(e)}),t},clone:function(e){return Array.isArray(e)?e.slice(0):this.extend({},e)},without:function(e){return this.toArray(arguments,1).forEach(function(t){for(var n;~(n=e.indexOf(t));)e.splice(n,1)}),e},last:function(e){return e[e.length-1]}}})},{"../assets/range":"C:\\Temp\\emmet\\lib\\assets\\range.js"}],"C:\\Temp\\emmet\\lib\\utils\\cssSections.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){function r(e){return'"'==e||"'"==e}function i(){return p=(p+1)%m,"s"+p}function s(e,t){this.id=i(),this.parent=null,this.nextSibling=null,this.previousSibling=null,this._source=t,this._name=null,this._content=null,this._data={},!e&&t&&(e=l(0,t)),this.range=e,this.children=[]}var o=e("./common"),a=e("./comments"),l=e("../assets/range"),c=e("../assets/stringStream"),u=(e("../parser/css"),e("../assets/htmlMatcher")),f=e("../editTree/xml"),p=1,m=1e6,d=/^(\s*).+?(\s*)$/,h=/\s/g;return s.prototype={addChild:function(e){e instanceof s||(e=new s(e));var t=o.last(this.children);return t&&(t.nextSibling=e,e.previousSibling=t),e.parent=this,this.children.push(e),e},root:function(){var e=this;do if(!e.parent)return e;while(e=e.parent);return e},source:function(){return this._source||this.root()._source},name:function(){if(null===this._name){var e=this.nameRange();e&&(this._name=e.substring(this.source()))}return this._name},nameRange:function(){if(this.range&&"_selectorEnd"in this.range)return l.create2(this.range.start,this.range._selectorEnd)},matchDeep:function(e){if(!this.range.inside(e))return null;for(var t,n=0,r=this.children.length;n<r;n++)if(t=this.children[n].matchDeep(e))return t;return this.parent?this:null},allRanges:function(){var e=[];return this.parent&&e.push(this.range),this.children.forEach(function(t){e=e.concat(t.allRanges())}),e},data:function(e,t){return"undefined"!=typeof t&&(this._data[e]=t),this._data[e]},stringify:function(e){e=e||"";var t="";return this.children.forEach(function(n){t+=e+n.name().replace(/\n/g,"\\n")+"\n",t+=n.stringify(e+"--")}),t},content:function(){if(null!==this._content)return this._content;if(!(this.range&&"_contentStart"in this.range))return"";var e=l.create2(this.range._contentStart+1,this.range.end-1),t=this.source(),n=e.start,r="";return this.children.forEach(function(e){r+=t.substring(n,e.range.start),n=e.range.end}),r+=t.substring(n,e.end),this._content=o.trim(r)}},{findAllRules:function(e){e=this.sanitize(e);for(var t,n,i=c(e),s=[],a=this,u=function(t){var n=a.extractSelector(e,t.start),r=l.create2(n.start,t.end);r._selectorEnd=n.end,r._contentStart=t.start,s.push(r)};n=i.next();)if(r(n)){if(!i.skipString(n))break}else"{"==n&&(t=this.matchBracesRanges(e,i.pos-1),t.forEach(u),t.length)&&(i.pos=o.last(t).end);return s.sort(function(e,t){return e.start-t.start})},matchBracesRanges:function(e,t,n){n&&(e=this.sanitize(e));var r=c(e);r.start=r.pos=t;for(var i,s=[],o=[];i=r.next();)if("{"==i)s.push(r.pos-1);else if("}"==i){if(!s.length)throw"Invalid source structure (check for curly braces)";if(o.push(l.create2(s.pop(),r.pos)),!s.length)return o}else r.skipQuoted();return o},extractSelector:function(e,t,n){n&&(e=this.sanitize(e));for(var r,i=function(){var n=e.charAt(t);if('"'==n||"'"==n){for(;--t>=0&&(e.charAt(t)!=n||"\\"==e.charAt(t-1)););return!0}return!1},s=t;--t>=0;)if(!i())if(r=e.charAt(t),")"!=r){if("{"==r||"}"==r||";"==r){t++;break}}else for(;--t>=0&&(i()||"("!=e.charAt(t)););t<0&&(t=0);var o=e.substring(t,s),a=o.replace(h," ").match(d);return a&&(t+=a[1].length,s-=a[2].length),l.create2(t,s)},matchEnclosingRule:function(e,t){"string"==typeof e&&(e=this.findAllRules(e));var n=e.filter(function(e){return e.inside(t)});return o.last(n)},locateRule:function(e,t,n){var r=0,i=this.styleTagRange(e,t);i&&(r=i.start,t-=i.start,e=i.substring(e));var s=this.findAllRules(e),o=this.matchEnclosingRule(s,t);if(o)return o.shift(r);for(var a=0,l=s.length;a<l;a++)if(s[a].start>t)return s[n&&a>0?a-1:a].shift(r)},sanitize:function(e){e=a.strip(e);for(var t,n,i=c(e),s=[];t=i.next();)if(r(t))i.skipString(t);else if(("#"===t||"@"===t)&&(n=i.peek(),"{"===n)){if(i.start=i.pos-1,!i.skipTo("}"))throw"Invalid string interpolation at "+i.start;i.pos+=1,s.push([i.start,i.pos])}return o.replaceWith(e,s,"a")},sectionTree:function(e){var t=new s(null,e),n=this.findAllRules(e),r=function(e,n){for(;n&&n.range;){if(n.range.contains(e))return n.addChild(e);n=n.parent}return t.addChild(e)},i=t;return n.forEach(function(e){i=r(e,i)}),t},nestedSectionsInRule:function(e){var t=e.valueRange(!0).start,n=this.findAllRules(e.valueRange().substring(e.source));return n.forEach(function(e){e.start+=t,e.end+=t,e._selectorEnd+=t,e._contentStart+=t}),n},styleTagRange:function(e,t){var n=u.tag(e,t);return n&&"style"==n.open.name.toLowerCase()&&n.innerRange.cmp(t,"lte","gte")&&n.innerRange},styleAttrRange:function(e,t){var n=f.parseFromPosition(e,t,!0);if(n){var r=n.itemFromPosition(t,!0);return r&&"style"==r.name().toLowerCase()&&r.valueRange(!0).cmp(t,"lte","gte")&&r.valueRange(!0)}},CSSSection:s}})},{"../assets/htmlMatcher":"C:\\Temp\\emmet\\lib\\assets\\htmlMatcher.js","../assets/range":"C:\\Temp\\emmet\\lib\\assets\\range.js","../assets/stringStream":"C:\\Temp\\emmet\\lib\\assets\\stringStream.js","../editTree/xml":"C:\\Temp\\emmet\\lib\\editTree\\xml.js","../parser/css":"C:\\Temp\\emmet\\lib\\parser\\css.js","./comments":"C:\\Temp\\emmet\\lib\\utils\\comments.js","./common":"C:\\Temp\\emmet\\lib\\utils\\common.js"}],"C:\\Temp\\emmet\\lib\\utils\\editor.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){var r=e("./common"),i=e("../assets/resources");return{isInsideTag:function(e,t){for(var n=/^<\/?\w[\w\:\-]*.*?>/,r=t;r>-1&&"<"!=e.charAt(r);)r--;if(r!=-1){var i=n.exec(e.substring(r));if(i&&t>r&&t<r+i[0].length)return!0}return!1},outputInfo:function(e,t,n){return n=n||e.getProfileName(),{syntax:String(t||e.getSyntax()),profile:n||null,content:String(e.getContent())}},unindent:function(e,t){return r.unindentString(t,this.getCurrentLinePadding(e))},getCurrentLinePadding:function(e){return r.getLinePadding(e.getCurrentLine())},normalize:function(e,t){t=r.extend({newline:i.getNewline(),indentation:i.getVariable("indentation")},t);var n=function(e){return r.repeatString(t.indentation,e.length)},s=r.splitByLines(e);return"\t"!==t.indentation&&(s=s.map(function(e){return e.replace(/^\s+/,function(e){return e.replace(/\t/g,n)})})),s.join(t.newline)}}})},{"../assets/resources":"C:\\Temp\\emmet\\lib\\assets\\resources.js","./common":"C:\\Temp\\emmet\\lib\\utils\\common.js"}],"C:\\Temp\\emmet\\lib\\utils\\math.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){function r(e){function t(){}return t.prototype=e,new t}function i(e,t,n,r){this.type_=e,this.index_=t||0,this.prio_=n||0,this.number_=void 0!==r&&null!==r?r:0,this.toString=function(){switch(this.type_){case x:return this.number_;case y:case C:case w:return this.index_;case T:return"CALL";default:return"Invalid Token"}}}function s(e,t,n,r){this.tokens=e,this.ops1=t,this.ops2=n,this.functions=r}function o(e){return"string"==typeof e?(j.lastIndex=0,j.test(e)?"'"+e.replace(j,function(e){var t=k[e];return"string"==typeof t?t:"\\u"+("0000"+e.charCodeAt(0).toString(16)).slice(-4)})+"'":"'"+e+"'"):e}function a(e,t){return Number(e)+Number(t)}function l(e,t){return e-t}function c(e,t){return e*t}function u(e,t){return e/t}function f(e,t){return e%t}function p(e,t){return""+e+t}function m(e){return-e}function d(e){return Math.random()*(e||1)}function h(e){e=Math.floor(e);for(var t=e;e>1;)t*=--e;return t}function b(e,t){return Math.sqrt(e*e+t*t)}function g(e,t){return"[object Array]"!=Object.prototype.toString.call(e)?[e,t]:(e=e.slice(),e.push(t),e)}function v(){this.success=!1,this.errormsg="",this.expression="",this.pos=0,this.tokennumber=0,this.tokenprio=0,this.tokenindex=0,this.tmpprio=0,this.ops1={sin:Math.sin,cos:Math.cos,tan:Math.tan,asin:Math.asin,acos:Math.acos,atan:Math.atan,sqrt:Math.sqrt,log:Math.log,abs:Math.abs,ceil:Math.ceil,floor:Math.floor,round:Math.round,"-":m,exp:Math.exp},this.ops2={"+":a,"-":l,"*":c,"/":u,"%":f,"^":Math.pow,",":g,"||":p},this.functions={random:d,fac:h,min:Math.min,max:Math.max,pyt:b,pow:Math.pow,atan2:Math.atan2},this.consts={E:Math.E,PI:Math.PI}}var x=0,y=1,C=2,w=3,T=4,j=/[\\\'\x00-\x1f\x7f-\x9f\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,k={"\b":"\\b","\t":"\\t","\n":"\\n","\f":"\\f","\r":"\\r","'":"\\'","\\":"\\\\"};s.prototype={simplify:function(e){e=e||{};var t,n,o,a,l=[],c=[],u=this.tokens.length,f=0;for(f=0;f<u;f++){a=this.tokens[f];var p=a.type_;if(p===x)l.push(a);else if(p===w&&a.index_ in e)a=new i(x,0,0,e[a.index_]),l.push(a);else if(p===C&&l.length>1)n=l.pop(),t=l.pop(),o=this.ops2[a.index_],a=new i(x,0,0,o(t.number_,n.number_)),l.push(a);else if(p===y&&l.length>0)t=l.pop(),o=this.ops1[a.index_],a=new i(x,0,0,o(t.number_)),l.push(a);else{for(;l.length>0;)c.push(l.shift());c.push(a)}}for(;l.length>0;)c.push(l.shift());return new s(c,r(this.ops1),r(this.ops2),r(this.functions))},substitute:function(e,t){t instanceof s||(t=(new v).parse(String(t)));var n,o=[],a=this.tokens.length,l=0;for(l=0;l<a;l++){n=this.tokens[l];var c=n.type_;if(c===w&&n.index_===e)for(var u=0;u<t.tokens.length;u++){var f=t.tokens[u],p=new i(f.type_,f.index_,f.prio_,f.number_);o.push(p)}else o.push(n)}var m=new s(o,r(this.ops1),r(this.ops2),r(this.functions));return m},evaluate:function(e){e=e||{};var t,n,r,i,s=[],o=this.tokens.length,a=0;for(a=0;a<o;a++){i=this.tokens[a];var l=i.type_;if(l===x)s.push(i.number_);else if(l===C)n=s.pop(),t=s.pop(),r=this.ops2[i.index_],s.push(r(t,n));else if(l===w)if(i.index_ in e)s.push(e[i.index_]);else{if(!(i.index_ in this.functions))throw new Error("undefined variable: "+i.index_);s.push(this.functions[i.index_])}else if(l===y)t=s.pop(),r=this.ops1[i.index_],s.push(r(t));else{if(l!==T)throw new Error("invalid Expression");if(t=s.pop(),r=s.pop(),!r.apply||!r.call)throw new Error(r+" is not a function");"[object Array]"==Object.prototype.toString.call(t)?s.push(r.apply(void 0,t)):s.push(r.call(void 0,t))}}if(s.length>1)throw new Error("invalid Expression (parity)");return s[0]},toString:function(e){var t,n,r,i,s=[],a=this.tokens.length,l=0;for(l=0;l<a;l++){i=this.tokens[l];var c=i.type_;if(c===x)s.push(o(i.number_));else if(c===C)n=s.pop(),t=s.pop(),r=i.index_,e&&"^"==r?s.push("Math.pow("+t+","+n+")"):s.push("("+t+r+n+")");else if(c===w)s.push(i.index_);else if(c===y)t=s.pop(),r=i.index_,"-"===r?s.push("("+r+t+")"):s.push(r+"("+t+")");else{if(c!==T)throw new Error("invalid Expression");t=s.pop(),r=s.pop(),s.push(r+"("+t+")")}}if(s.length>1)throw new Error("invalid Expression (parity)");return s[0]},variables:function(){for(var e=this.tokens.length,t=[],n=0;n<e;n++){var r=this.tokens[n];r.type_===w&&t.indexOf(r.index_)==-1&&t.push(r.index_)}return t},toJSFunction:function(e,t){var n=new Function(e,"with(Parser.values) { return "+this.simplify(t).toString(!0)+"; }");return n}},v.parse=function(e){return(new v).parse(e)},v.evaluate=function(e,t){return v.parse(e).evaluate(t)},v.Expression=s,v.values={sin:Math.sin,cos:Math.cos,tan:Math.tan,asin:Math.asin,acos:Math.acos,atan:Math.atan,sqrt:Math.sqrt,log:Math.log,abs:Math.abs,ceil:Math.ceil,floor:Math.floor,round:Math.round,random:d,fac:h,exp:Math.exp,min:Math.min,max:Math.max,pyt:b,pow:Math.pow,atan2:Math.atan2,E:Math.E,PI:Math.PI};var S=1,_=2,A=4,$=8,E=16,P=32,z=64,O=128,R=256;return v.prototype={parse:function(e){this.errormsg="",this.success=!0;var t=[],n=[];this.tmpprio=0;var o=S|$|A|z,a=0;for(this.expression=e,this.pos=0;this.pos<this.expression.length;)if(this.isOperator())this.isSign()&&o&z?(this.isNegativeSign()&&(this.tokenprio=2,this.tokenindex="-",a++,this.addfunc(n,t,y)),o=S|$|A|z):this.isComment()||(0===(o&_)&&this.error_parsing(this.pos,"unexpected operator"),a+=2,this.addfunc(n,t,C),o=S|$|A|z);else if(this.isNumber()){0===(o&S)&&this.error_parsing(this.pos,"unexpected number");var l=new i(x,0,0,this.tokennumber);n.push(l),o=_|E|P}else if(this.isString()){0===(o&S)&&this.error_parsing(this.pos,"unexpected string");var l=new i(x,0,0,this.tokennumber);n.push(l),o=_|E|P}else if(this.isLeftParenth())0===(o&$)&&this.error_parsing(this.pos,'unexpected "("'),o&O&&(a+=2,this.tokenprio=-2,this.tokenindex=-1,this.addfunc(n,t,T)),o=S|$|A|z|R;else if(this.isRightParenth()){if(o&R){var l=new i(x,0,0,[]);n.push(l)}else 0===(o&E)&&this.error_parsing(this.pos,'unexpected ")"');o=_|E|P|$|O}else if(this.isComma())0===(o&P)&&this.error_parsing(this.pos,'unexpected ","'),this.addfunc(n,t,C),a+=2,o=S|$|A|z;else if(this.isConst()){0===(o&S)&&this.error_parsing(this.pos,"unexpected constant");var c=new i(x,0,0,this.tokennumber);n.push(c),o=_|E|P}else if(this.isOp2())0===(o&A)&&this.error_parsing(this.pos,"unexpected function"),this.addfunc(n,t,C),a+=2,o=$;else if(this.isOp1())0===(o&A)&&this.error_parsing(this.pos,"unexpected function"),this.addfunc(n,t,y),a++,o=$;else if(this.isVar()){0===(o&S)&&this.error_parsing(this.pos,"unexpected variable");var u=new i(w,this.tokenindex,0,0);n.push(u),o=_|E|P|$|O}else this.isWhite()||(""===this.errormsg?this.error_parsing(this.pos,"unknown character"):this.error_parsing(this.pos,this.errormsg));for((this.tmpprio<0||this.tmpprio>=10)&&this.error_parsing(this.pos,'unmatched "()"');t.length>0;){var f=t.pop();n.push(f)}return a+1!==n.length&&this.error_parsing(this.pos,"parity"),new s(n,r(this.ops1),r(this.ops2),r(this.functions))},evaluate:function(e,t){return this.parse(e).evaluate(t)},error_parsing:function(e,t){throw this.success=!1,this.errormsg="parse error [column "+e+"]: "+t,new Error(this.errormsg)},addfunc:function(e,t,n){for(var r=new i(n,this.tokenindex,this.tokenprio+this.tmpprio,0);t.length>0&&r.prio_<=t[t.length-1].prio_;)e.push(t.pop());t.push(r)},isNumber:function(){for(var e=!1,t="";this.pos<this.expression.length;){var n=this.expression.charCodeAt(this.pos);if(!(n>=48&&n<=57||46===n))break;t+=this.expression.charAt(this.pos),this.pos++,this.tokennumber=parseFloat(t),e=!0}return e},unescape:function(e,t){for(var n=[],r=!1,i=0;i<e.length;i++){var s=e.charAt(i);if(r){switch(s){case"'":n.push("'");break;case"\\":n.push("\\");break;case"/":n.push("/");break;case"b":n.push("\b");break;case"f":n.push("\f");break;case"n":n.push("\n");break;case"r":n.push("\r");break;case"t":n.push("\t");break;case"u":var o=parseInt(e.substring(i+1,i+5),16);n.push(String.fromCharCode(o)),i+=4;break;default:throw this.error_parsing(t+i,"Illegal escape sequence: '\\"+s+"'")}r=!1}else"\\"==s?r=!0:n.push(s)}return n.join("")},isString:function(){var e=!1,t="",n=this.pos;if(this.pos<this.expression.length&&"'"==this.expression.charAt(this.pos))for(this.pos++;this.pos<this.expression.length;){var r=this.expression.charAt(this.pos);if("'"==r&&"\\"!=t.slice(-1)){this.pos++,this.tokennumber=this.unescape(t,n),e=!0;break}t+=this.expression.charAt(this.pos),this.pos++}return e},isConst:function(){var e;for(var t in this.consts){var n=t.length;if(e=this.expression.substr(this.pos,n),t===e)return this.tokennumber=this.consts[t],this.pos+=n,!0}return!1},isOperator:function(){var e=this.expression.charCodeAt(this.pos);if(43===e)this.tokenprio=0,this.tokenindex="+";else if(45===e)this.tokenprio=0,this.tokenindex="-";else if(124===e){if(124!==this.expression.charCodeAt(this.pos+1))return!1;this.pos++,this.tokenprio=0,this.tokenindex="||"}else if(42===e)this.tokenprio=1,this.tokenindex="*";else if(47===e)this.tokenprio=2,this.tokenindex="/";else if(37===e)this.tokenprio=2,this.tokenindex="%";else{if(94!==e)return!1;this.tokenprio=3,this.tokenindex="^"}return this.pos++,!0},isSign:function(){var e=this.expression.charCodeAt(this.pos-1);return 45===e||43===e},isPositiveSign:function(){var e=this.expression.charCodeAt(this.pos-1);return 43===e},isNegativeSign:function(){var e=this.expression.charCodeAt(this.pos-1);return 45===e},isLeftParenth:function(){var e=this.expression.charCodeAt(this.pos);return 40===e&&(this.pos++,this.tmpprio+=10,!0)},isRightParenth:function(){var e=this.expression.charCodeAt(this.pos);return 41===e&&(this.pos++,this.tmpprio-=10,!0)},isComma:function(){var e=this.expression.charCodeAt(this.pos);return 44===e&&(this.pos++,this.tokenprio=-1,this.tokenindex=",",!0)},isWhite:function(){var e=this.expression.charCodeAt(this.pos);return(32===e||9===e||10===e||13===e)&&(this.pos++,!0)},isOp1:function(){for(var e="",t=this.pos;t<this.expression.length;t++){var n=this.expression.charAt(t);if(n.toUpperCase()===n.toLowerCase()&&(t===this.pos||"_"!=n&&(n<"0"||n>"9")))break;e+=n}return e.length>0&&e in this.ops1&&(this.tokenindex=e,this.tokenprio=5,this.pos+=e.length,!0)},isOp2:function(){for(var e="",t=this.pos;t<this.expression.length;t++){var n=this.expression.charAt(t);if(n.toUpperCase()===n.toLowerCase()&&(t===this.pos||"_"!=n&&(n<"0"||n>"9")))break;e+=n}return e.length>0&&e in this.ops2&&(this.tokenindex=e,this.tokenprio=5,this.pos+=e.length,!0)},isVar:function(){for(var e="",t=this.pos;t<this.expression.length;t++){var n=this.expression.charAt(t);if(n.toUpperCase()===n.toLowerCase()&&(t===this.pos||"_"!=n&&(n<"0"||n>"9")))break;e+=n}return e.length>0&&(this.tokenindex=e,this.tokenprio=4,this.pos+=e.length,!0)},isComment:function(){var e=this.expression.charCodeAt(this.pos-1);return 47===e&&42===this.expression.charCodeAt(this.pos)&&(this.pos=this.expression.indexOf("*/",this.pos)+2,1===this.pos&&(this.pos=this.expression.length),!0)}},v})},{}],"C:\\Temp\\emmet\\lib\\utils\\template.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){function r(e){for(var t=[],n=a(e);!n.eol();)","==n.peek()&&(t.push(l.trim(n.current())),n.next(),n.start=n.pos),n.next();return t.push(l.trim(n.current())),t.filter(function(e){return!!e})}function i(e){for(var t,n=null,i=a(e);!i.eol();){if("("==i.peek()){n=i.current(),i.start=i.pos,i.skipToPair("(",")",!0),t=i.current(),t=r(t.substring(1,t.length-1));break}i.next()}return n&&{name:n,args:t}}function s(e,t){if(/^['"]/.test(e))return e.replace(/^(['"])(.+?)\1$/,"$2");if(!isNaN(+e))return+e;if(e){for(var n=e.split("."),r=t;n.length;)r=r[n.shift()];return r}}function o(e,t){return e.replace(/<%[=\-](.+?)%>/g,function(e,n){n=l.trim(n);var r=i(n);if(r){var o=r.args.map(function(e){return s(e,t)});return t[r.name].apply(t,o)}return s(n,t)})}var a=e("../assets/stringStream"),l=e("./common");return function(e,t){return t?o(e,t):function(t){return o(e,t)}}})},{"../assets/stringStream":"C:\\Temp\\emmet\\lib\\assets\\stringStream.js","./common":"C:\\Temp\\emmet\\lib\\utils\\common.js"}],"C:\\Temp\\emmet\\lib\\vendor\\klass.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){function r(e,t,n){var r;return r=t&&t.hasOwnProperty("constructor")?t.constructor:function(){e.apply(this,arguments)},i.extend(r,e),s.prototype=e.prototype,r.prototype=new s,t&&i.extend(r.prototype,t),n&&i.extend(r,n),r.prototype.constructor=r,r.__super__=e.prototype,r}var i=e("../utils/common"),s=function(){};return{extend:function(e,t){var n=r(this,e,t);return n.extend=this.extend,e.hasOwnProperty("toString")&&(n.prototype.toString=e.toString),n}}})},{"../utils/common":"C:\\Temp\\emmet\\lib\\utils\\common.js"}],"C:\\Temp\\emmet\\lib\\vendor\\stringScore.js":[function(e,t,n){if("object"==typeof t&&"function"!=typeof r)var r=function(r){t.exports=r(e,n,t)};r(function(e,t,n){return{score:function(e,t,n){if(e==t)return 1;if(""==t)return 0;for(var r,i,s,o,a,l,c,u,f,p=0,m=t.length,d=e.length,h=1,b=0;b<m;++b){if(l=t.charAt(b),c=e.indexOf(l.toLowerCase()),
-u=e.indexOf(l.toUpperCase()),f=Math.min(c,u),a=f>-1?f:Math.max(c,u),a===-1){if(n){h+=1-n;continue}return 0}o=.1,e[a]===l&&(o+=.1),0===a?(o+=.6,0===b&&(r=1)):" "===e.charAt(a-1)&&(o+=.8),e=e.substring(a+1,d),p+=o}return i=p/m,s=(i*(m/d)+i)/2,s/=h,r&&s+.15<1&&(s+=.15),s}}})},{}]},{},["./lib/emmet.js","./bundles/snippets.js"])("./lib/emmet.js")});
+/**
+ * Check if given code is a number
+ */
+function isNumber(code) {
+    return code > 47 && code < 58;
+}
+/**
+ * Check if given character code is alpha code (letter through A to Z)
+ */
+function isAlpha(code, from, to) {
+    from = from || 65; // A
+    to = to || 90; // Z
+    code &= ~32; // quick hack to convert any char code to uppercase char code
+    return code >= from && code <= to;
+}
+/**
+ * Check if given character code is a white-space character: a space character
+ * or line breaks
+ */
+function isWhiteSpace(code) {
+    return code === 32 /* space */
+        || code === 9 /* tab */
+        || code === 160; /* non-breaking space */
+}
+/**
+ * Check if given character code is a space character
+ */
+function isSpace(code) {
+    return isWhiteSpace(code)
+        || code === 10 /* LF */
+        || code === 13; /* CR */
+}
+/**
+ * Check if given character code is a quote character
+ */
+function isQuote(code) {
+    return code === 39 /* ' */ || code === 34 /* " */;
+}
+
+/**
+ * A streaming, character code-based string reader
+ */
+class Scanner {
+    constructor(str, start, end) {
+        if (end == null && typeof str === 'string') {
+            end = str.length;
+        }
+        this.string = str;
+        this.pos = this.start = start || 0;
+        this.end = end || 0;
+    }
+    /**
+     * Returns true only if the stream is at the end of the file.
+     */
+    eof() {
+        return this.pos >= this.end;
+    }
+    /**
+     * Creates a new stream instance which is limited to given `start` and `end`
+     * range. E.g. its `eof()` method will look at `end` property, not actual
+     * stream end
+     */
+    limit(start, end) {
+        return new Scanner(this.string, start, end);
+    }
+    /**
+     * Returns the next character code in the stream without advancing it.
+     * Will return NaN at the end of the file.
+     */
+    peek() {
+        return this.string.charCodeAt(this.pos);
+    }
+    /**
+     * Returns the next character in the stream and advances it.
+     * Also returns <code>undefined</code> when no more characters are available.
+     */
+    next() {
+        if (this.pos < this.string.length) {
+            return this.string.charCodeAt(this.pos++);
+        }
+    }
+    /**
+     * `match` can be a character code or a function that takes a character code
+     * and returns a boolean. If the next character in the stream 'matches'
+     * the given argument, it is consumed and returned.
+     * Otherwise, `false` is returned.
+     */
+    eat(match) {
+        const ch = this.peek();
+        const ok = typeof match === 'function' ? match(ch) : ch === match;
+        if (ok) {
+            this.next();
+        }
+        return ok;
+    }
+    /**
+     * Repeatedly calls <code>eat</code> with the given argument, until it
+     * fails. Returns <code>true</code> if any characters were eaten.
+     */
+    eatWhile(match) {
+        const start = this.pos;
+        while (!this.eof() && this.eat(match)) { /* */ }
+        return this.pos !== start;
+    }
+    /**
+     * Backs up the stream n characters. Backing it up further than the
+     * start of the current token will cause things to break, so be careful.
+     */
+    backUp(n) {
+        this.pos -= (n || 1);
+    }
+    /**
+     * Get the string between the start of the current token and the
+     * current stream position.
+     */
+    current() {
+        return this.substring(this.start, this.pos);
+    }
+    /**
+     * Returns substring for given range
+     */
+    substring(start, end) {
+        return this.string.slice(start, end);
+    }
+    /**
+     * Creates error object with current stream state
+     */
+    error(message, pos = this.pos) {
+        return new ScannerError(`${message} at ${pos + 1}`, pos, this.string);
+    }
+}
+class ScannerError extends Error {
+    constructor(message, pos, str) {
+        super(message);
+        this.pos = pos;
+        this.string = str;
+    }
+}
+
+function tokenScanner(tokens) {
+    return {
+        tokens,
+        start: 0,
+        pos: 0,
+        size: tokens.length
+    };
+}
+function peek(scanner) {
+    return scanner.tokens[scanner.pos];
+}
+function next(scanner) {
+    return scanner.tokens[scanner.pos++];
+}
+function slice(scanner, from = scanner.start, to = scanner.pos) {
+    return scanner.tokens.slice(from, to);
+}
+function readable(scanner) {
+    return scanner.pos < scanner.size;
+}
+function consume(scanner, test) {
+    const token = peek(scanner);
+    if (token && test(token)) {
+        scanner.pos++;
+        return true;
+    }
+    return false;
+}
+function error(scanner, message, token = peek(scanner)) {
+    if (token && token.start != null) {
+        message += ` at ${token.start}`;
+    }
+    const err = new Error(message);
+    err['pos'] = token && token.start;
+    return err;
+}
+
+function abbreviation(abbr, options = {}) {
+    const scanner = tokenScanner(abbr);
+    const result = statements(scanner, options);
+    if (readable(scanner)) {
+        throw error(scanner, 'Unexpected character');
+    }
+    return result;
+}
+function statements(scanner, options) {
+    const result = {
+        type: 'TokenGroup',
+        elements: []
+    };
+    let ctx = result;
+    let node;
+    const stack = [];
+    while (readable(scanner)) {
+        if (node = element(scanner, options) || group(scanner, options)) {
+            ctx.elements.push(node);
+            if (consume(scanner, isChildOperator)) {
+                stack.push(ctx);
+                ctx = node;
+            }
+            else if (consume(scanner, isSiblingOperator)) {
+                continue;
+            }
+            else if (consume(scanner, isClimbOperator)) {
+                do {
+                    if (stack.length) {
+                        ctx = stack.pop();
+                    }
+                } while (consume(scanner, isClimbOperator));
+            }
+        }
+        else {
+            break;
+        }
+    }
+    return result;
+}
+/**
+ * Consumes group from given scanner
+ */
+function group(scanner, options) {
+    if (consume(scanner, isGroupStart)) {
+        const result = statements(scanner, options);
+        const token = next(scanner);
+        if (isBracket(token, 'group', false)) {
+            result.repeat = repeater(scanner);
+            return result;
+        }
+        throw error(scanner, 'Expecting )', token);
+    }
+}
+/**
+ * Consumes single element from given scanner
+ */
+function element(scanner, options) {
+    let attr;
+    const elem = {
+        type: 'TokenElement',
+        name: void 0,
+        attributes: void 0,
+        value: void 0,
+        repeat: void 0,
+        selfClose: false,
+        elements: []
+    };
+    if (elementName(scanner, options)) {
+        elem.name = slice(scanner);
+    }
+    while (readable(scanner)) {
+        scanner.start = scanner.pos;
+        if (!elem.repeat && !isEmpty(elem) && consume(scanner, isRepeater)) {
+            elem.repeat = scanner.tokens[scanner.pos - 1];
+        }
+        else if (!elem.value && text(scanner)) {
+            elem.value = getText(scanner);
+        }
+        else if (attr = shortAttribute(scanner, 'id', options) || shortAttribute(scanner, 'class', options) || attributeSet(scanner)) {
+            if (!elem.attributes) {
+                elem.attributes = Array.isArray(attr) ? attr.slice() : [attr];
+            }
+            else {
+                elem.attributes = elem.attributes.concat(attr);
+            }
+        }
+        else {
+            if (!isEmpty(elem) && consume(scanner, isCloseOperator)) {
+                elem.selfClose = true;
+                if (!elem.repeat && consume(scanner, isRepeater)) {
+                    elem.repeat = scanner.tokens[scanner.pos - 1];
+                }
+            }
+            break;
+        }
+    }
+    return !isEmpty(elem) ? elem : void 0;
+}
+/**
+ * Consumes attribute set from given scanner
+ */
+function attributeSet(scanner) {
+    if (consume(scanner, isAttributeSetStart)) {
+        const attributes = [];
+        let attr;
+        while (readable(scanner)) {
+            if (attr = attribute(scanner)) {
+                attributes.push(attr);
+            }
+            else if (consume(scanner, isAttributeSetEnd)) {
+                break;
+            }
+            else if (!consume(scanner, isWhiteSpace$1)) {
+                throw error(scanner, `Unexpected "${peek(scanner).type}" token`);
+            }
+        }
+        return attributes;
+    }
+}
+/**
+ * Consumes attribute shorthand (class or id) from given scanner
+ */
+function shortAttribute(scanner, type, options) {
+    if (isOperator(peek(scanner), type)) {
+        scanner.pos++;
+        const attr = {
+            name: [createLiteral(type)]
+        };
+        // Consume expression after shorthand start for React-like components
+        if (options.jsx && text(scanner)) {
+            attr.value = getText(scanner);
+            attr.expression = true;
+        }
+        else {
+            attr.value = literal(scanner) ? slice(scanner) : void 0;
+        }
+        return attr;
+    }
+}
+/**
+ * Consumes single attribute from given scanner
+ */
+function attribute(scanner) {
+    if (quoted(scanner)) {
+        // Consumed quoted value: it’s a value for default attribute
+        return {
+            value: slice(scanner)
+        };
+    }
+    if (literal(scanner, true)) {
+        return {
+            name: slice(scanner),
+            value: consume(scanner, isEquals) && (quoted(scanner) || literal(scanner, true))
+                ? slice(scanner)
+                : void 0
+        };
+    }
+}
+function repeater(scanner) {
+    return isRepeater(peek(scanner))
+        ? scanner.tokens[scanner.pos++]
+        : void 0;
+}
+/**
+ * Consumes quoted value from given scanner, if possible
+ */
+function quoted(scanner) {
+    const start = scanner.pos;
+    const quote = peek(scanner);
+    if (isQuote$1(quote)) {
+        scanner.pos++;
+        while (readable(scanner)) {
+            if (isQuote$1(next(scanner), quote.single)) {
+                scanner.start = start;
+                return true;
+            }
+        }
+        throw error(scanner, 'Unclosed quote', quote);
+    }
+    return false;
+}
+/**
+ * Consumes literal (unquoted value) from given scanner
+ */
+function literal(scanner, allowBrackets) {
+    const start = scanner.pos;
+    const brackets = {
+        attribute: 0,
+        expression: 0,
+        group: 0
+    };
+    while (readable(scanner)) {
+        const token = peek(scanner);
+        if (brackets.expression) {
+            // If we’re inside expression, we should consume all content in it
+            if (isBracket(token, 'expression')) {
+                brackets[token.context] += token.open ? 1 : -1;
+            }
+        }
+        else if (isQuote$1(token) || isOperator(token) || isWhiteSpace$1(token) || isRepeater(token)) {
+            break;
+        }
+        else if (isBracket(token)) {
+            if (!allowBrackets) {
+                break;
+            }
+            if (token.open) {
+                brackets[token.context]++;
+            }
+            else if (!brackets[token.context]) {
+                // Stop if found unmatched closing brace: it must be handled
+                // by parent consumer
+                break;
+            }
+            else {
+                brackets[token.context]--;
+            }
+        }
+        scanner.pos++;
+    }
+    if (start !== scanner.pos) {
+        scanner.start = start;
+        return true;
+    }
+    return false;
+}
+/**
+ * Consumes element name from given scanner
+ */
+function elementName(scanner, options) {
+    const start = scanner.pos;
+    if (options.jsx && consume(scanner, isCapitalizedLiteral)) {
+        // Check for edge case: consume immediate capitalized class names
+        // for React-like components, e.g. `Foo.Bar.Baz`
+        while (readable(scanner)) {
+            const { pos } = scanner;
+            if (!consume(scanner, isClassNameOperator) || !consume(scanner, isCapitalizedLiteral)) {
+                scanner.pos = pos;
+                break;
+            }
+        }
+    }
+    while (readable(scanner) && consume(scanner, isElementName)) {
+        // empty
+    }
+    if (scanner.pos !== start) {
+        scanner.start = start;
+        return true;
+    }
+    return false;
+}
+/**
+ * Consumes text value from given scanner
+ */
+function text(scanner) {
+    const start = scanner.pos;
+    if (consume(scanner, isTextStart)) {
+        let brackets = 0;
+        while (readable(scanner)) {
+            const token = next(scanner);
+            if (isBracket(token, 'expression')) {
+                if (token.open) {
+                    brackets++;
+                }
+                else if (!brackets) {
+                    break;
+                }
+                else {
+                    brackets--;
+                }
+            }
+        }
+        scanner.start = start;
+        return true;
+    }
+    return false;
+}
+function getText(scanner) {
+    let from = scanner.start;
+    let to = scanner.pos;
+    if (isBracket(scanner.tokens[from], 'expression', true)) {
+        from++;
+    }
+    if (isBracket(scanner.tokens[to - 1], 'expression', false)) {
+        to--;
+    }
+    return slice(scanner, from, to);
+}
+function isBracket(token, context, isOpen) {
+    return Boolean(token && token.type === 'Bracket'
+        && (!context || token.context === context)
+        && (isOpen == null || token.open === isOpen));
+}
+function isOperator(token, type) {
+    return Boolean(token && token.type === 'Operator' && (!type || token.operator === type));
+}
+function isQuote$1(token, isSingle) {
+    return Boolean(token && token.type === 'Quote' && (isSingle == null || token.single === isSingle));
+}
+function isWhiteSpace$1(token) {
+    return Boolean(token && token.type === 'WhiteSpace');
+}
+function isEquals(token) {
+    return isOperator(token, 'equal');
+}
+function isRepeater(token) {
+    return Boolean(token && token.type === 'Repeater');
+}
+function isLiteral(token) {
+    return token.type === 'Literal';
+}
+function isCapitalizedLiteral(token) {
+    if (isLiteral(token)) {
+        const ch = token.value.charCodeAt(0);
+        return ch >= 65 && ch <= 90;
+    }
+    return false;
+}
+function isElementName(token) {
+    return token.type === 'Literal' || token.type === 'RepeaterNumber' || token.type === 'RepeaterPlaceholder';
+}
+function isClassNameOperator(token) {
+    return isOperator(token, 'class');
+}
+function isAttributeSetStart(token) {
+    return isBracket(token, 'attribute', true);
+}
+function isAttributeSetEnd(token) {
+    return isBracket(token, 'attribute', false);
+}
+function isTextStart(token) {
+    return isBracket(token, 'expression', true);
+}
+function isGroupStart(token) {
+    return isBracket(token, 'group', true);
+}
+function createLiteral(value) {
+    return { type: 'Literal', value };
+}
+function isEmpty(elem) {
+    return !elem.name && !elem.value && !elem.attributes;
+}
+function isChildOperator(token) {
+    return isOperator(token, 'child');
+}
+function isSiblingOperator(token) {
+    return isOperator(token, 'sibling');
+}
+function isClimbOperator(token) {
+    return isOperator(token, 'climb');
+}
+function isCloseOperator(token) {
+    return isOperator(token, 'close');
+}
+
+/**
+ * If consumes escape character, sets current stream range to escaped value
+ */
+function escaped(scanner) {
+    if (scanner.eat(92 /* Escape */)) {
+        if (scanner.eof()) {
+            scanner.start = scanner.pos - 1;
+        }
+        else {
+            scanner.start = scanner.pos++;
+        }
+        return true;
+    }
+    return false;
+}
+
+function tokenize(source) {
+    const scanner = new Scanner(source);
+    const result = [];
+    const ctx = {
+        group: 0,
+        attribute: 0,
+        expression: 0,
+        quote: 0
+    };
+    let ch = 0;
+    let token;
+    while (!scanner.eof()) {
+        ch = scanner.peek();
+        token = field(scanner, ctx)
+            || repeaterPlaceholder(scanner)
+            || repeaterNumber(scanner)
+            || repeater$1(scanner)
+            || whiteSpace(scanner)
+            || literal$1(scanner, ctx)
+            || operator(scanner)
+            || quote(scanner)
+            || bracket(scanner);
+        if (token) {
+            result.push(token);
+            if (token.type === 'Quote') {
+                ctx.quote = ch === ctx.quote ? 0 : ch;
+            }
+            else if (token.type === 'Bracket') {
+                ctx[token.context] += token.open ? 1 : -1;
+            }
+        }
+        else {
+            throw scanner.error('Unexpected character');
+        }
+    }
+    return result;
+}
+/**
+ * Consumes literal from given scanner
+ */
+function literal$1(scanner, ctx) {
+    const start = scanner.pos;
+    let value = '';
+    while (!scanner.eof()) {
+        const ch = scanner.peek();
+        if (ch === ctx.quote || ch === 36 /* Dollar */ || isAllowedOperator(ch, ctx)) {
+            // 1. Found matching quote
+            // 2. The `$` character has special meaning in every context
+            // 3. Depending on context, some characters should be treated as operators
+            break;
+        }
+        if (ctx.expression && ch === 125 /* CurlyBracketClose */) {
+            break;
+        }
+        if (!ctx.quote && !ctx.expression && (isAllowedSpace(ch, ctx) || isAllowedRepeater(ch, ctx) || isQuote(ch) || bracketType(ch))) {
+            // Stop for characters not allowed in unquoted literal
+            break;
+        }
+        value += escaped(scanner)
+            ? scanner.current()
+            : scanner.string[scanner.pos++];
+    }
+    if (start !== scanner.pos) {
+        scanner.start = start;
+        return {
+            type: 'Literal',
+            value,
+            start,
+            end: scanner.pos
+        };
+    }
+}
+/**
+ * Consumes white space characters as string literal from given scanner
+ */
+function whiteSpace(scanner) {
+    const start = scanner.pos;
+    if (scanner.eatWhile(isSpace)) {
+        return {
+            type: 'WhiteSpace',
+            start,
+            end: scanner.pos
+        };
+    }
+}
+/**
+ * Consumes quote from given scanner
+ */
+function quote(scanner) {
+    const ch = scanner.peek();
+    if (isQuote(ch)) {
+        return {
+            type: 'Quote',
+            single: ch === 39 /* SingleQuote */,
+            start: scanner.pos++,
+            end: scanner.pos
+        };
+    }
+}
+/**
+ * Consumes bracket from given scanner
+ */
+function bracket(scanner) {
+    const ch = scanner.peek();
+    const context = bracketType(ch);
+    if (context) {
+        return {
+            type: 'Bracket',
+            open: isOpenBracket(ch),
+            context,
+            start: scanner.pos++,
+            end: scanner.pos
+        };
+    }
+}
+/**
+ * Consumes operator from given scanner
+ */
+function operator(scanner) {
+    const op = operatorType(scanner.peek());
+    if (op) {
+        return {
+            type: 'Operator',
+            operator: op,
+            start: scanner.pos++,
+            end: scanner.pos
+        };
+    }
+}
+/**
+ * Consumes node repeat token from current stream position and returns its
+ * parsed value
+ */
+function repeater$1(scanner) {
+    const start = scanner.pos;
+    if (scanner.eat(42 /* Asterisk */)) {
+        scanner.start = scanner.pos;
+        let count = 1;
+        let implicit = false;
+        if (scanner.eatWhile(isNumber)) {
+            count = Number(scanner.current());
+        }
+        else {
+            implicit = true;
+        }
+        return {
+            type: 'Repeater',
+            count,
+            value: 0,
+            implicit,
+            start,
+            end: scanner.pos
+        };
+    }
+}
+/**
+ * Consumes repeater placeholder `$#` from given scanner
+ */
+function repeaterPlaceholder(scanner) {
+    const start = scanner.pos;
+    if (scanner.eat(36 /* Dollar */) && scanner.eat(35 /* Hash */)) {
+        return {
+            type: 'RepeaterPlaceholder',
+            value: void 0,
+            start,
+            end: scanner.pos
+        };
+    }
+    scanner.pos = start;
+}
+/**
+ * Consumes numbering token like `$` from given scanner state
+ */
+function repeaterNumber(scanner) {
+    const start = scanner.pos;
+    if (scanner.eatWhile(36 /* Dollar */)) {
+        const size = scanner.pos - start;
+        let reverse = false;
+        let base = 1;
+        let parent = 0;
+        if (scanner.eat(64 /* At */)) {
+            // Consume numbering modifiers
+            while (scanner.eat(94 /* Climb */)) {
+                parent++;
+            }
+            reverse = scanner.eat(45 /* Dash */);
+            scanner.start = scanner.pos;
+            if (scanner.eatWhile(isNumber)) {
+                base = Number(scanner.current());
+            }
+        }
+        scanner.start = start;
+        return {
+            type: 'RepeaterNumber',
+            size,
+            reverse,
+            base,
+            parent,
+            start,
+            end: scanner.pos
+        };
+    }
+}
+function field(scanner, ctx) {
+    const start = scanner.pos;
+    // Fields are allowed inside expressions and attributes
+    if ((ctx.expression || ctx.attribute) && scanner.eat(36 /* Dollar */) && scanner.eat(123 /* CurlyBracketOpen */)) {
+        scanner.start = scanner.pos;
+        let index;
+        let name = '';
+        if (scanner.eatWhile(isNumber)) {
+            // It’s a field
+            index = Number(scanner.current());
+            name = scanner.eat(58 /* Colon */) ? consumePlaceholder(scanner) : '';
+        }
+        else if (isAlpha(scanner.peek())) {
+            // It’s a variable
+            name = consumePlaceholder(scanner);
+        }
+        if (scanner.eat(125 /* CurlyBracketClose */)) {
+            return {
+                type: 'Field',
+                index, name,
+                start,
+                end: scanner.pos
+            };
+        }
+        throw scanner.error('Expecting }');
+    }
+    // If we reached here then there’s no valid field here, revert
+    // back to starting position
+    scanner.pos = start;
+}
+/**
+ * Consumes a placeholder: value right after `:` in field. Could be empty
+ */
+function consumePlaceholder(stream) {
+    const stack = [];
+    stream.start = stream.pos;
+    while (!stream.eof()) {
+        if (stream.eat(123 /* CurlyBracketOpen */)) {
+            stack.push(stream.pos);
+        }
+        else if (stream.eat(125 /* CurlyBracketClose */)) {
+            if (!stack.length) {
+                stream.pos--;
+                break;
+            }
+            stack.pop();
+        }
+        else {
+            stream.pos++;
+        }
+    }
+    if (stack.length) {
+        stream.pos = stack.pop();
+        throw stream.error(`Expecting }`);
+    }
+    return stream.current();
+}
+/**
+ * Check if given character code is an operator and it’s allowed in current context
+ */
+function isAllowedOperator(ch, ctx) {
+    const op = operatorType(ch);
+    if (!op || ctx.quote || ctx.expression) {
+        // No operators inside quoted values or expressions
+        return false;
+    }
+    // Inside attributes, only `equals` is allowed
+    return !ctx.attribute || op === 'equal';
+}
+/**
+ * Check if given character is a space character and is allowed to be consumed
+ * as a space token in current context
+ */
+function isAllowedSpace(ch, ctx) {
+    return isSpace(ch) && !ctx.expression;
+}
+/**
+ * Check if given character can be consumed as repeater in current context
+ */
+function isAllowedRepeater(ch, ctx) {
+    return ch === 42 /* Asterisk */ && !ctx.attribute && !ctx.expression;
+}
+/**
+ * If given character is a bracket, returns it’s type
+ */
+function bracketType(ch) {
+    if (ch === 40 /* RoundBracketOpen */ || ch === 41 /* RoundBracketClose */) {
+        return 'group';
+    }
+    if (ch === 91 /* SquareBracketOpen */ || ch === 93 /* SquareBracketClose */) {
+        return 'attribute';
+    }
+    if (ch === 123 /* CurlyBracketOpen */ || ch === 125 /* CurlyBracketClose */) {
+        return 'expression';
+    }
+}
+/**
+ * If given character is an operator, returns it’s type
+ */
+function operatorType(ch) {
+    return (ch === 62 /* Child */ && 'child')
+        || (ch === 43 /* Sibling */ && 'sibling')
+        || (ch === 94 /* Climb */ && 'climb')
+        || (ch === 46 /* Dot */ && 'class')
+        || (ch === 35 /* Hash */ && 'id')
+        || (ch === 47 /* Slash */ && 'close')
+        || (ch === 61 /* Equals */ && 'equal')
+        || void 0;
+}
+/**
+ * Check if given character is an open bracket
+ */
+function isOpenBracket(ch) {
+    return ch === 123 /* CurlyBracketOpen */
+        || ch === 91 /* SquareBracketOpen */
+        || ch === 40 /* RoundBracketOpen */;
+}
+
+const operators = {
+    child: '>',
+    class: '.',
+    climb: '^',
+    id: '#',
+    equal: '=',
+    close: '/',
+    sibling: '+'
+};
+const tokenVisitor = {
+    Literal(token) {
+        return token.value;
+    },
+    Quote(token) {
+        return token.single ? '\'' : '"';
+    },
+    Bracket(token) {
+        if (token.context === 'attribute') {
+            return token.open ? '[' : ']';
+        }
+        else if (token.context === 'expression') {
+            return token.open ? '{' : '}';
+        }
+        else {
+            return token.open ? '(' : '}';
+        }
+    },
+    Operator(token) {
+        return operators[token.operator];
+    },
+    Field(token, state) {
+        if (token.index != null) {
+            // It’s a field: by default, return TextMate-compatible field
+            return token.name
+                ? `\${${token.index}:${token.name}}`
+                : `\${${token.index}`;
+        }
+        else if (token.name) {
+            // It’s a variable
+            return state.getVariable(token.name);
+        }
+        return '';
+    },
+    RepeaterPlaceholder(token, state) {
+        // Find closest implicit repeater
+        let repeater;
+        for (let i = state.repeaters.length - 1; i >= 0; i--) {
+            if (state.repeaters[i].implicit) {
+                repeater = state.repeaters[i];
+                break;
+            }
+        }
+        state.inserted = true;
+        return state.getText(repeater && repeater.value);
+    },
+    RepeaterNumber(token, state) {
+        let value = 1;
+        const lastIx = state.repeaters.length - 1;
+        // const repeaterIx = Math.max(0, state.repeaters.length - 1 - token.parent);
+        const repeater = state.repeaters[lastIx];
+        if (repeater) {
+            value = token.reverse
+                ? token.base + repeater.count - repeater.value - 1
+                : token.base + repeater.value;
+            if (token.parent) {
+                const parentIx = Math.max(0, lastIx - token.parent);
+                if (parentIx !== lastIx) {
+                    const parentRepeater = state.repeaters[parentIx];
+                    value += repeater.count * parentRepeater.value;
+                }
+            }
+        }
+        let result = String(value);
+        while (result.length < token.size) {
+            result = '0' + result;
+        }
+        return result;
+    },
+    WhiteSpace() {
+        return ' ';
+    }
+};
+/**
+ * Converts given value token to string
+ */
+function stringify(token, state) {
+    if (!tokenVisitor[token.type]) {
+        throw new Error(`Unknown token ${token.type}`);
+    }
+    return tokenVisitor[token.type](token, state);
+}
+
+/**
+ * Converts given token-based abbreviation into simplified and unrolled node-based
+ * abbreviation
+ */
+function convert(abbr, options = {}) {
+    let textInserted = false;
+    const result = {
+        type: 'Abbreviation',
+        children: convertGroup(abbr, {
+            inserted: false,
+            repeaters: [],
+            text: options.text,
+            repeatGuard: options.maxRepeat || Number.POSITIVE_INFINITY,
+            getText(pos) {
+                textInserted = true;
+                const value = Array.isArray(options.text)
+                    ? (pos != null ? options.text[pos] : options.text.join('\n'))
+                    : options.text;
+                return value != null ? value : '';
+            },
+            getVariable(name) {
+                const varValue = options.variables && options.variables[name];
+                return varValue != null ? varValue : name;
+            }
+        })
+    };
+    if (options.text != null && !textInserted) {
+        // Text given but no implicitly repeated elements: insert it into
+        // deepest child
+        const deepest = deepestNode(last(result.children));
+        if (deepest) {
+            const text = Array.isArray(options.text) ? options.text.join('\n') : options.text;
+            insertText(deepest, text);
+        }
+    }
+    return result;
+}
+/**
+ * Converts given statement to abbreviation nodes
+ */
+function convertStatement(node, state) {
+    let result = [];
+    if (node.repeat) {
+        // Node is repeated: we should create copies of given node
+        // and supply context token with actual repeater state
+        const original = node.repeat;
+        const repeat = Object.assign({}, original);
+        repeat.count = repeat.implicit && Array.isArray(state.text)
+            ? state.text.length
+            : (repeat.count || 1);
+        let items;
+        state.repeaters.push(repeat);
+        for (let i = 0; i < repeat.count; i++) {
+            repeat.value = i;
+            node.repeat = repeat;
+            items = isGroup(node)
+                ? convertGroup(node, state)
+                : convertElement(node, state);
+            if (repeat.implicit && !state.inserted) {
+                // It’s an implicit repeater but no repeater placeholders found inside,
+                // we should insert text into deepest node
+                const target = last(items);
+                const deepest = target && deepestNode(target);
+                if (deepest) {
+                    insertText(deepest, state.getText(repeat.value));
+                }
+            }
+            result = result.concat(items);
+            // We should output at least one repeated item even if it’s reached
+            // repeat limit
+            if (--state.repeatGuard <= 0) {
+                break;
+            }
+        }
+        state.repeaters.pop();
+        node.repeat = original;
+        if (repeat.implicit) {
+            state.inserted = true;
+        }
+    }
+    else {
+        result = result.concat(isGroup(node) ? convertGroup(node, state) : convertElement(node, state));
+    }
+    return result;
+}
+function convertElement(node, state) {
+    let children = [];
+    const elem = {
+        type: 'AbbreviationNode',
+        name: node.name && stringifyName(node.name, state),
+        value: node.value && stringifyValue(node.value, state),
+        attributes: void 0,
+        children,
+        repeat: node.repeat && Object.assign({}, node.repeat),
+        selfClosing: node.selfClose,
+    };
+    let result = [elem];
+    for (const child of node.elements) {
+        children = children.concat(convertStatement(child, state));
+    }
+    if (node.attributes) {
+        elem.attributes = [];
+        for (const attr of node.attributes) {
+            elem.attributes.push(convertAttribute(attr, state));
+        }
+    }
+    // In case if current node is a text-only snippet without fields, we should
+    // put all children as siblings
+    if (!elem.name && !elem.attributes && elem.value && !elem.value.some(isField)) {
+        // XXX it’s unclear that `children` is not bound to `elem`
+        // due to concat operation
+        result = result.concat(children);
+    }
+    else {
+        elem.children = children;
+    }
+    return result;
+}
+function convertGroup(node, state) {
+    let result = [];
+    for (const child of node.elements) {
+        result = result.concat(convertStatement(child, state));
+    }
+    if (node.repeat) {
+        result = attachRepeater(result, node.repeat);
+    }
+    return result;
+}
+function convertAttribute(node, state) {
+    let implied = false;
+    let isBoolean = false;
+    let valueType = node.expression ? 'expression' : 'raw';
+    let value;
+    const name = node.name && stringifyName(node.name, state);
+    if (name && name[0] === '!') {
+        implied = true;
+    }
+    if (name && name[name.length - 1] === '.') {
+        isBoolean = true;
+    }
+    if (node.value) {
+        const tokens = node.value.slice();
+        if (isQuote$1(tokens[0])) {
+            // It’s a quoted value: remove quotes from output but mark attribute
+            // value as quoted
+            const quote = tokens.shift();
+            if (tokens.length && last(tokens).type === quote.type) {
+                tokens.pop();
+            }
+            valueType = quote.single ? 'singleQuote' : 'doubleQuote';
+        }
+        else if (isBracket(tokens[0], 'expression', true)) {
+            // Value is expression: remove brackets but mark value type
+            valueType = 'expression';
+            tokens.shift();
+            if (isBracket(last(tokens), 'expression', false)) {
+                tokens.pop();
+            }
+        }
+        value = stringifyValue(tokens, state);
+    }
+    return {
+        name: isBoolean || implied
+            ? name.slice(implied ? 1 : 0, isBoolean ? -1 : void 0)
+            : name,
+        value,
+        boolean: isBoolean,
+        implied,
+        valueType
+    };
+}
+/**
+ * Converts given token list to string
+ */
+function stringifyName(tokens, state) {
+    let str = '';
+    for (let i = 0; i < tokens.length; i++) {
+        str += stringify(tokens[i], state);
+    }
+    return str;
+}
+/**
+ * Converts given token list to value list
+ */
+function stringifyValue(tokens, state) {
+    const result = [];
+    let str = '';
+    for (let i = 0, token; i < tokens.length; i++) {
+        token = tokens[i];
+        if (isField(token)) {
+            // We should keep original fields in output since some editors has their
+            // own syntax for field or doesn’t support fields at all so we should
+            // capture actual field location in output stream
+            if (str) {
+                result.push(str);
+                str = '';
+            }
+            result.push(token);
+        }
+        else {
+            str += stringify(token, state);
+        }
+    }
+    if (str) {
+        result.push(str);
+    }
+    return result;
+}
+function isGroup(node) {
+    return node.type === 'TokenGroup';
+}
+function isField(token) {
+    return typeof token === 'object' && token.type === 'Field' && token.index != null;
+}
+function last(arr) {
+    return arr[arr.length - 1];
+}
+function deepestNode(node) {
+    return node.children.length ? deepestNode(last(node.children)) : node;
+}
+function insertText(node, text) {
+    if (node.value) {
+        const lastToken = last(node.value);
+        if (typeof lastToken === 'string') {
+            node.value[node.value.length - 1] += text;
+        }
+        else {
+            node.value.push(text);
+        }
+    }
+    else {
+        node.value = [text];
+    }
+}
+function attachRepeater(items, repeater) {
+    for (const item of items) {
+        if (!item.repeat) {
+            item.repeat = Object.assign({}, repeater);
+        }
+    }
+    return items;
+}
+
+/**
+ * Parses given abbreviation into node tree
+ */
+function parseAbbreviation(abbr, options) {
+    try {
+        const tokens = typeof abbr === 'string' ? tokenize(abbr) : abbr;
+        return convert(abbreviation(tokens, options), options);
+    }
+    catch (err) {
+        if (err instanceof ScannerError && typeof abbr === 'string') {
+            err.message += `\n${abbr}\n${'-'.repeat(err.pos)}^`;
+        }
+        throw err;
+    }
+}
+
+/**
+ * Check if given code is a number
+ */
+function isNumber$1(code) {
+    return code > 47 && code < 58;
+}
+/**
+ * Check if given character code is alpha code (letter through A to Z)
+ */
+function isAlpha$1(code, from, to) {
+    from = from || 65; // A
+    to = to || 90; // Z
+    code &= ~32; // quick hack to convert any char code to uppercase char code
+    return code >= from && code <= to;
+}
+function isAlphaNumericWord(code) {
+    return isNumber$1(code) || isAlphaWord(code);
+}
+function isAlphaWord(code) {
+    return code === 95 /* _ */ || isAlpha$1(code);
+}
+/**
+ * Check if given character code is a white-space character: a space character
+ * or line breaks
+ */
+function isWhiteSpace$2(code) {
+    return code === 32 /* space */
+        || code === 9 /* tab */
+        || code === 160; /* non-breaking space */
+}
+/**
+ * Check if given character code is a space character
+ */
+function isSpace$1(code) {
+    return isWhiteSpace$2(code)
+        || code === 10 /* LF */
+        || code === 13; /* CR */
+}
+/**
+ * Check if given character code is a quote character
+ */
+function isQuote$2(code) {
+    return code === 39 /* ' */ || code === 34 /* " */;
+}
+
+/**
+ * A streaming, character code-based string reader
+ */
+class Scanner$1 {
+    constructor(str, start, end) {
+        if (end == null && typeof str === 'string') {
+            end = str.length;
+        }
+        this.string = str;
+        this.pos = this.start = start || 0;
+        this.end = end || 0;
+    }
+    /**
+     * Returns true only if the stream is at the end of the file.
+     */
+    eof() {
+        return this.pos >= this.end;
+    }
+    /**
+     * Creates a new stream instance which is limited to given `start` and `end`
+     * range. E.g. its `eof()` method will look at `end` property, not actual
+     * stream end
+     */
+    limit(start, end) {
+        return new Scanner$1(this.string, start, end);
+    }
+    /**
+     * Returns the next character code in the stream without advancing it.
+     * Will return NaN at the end of the file.
+     */
+    peek() {
+        return this.string.charCodeAt(this.pos);
+    }
+    /**
+     * Returns the next character in the stream and advances it.
+     * Also returns <code>undefined</code> when no more characters are available.
+     */
+    next() {
+        if (this.pos < this.string.length) {
+            return this.string.charCodeAt(this.pos++);
+        }
+    }
+    /**
+     * `match` can be a character code or a function that takes a character code
+     * and returns a boolean. If the next character in the stream 'matches'
+     * the given argument, it is consumed and returned.
+     * Otherwise, `false` is returned.
+     */
+    eat(match) {
+        const ch = this.peek();
+        const ok = typeof match === 'function' ? match(ch) : ch === match;
+        if (ok) {
+            this.next();
+        }
+        return ok;
+    }
+    /**
+     * Repeatedly calls <code>eat</code> with the given argument, until it
+     * fails. Returns <code>true</code> if any characters were eaten.
+     */
+    eatWhile(match) {
+        const start = this.pos;
+        while (!this.eof() && this.eat(match)) { /* */ }
+        return this.pos !== start;
+    }
+    /**
+     * Backs up the stream n characters. Backing it up further than the
+     * start of the current token will cause things to break, so be careful.
+     */
+    backUp(n) {
+        this.pos -= (n || 1);
+    }
+    /**
+     * Get the string between the start of the current token and the
+     * current stream position.
+     */
+    current() {
+        return this.substring(this.start, this.pos);
+    }
+    /**
+     * Returns substring for given range
+     */
+    substring(start, end) {
+        return this.string.slice(start, end);
+    }
+    /**
+     * Creates error object with current stream state
+     */
+    error(message, pos = this.pos) {
+        return new ScannerError$1(`${message} at ${pos + 1}`, pos, this.string);
+    }
+}
+class ScannerError$1 extends Error {
+    constructor(message, pos, str) {
+        super(message);
+        this.pos = pos;
+        this.string = str;
+    }
+}
+
+function tokenize$1(abbr, isValue) {
+    let brackets = 0;
+    let token;
+    const scanner = new Scanner$1(abbr);
+    const tokens = [];
+    while (!scanner.eof()) {
+        token = field$1(scanner)
+            || numberValue(scanner)
+            || colorValue(scanner)
+            || stringValue(scanner)
+            || bracket$1(scanner)
+            || operator$1(scanner)
+            || whiteSpace$1(scanner)
+            || literal$2(scanner, brackets === 0 && !isValue)
+            || void 0;
+        if (!token) {
+            throw scanner.error('Unexpected character');
+        }
+        if (token.type === 'Bracket') {
+            if (!brackets && token.open) {
+                mergeTokens(scanner, tokens);
+            }
+            brackets += token.open ? 1 : -1;
+            if (brackets < 0) {
+                throw scanner.error('Unexpected bracket', token.start);
+            }
+        }
+        tokens.push(token);
+        // Forcibly consume next operator after unit-less numeric value or color:
+        // next dash `-` must be used as value delimiter
+        if (shouldConsumeDashAfter(token) && (token = operator$1(scanner))) {
+            tokens.push(token);
+        }
+    }
+    return tokens;
+}
+function field$1(scanner) {
+    const start = scanner.pos;
+    if (scanner.eat(36 /* Dollar */) && scanner.eat(123 /* CurlyBracketOpen */)) {
+        scanner.start = scanner.pos;
+        let index;
+        let name = '';
+        if (scanner.eatWhile(isNumber$1)) {
+            // It’s a field
+            index = Number(scanner.current());
+            name = scanner.eat(58 /* Colon */) ? consumePlaceholder$1(scanner) : '';
+        }
+        else if (isAlpha$1(scanner.peek())) {
+            // It’s a variable
+            name = consumePlaceholder$1(scanner);
+        }
+        if (scanner.eat(125 /* CurlyBracketClose */)) {
+            return {
+                type: 'Field',
+                index, name,
+                start,
+                end: scanner.pos
+            };
+        }
+        throw scanner.error('Expecting }');
+    }
+    // If we reached here then there’s no valid field here, revert
+    // back to starting position
+    scanner.pos = start;
+}
+/**
+ * Consumes a placeholder: value right after `:` in field. Could be empty
+ */
+function consumePlaceholder$1(stream) {
+    const stack = [];
+    stream.start = stream.pos;
+    while (!stream.eof()) {
+        if (stream.eat(123 /* CurlyBracketOpen */)) {
+            stack.push(stream.pos);
+        }
+        else if (stream.eat(125 /* CurlyBracketClose */)) {
+            if (!stack.length) {
+                stream.pos--;
+                break;
+            }
+            stack.pop();
+        }
+        else {
+            stream.pos++;
+        }
+    }
+    if (stack.length) {
+        stream.pos = stack.pop();
+        throw stream.error(`Expecting }`);
+    }
+    return stream.current();
+}
+/**
+ * Consumes literal from given scanner
+ * @param short Use short notation for consuming value.
+ * The difference between “short” and “full” notation is that first one uses
+ * alpha characters only and used for extracting keywords from abbreviation,
+ * while “full” notation also supports numbers and dashes
+ */
+function literal$2(scanner, short) {
+    const start = scanner.pos;
+    if (scanner.eat(isIdentPrefix)) {
+        // SCSS or LESS variable
+        // NB a bit dirty hack: if abbreviation starts with identifier prefix,
+        // consume alpha characters only to allow embedded variables
+        scanner.eatWhile(start ? isKeyword : isLiteral$1);
+    }
+    else if (scanner.eat(isAlphaWord)) {
+        scanner.eatWhile(short ? isLiteral$1 : isKeyword);
+    }
+    else {
+        // Allow dots only at the beginning of literal
+        scanner.eat(46 /* Dot */);
+        scanner.eatWhile(isLiteral$1);
+    }
+    if (start !== scanner.pos) {
+        scanner.start = start;
+        return createLiteral$1(scanner, scanner.start = start);
+    }
+}
+function createLiteral$1(scanner, start = scanner.start, end = scanner.pos) {
+    return {
+        type: 'Literal',
+        value: scanner.substring(start, end),
+        start,
+        end
+    };
+}
+/**
+ * Consumes numeric CSS value (number with optional unit) from current stream,
+ * if possible
+ */
+function numberValue(scanner) {
+    const start = scanner.pos;
+    if (consumeNumber(scanner)) {
+        scanner.start = start;
+        const rawValue = scanner.current();
+        // eat unit, which can be a % or alpha word
+        scanner.start = scanner.pos;
+        scanner.eat(37 /* Percent */) || scanner.eatWhile(isAlphaWord);
+        return {
+            type: 'NumberValue',
+            value: Number(rawValue),
+            rawValue,
+            unit: scanner.current(),
+            start,
+            end: scanner.pos
+        };
+    }
+}
+/**
+ * Consumes quoted string value from given scanner
+ */
+function stringValue(scanner) {
+    const ch = scanner.peek();
+    const start = scanner.pos;
+    let finished = false;
+    if (isQuote$2(ch)) {
+        scanner.pos++;
+        while (!scanner.eof()) {
+            // Do not throw error on malformed string
+            if (scanner.eat(ch)) {
+                finished = true;
+                break;
+            }
+            else {
+                scanner.pos++;
+            }
+        }
+        scanner.start = start;
+        return {
+            type: 'StringValue',
+            value: scanner.substring(start + 1, scanner.pos - (finished ? 1 : 0)),
+            quote: ch === 39 /* SingleQuote */ ? 'single' : 'double',
+            start,
+            end: scanner.pos
+        };
+    }
+}
+/**
+ * Consumes a color token from given string
+ */
+function colorValue(scanner) {
+    // supported color variations:
+    // #abc   → #aabbccc
+    // #0     → #000000
+    // #fff.5 → rgba(255, 255, 255, 0.5)
+    // #t     → transparent
+    const start = scanner.pos;
+    if (scanner.eat(35 /* Hash */)) {
+        scanner.start = scanner.pos;
+        scanner.eat(116 /* Transparent */) || scanner.eatWhile(isHex);
+        const color = scanner.current();
+        let alpha;
+        // a hex color can be followed by `.num` alpha value
+        scanner.start = scanner.pos;
+        if (scanner.eat(46 /* Dot */) && scanner.eatWhile(isNumber$1)) {
+            alpha = scanner.current();
+        }
+        const { r, g, b, a } = parseColor(color, alpha);
+        return {
+            type: 'ColorValue',
+            r, g, b, a,
+            raw: scanner.substring(start + 1, scanner.pos),
+            start,
+            end: scanner.pos
+        };
+    }
+}
+/**
+ * Consumes white space characters as string literal from given scanner
+ */
+function whiteSpace$1(scanner) {
+    const start = scanner.pos;
+    if (scanner.eatWhile(isSpace$1)) {
+        return {
+            type: 'WhiteSpace',
+            start,
+            end: scanner.pos
+        };
+    }
+}
+/**
+ * Consumes bracket from given scanner
+ */
+function bracket$1(scanner) {
+    const ch = scanner.peek();
+    if (isBracket$1(ch)) {
+        return {
+            type: 'Bracket',
+            open: ch === 40 /* RoundBracketOpen */,
+            start: scanner.pos++,
+            end: scanner.pos
+        };
+    }
+}
+/**
+ * Consumes operator from given scanner
+ */
+function operator$1(scanner) {
+    const op = operatorType$1(scanner.peek());
+    if (op) {
+        return {
+            type: 'Operator',
+            operator: op,
+            start: scanner.pos++,
+            end: scanner.pos
+        };
+    }
+}
+/**
+ * Eats number value from given stream
+ * @return Returns `true` if number was consumed
+ */
+function consumeNumber(stream) {
+    const start = stream.pos;
+    stream.eat(45 /* Dash */);
+    const afterNegative = stream.pos;
+    const hasDecimal = stream.eatWhile(isNumber$1);
+    const prevPos = stream.pos;
+    if (stream.eat(46 /* Dot */)) {
+        // It’s perfectly valid to have numbers like `1.`, which enforces
+        // value to float unit type
+        const hasFloat = stream.eatWhile(isNumber$1);
+        if (!hasDecimal && !hasFloat) {
+            // Lone dot
+            stream.pos = prevPos;
+        }
+    }
+    // Edge case: consumed dash only: not a number, bail-out
+    if (stream.pos === afterNegative) {
+        stream.pos = start;
+    }
+    return stream.pos !== start;
+}
+function isIdentPrefix(code) {
+    return code === 64 /* At */ || code === 36 /* Dollar */;
+}
+/**
+ * If given character is an operator, returns it’s type
+ */
+function operatorType$1(ch) {
+    return (ch === 43 /* Sibling */ && "+" /* Sibling */)
+        || (ch === 33 /* Excl */ && "!" /* Important */)
+        || (ch === 44 /* Comma */ && "," /* ArgumentDelimiter */)
+        || (ch === 58 /* Colon */ && ":" /* PropertyDelimiter */)
+        || (ch === 45 /* Dash */ && "-" /* ValueDelimiter */)
+        || void 0;
+}
+/**
+ * Check if given code is a hex value (/0-9a-f/)
+ */
+function isHex(code) {
+    return isNumber$1(code) || isAlpha$1(code, 65, 70); // A-F
+}
+function isKeyword(code) {
+    return isAlphaNumericWord(code) || code === 45 /* Dash */;
+}
+function isBracket$1(code) {
+    return code === 40 /* RoundBracketOpen */ || code === 41 /* RoundBracketClose */;
+}
+function isLiteral$1(code) {
+    return isAlphaWord(code) || code === 37 /* Percent */;
+}
+/**
+ * Parses given color value from abbreviation into RGBA format
+ */
+function parseColor(value, alpha) {
+    let r = '0';
+    let g = '0';
+    let b = '0';
+    let a = Number(alpha != null && alpha !== '' ? alpha : 1);
+    if (value === 't') {
+        a = 0;
+    }
+    else {
+        switch (value.length) {
+            case 0:
+                break;
+            case 1:
+                r = g = b = value + value;
+                break;
+            case 2:
+                r = g = b = value;
+                break;
+            case 3:
+                r = value[0] + value[0];
+                g = value[1] + value[1];
+                b = value[2] + value[2];
+                break;
+            default:
+                value += value;
+                r = value.slice(0, 2);
+                g = value.slice(2, 4);
+                b = value.slice(4, 6);
+        }
+    }
+    return {
+        r: parseInt(r, 16),
+        g: parseInt(g, 16),
+        b: parseInt(b, 16),
+        a
+    };
+}
+/**
+ * Check if scanner reader must consume dash after given token.
+ * Used in cases where user must explicitly separate numeric values
+ */
+function shouldConsumeDashAfter(token) {
+    return token.type === 'ColorValue' || (token.type === 'NumberValue' && !token.unit);
+}
+/**
+ * Merges last adjacent tokens into a single literal.
+ * This function is used to overcome edge case when function name was parsed
+ * as a list of separate tokens. For example, a `scale3d()` value will be
+ * parsed as literal and number tokens (`scale` and `3d`) which is a perfectly
+ * valid abbreviation but undesired result. This function will detect last adjacent
+ * literal and number values and combine them into single literal
+ */
+function mergeTokens(scanner, tokens) {
+    let start = 0;
+    let end = 0;
+    while (tokens.length) {
+        const token = last$1(tokens);
+        if (token.type === 'Literal' || token.type === 'NumberValue') {
+            start = token.start;
+            if (!end) {
+                end = token.end;
+            }
+            tokens.pop();
+        }
+        else {
+            break;
+        }
+    }
+    if (start !== end) {
+        tokens.push(createLiteral$1(scanner, start, end));
+    }
+}
+function last$1(arr) {
+    return arr[arr.length - 1];
+}
+
+function tokenScanner$1(tokens) {
+    return {
+        tokens,
+        start: 0,
+        pos: 0,
+        size: tokens.length
+    };
+}
+function peek$1(scanner) {
+    return scanner.tokens[scanner.pos];
+}
+function readable$1(scanner) {
+    return scanner.pos < scanner.size;
+}
+function consume$1(scanner, test) {
+    if (test(peek$1(scanner))) {
+        scanner.pos++;
+        return true;
+    }
+    return false;
+}
+function error$1(scanner, message, token = peek$1(scanner)) {
+    if (token && token.start != null) {
+        message += ` at ${token.start}`;
+    }
+    const err = new Error(message);
+    err['pos'] = token && token.start;
+    return err;
+}
+
+function parser(tokens, options = {}) {
+    const scanner = tokenScanner$1(tokens);
+    const result = [];
+    let property;
+    while (readable$1(scanner)) {
+        if (property = consumeProperty(scanner, options)) {
+            result.push(property);
+        }
+        else if (!consume$1(scanner, isSiblingOperator$1)) {
+            throw error$1(scanner, 'Unexpected token');
+        }
+    }
+    return result;
+}
+/**
+ * Consumes single CSS property
+ */
+function consumeProperty(scanner, options) {
+    let name;
+    let important = false;
+    let valueFragment;
+    const value = [];
+    const token = peek$1(scanner);
+    if (!options.value && isLiteral$1$1(token) && !isFunctionStart(scanner)) {
+        scanner.pos++;
+        name = token.value;
+        // Consume any following value delimiter after property name
+        consume$1(scanner, isValueDelimiter);
+    }
+    // Skip whitespace right after property name, if any
+    consume$1(scanner, isWhiteSpace$3);
+    while (readable$1(scanner)) {
+        if (consume$1(scanner, isImportant)) {
+            important = true;
+        }
+        else if (valueFragment = consumeValue(scanner)) {
+            value.push(valueFragment);
+        }
+        else if (!consume$1(scanner, isFragmentDelimiter)) {
+            break;
+        }
+    }
+    if (name || value.length || important) {
+        return { name, value, important };
+    }
+}
+/**
+ * Consumes single value fragment, e.g. all value tokens before comma
+ */
+function consumeValue(scanner) {
+    const result = [];
+    let token;
+    let args;
+    while (readable$1(scanner)) {
+        token = peek$1(scanner);
+        if (isValue(token)) {
+            scanner.pos++;
+            if (isLiteral$1$1(token) && (args = consumeArguments(scanner))) {
+                result.push({
+                    type: 'FunctionCall',
+                    name: token.value,
+                    arguments: args
+                });
+            }
+            else {
+                result.push(token);
+            }
+        }
+        else if (isValueDelimiter(token)) {
+            scanner.pos++;
+        }
+        else {
+            break;
+        }
+    }
+    return result.length
+        ? { type: 'CSSValue', value: result }
+        : void 0;
+}
+function consumeArguments(scanner) {
+    const start = scanner.pos;
+    if (consume$1(scanner, isOpenBracket$1)) {
+        const args = [];
+        let value;
+        while (readable$1(scanner) && !consume$1(scanner, isCloseBracket)) {
+            if (value = consumeValue(scanner)) {
+                args.push(value);
+            }
+            else if (!consume$1(scanner, isWhiteSpace$3) && !consume$1(scanner, isArgumentDelimiter)) {
+                throw error$1(scanner, 'Unexpected token');
+            }
+        }
+        scanner.start = start;
+        return args;
+    }
+}
+function isLiteral$1$1(token) {
+    return token && token.type === 'Literal';
+}
+function isBracket$1$1(token, open) {
+    return token && token.type === 'Bracket' && (open == null || token.open === open);
+}
+function isOpenBracket$1(token) {
+    return isBracket$1$1(token, true);
+}
+function isCloseBracket(token) {
+    return isBracket$1$1(token, false);
+}
+function isWhiteSpace$3(token) {
+    return token && token.type === 'WhiteSpace';
+}
+function isOperator$1(token, operator) {
+    return token && token.type === 'Operator' && (!operator || token.operator === operator);
+}
+function isSiblingOperator$1(token) {
+    return isOperator$1(token, "+" /* Sibling */);
+}
+function isArgumentDelimiter(token) {
+    return isOperator$1(token, "," /* ArgumentDelimiter */);
+}
+function isFragmentDelimiter(token) {
+    return isArgumentDelimiter(token) || isWhiteSpace$3(token);
+}
+function isImportant(token) {
+    return isOperator$1(token, "!" /* Important */);
+}
+function isValue(token) {
+    return token.type === 'StringValue'
+        || token.type === 'ColorValue'
+        || token.type === 'NumberValue'
+        || token.type === 'Literal'
+        || token.type === 'Field';
+}
+function isValueDelimiter(token) {
+    return isWhiteSpace$3(token)
+        || isOperator$1(token, ":" /* PropertyDelimiter */)
+        || isOperator$1(token, "-" /* ValueDelimiter */);
+}
+function isFunctionStart(scanner) {
+    const t1 = scanner.tokens[scanner.pos];
+    const t2 = scanner.tokens[scanner.pos + 1];
+    return t1 && t2 && isLiteral$1$1(t1) && t2.type === 'Bracket';
+}
+
+/**
+ * Parses given abbreviation into property set
+ */
+function parse(abbr, options) {
+    try {
+        const tokens = typeof abbr === 'string' ? tokenize$1(abbr, options && options.value) : abbr;
+        return parser(tokens, options);
+    }
+    catch (err) {
+        if (err instanceof ScannerError$1 && typeof abbr === 'string') {
+            err.message += `\n${abbr}\n${'-'.repeat(err.pos)}^`;
+        }
+        throw err;
+    }
+}
+
+/**
+ * Merges attributes in current node: de-duplicates attributes with the same name
+ * and merges class names
+ */
+function mergeAttributes(node, config) {
+    if (!node.attributes) {
+        return;
+    }
+    const attributes = [];
+    const lookup = {};
+    for (const attr of node.attributes) {
+        if (attr.name) {
+            const attrName = attr.name;
+            if (attrName in lookup) {
+                const prev = lookup[attrName];
+                if (attrName === 'class') {
+                    prev.value = mergeValue(prev.value, attr.value, ' ');
+                }
+                else {
+                    mergeDeclarations(prev, attr, config);
+                }
+            }
+            else {
+                // Create new attribute instance so we can safely modify it later
+                attributes.push(lookup[attrName] = Object.assign({}, attr));
+            }
+        }
+        else {
+            attributes.push(attr);
+        }
+    }
+    node.attributes = attributes;
+}
+/**
+ * Merges two token lists into single list. Adjacent strings are merged together
+ */
+function mergeValue(prev, next, glue) {
+    if (prev && next) {
+        if (prev.length && glue) {
+            append(prev, glue);
+        }
+        for (const t of next) {
+            append(prev, t);
+        }
+        return prev;
+    }
+    const result = prev || next;
+    return result && result.slice();
+}
+/**
+ * Merges data from `src` attribute into `dest` and returns it
+ */
+function mergeDeclarations(dest, src, config) {
+    dest.name = src.name;
+    if (!config.options['output.reverseAttributes']) {
+        dest.value = src.value;
+    }
+    // Keep high-priority properties
+    if (!dest.implied) {
+        dest.implied = src.implied;
+    }
+    if (!dest.boolean) {
+        dest.boolean = src.boolean;
+    }
+    if (dest.valueType !== 'expression') {
+        dest.valueType = src.valueType;
+    }
+    return dest;
+}
+function append(tokens, value) {
+    const lastIx = tokens.length - 1;
+    if (typeof tokens[lastIx] === 'string' && typeof value === 'string') {
+        tokens[lastIx] += value;
+    }
+    else {
+        tokens.push(value);
+    }
+}
+
+/**
+ * Walks over each child node of given markup abbreviation AST node (not including
+ * given one) and invokes `fn` on each node.
+ * The `fn` callback accepts context node, list of ancestor nodes and optional
+ * state object
+ */
+function walk(node, fn, state) {
+    const ancestors = [node];
+    const callback = (ctx) => {
+        fn(ctx, ancestors, state);
+        ancestors.push(ctx);
+        ctx.children.forEach(callback);
+        ancestors.pop();
+    };
+    node.children.forEach(callback);
+}
+/**
+ * Finds node which is the deepest for in current node or node itself.
+ */
+function findDeepest(node) {
+    let parent;
+    while (node.children.length) {
+        parent = node;
+        node = node.children[node.children.length - 1];
+    }
+    return { parent, node };
+}
+function isNode(node) {
+    return node.type === 'AbbreviationNode';
+}
+
+/**
+ * Finds matching snippet from `registry` and resolves it into a parsed abbreviation.
+ * Resolved node is then updated or replaced with matched abbreviation tree.
+ *
+ * A HTML registry basically contains aliases to another Emmet abbreviations,
+ * e.g. a predefined set of name, attributes and so on, possibly a complex
+ * abbreviation with multiple elements. So we have to get snippet, parse it
+ * and recursively resolve it.
+ */
+function resolveSnippets(abbr, config) {
+    const stack = [];
+    const reversed = config.options['output.reverseAttributes'];
+    const resolve = (child) => {
+        const snippet = child.name && config.snippets[child.name];
+        // A snippet in stack means circular reference.
+        // It can be either a user error or a perfectly valid snippet like
+        // "img": "img[src alt]/", e.g. an element with predefined shape.
+        // In any case, simply stop parsing and keep element as is
+        if (!snippet || stack.includes(snippet)) {
+            return null;
+        }
+        const snippetAbbr = parseAbbreviation(snippet, config);
+        stack.push(snippet);
+        walkResolve(snippetAbbr, resolve);
+        stack.pop();
+        // Add attributes from current node into every top-level node of parsed abbreviation
+        for (const topNode of snippetAbbr.children) {
+            if (child.attributes) {
+                const from = topNode.attributes || [];
+                const to = child.attributes || [];
+                topNode.attributes = reversed ? to.concat(from) : from.concat(to);
+            }
+            mergeNodes(child, topNode);
+        }
+        return snippetAbbr;
+    };
+    walkResolve(abbr, resolve);
+    return abbr;
+}
+function walkResolve(node, resolve) {
+    let children = [];
+    for (const child of node.children) {
+        const resolved = resolve(child);
+        if (resolved) {
+            children = children.concat(resolved.children);
+            const deepest = findDeepest(resolved);
+            if (isNode(deepest.node)) {
+                deepest.node.children = deepest.node.children.concat(walkResolve(child, resolve));
+            }
+        }
+        else {
+            children.push(child);
+            child.children = walkResolve(child, resolve);
+        }
+    }
+    return node.children = children;
+}
+/**
+ * Adds data from first node into second node
+ */
+function mergeNodes(from, to) {
+    if (from.selfClosing) {
+        to.selfClosing = true;
+    }
+    if (from.value != null) {
+        to.value = from.value;
+    }
+    if (from.repeat) {
+        to.repeat = from.repeat;
+    }
+}
+
+function createOutputStream(options, level = 0) {
+    return {
+        options,
+        value: '',
+        level,
+        offset: 0,
+        line: 0,
+        column: 0
+    };
+}
+/**
+ * Pushes plain string into output stream without newline processing
+ */
+function push(stream, text) {
+    const processText = stream.options['output.text'];
+    _push(stream, processText(text, stream.offset, stream.line, stream.column));
+}
+/**
+ * Pushes given string with possible newline formatting into output
+ */
+function pushString(stream, value) {
+    // If given value contains newlines, we should push content line-by-line and
+    // use `pushNewline()` to maintain proper line/column state
+    const lines = splitByLines(value);
+    for (let i = 0, il = lines.length - 1; i <= il; i++) {
+        push(stream, lines[i]);
+        if (i !== il) {
+            pushNewline(stream, true);
+        }
+    }
+}
+/**
+ * Pushes new line into given output stream
+ */
+function pushNewline(stream, indent) {
+    const baseIndent = stream.options['output.baseIndent'];
+    const newline = stream.options['output.newline'];
+    push(stream, newline + baseIndent);
+    stream.line++;
+    stream.column = baseIndent.length;
+    if (indent) {
+        pushIndent(stream, indent === true ? stream.level : indent);
+    }
+}
+/**
+ * Adds indentation of `size` to current output stream
+ */
+function pushIndent(stream, size = stream.level) {
+    const indent = stream.options['output.indent'];
+    push(stream, indent.repeat(Math.max(size, 0)));
+}
+/**
+ * Pushes field/tabstop into output stream
+ */
+function pushField(stream, index, placeholder) {
+    const field = stream.options['output.field'];
+    // NB: use `_push` instead of `push` to skip text processing
+    _push(stream, field(index, placeholder, stream.offset, stream.line, stream.column));
+}
+/**
+ * Returns given tag name formatted according to given config
+ */
+function tagName(name, config) {
+    return strCase(name, config.options['output.tagCase']);
+}
+/**
+ * Returns given attribute name formatted according to given config
+ */
+function attrName(name, config) {
+    return strCase(name, config.options['output.attributeCase']);
+}
+/**
+ * Returns character for quoting value of given attribute
+ */
+function attrQuote(attr, config, isOpen) {
+    if (attr.valueType === 'expression') {
+        return isOpen ? '{' : '}';
+    }
+    return config.options['output.attributeQuotes'] === 'single' ? '\'' : '"';
+}
+/**
+ * Check if given attribute is boolean
+ */
+function isBooleanAttribute(attr, config) {
+    return attr.boolean
+        || config.options['output.booleanAttributes'].includes((attr.name || '').toLowerCase());
+}
+/**
+ * Returns a token for self-closing tag, depending on current options
+ */
+function selfClose(config) {
+    switch (config.options['output.selfClosingStyle']) {
+        case 'xhtml': return ' /';
+        case 'xml': return '/';
+        default: return '';
+    }
+}
+/**
+ * Check if given tag name belongs to inline-level element
+ * @param node Parsed node or tag name
+ */
+function isInline(node, config) {
+    if (typeof node === 'string') {
+        return config.options.inlineElements.includes(node.toLowerCase());
+    }
+    // inline node is a node either with inline-level name or text-only node
+    return node.name ? isInline(node.name, config) : Boolean(node.value && !node.attributes);
+}
+/**
+ * Splits given text by lines
+ */
+function splitByLines(text) {
+    return text.split(/\r\n|\r|\n/g);
+}
+/**
+ * Pushes raw string into output stream without any processing
+ */
+function _push(stream, text) {
+    stream.value += text;
+    stream.offset += text.length;
+    stream.column += text.length;
+}
+function strCase(str, type) {
+    if (type) {
+        return type === 'upper' ? str.toUpperCase() : str.toLowerCase();
+    }
+    return str;
+}
+
+const elementMap = {
+    p: 'span',
+    ul: 'li',
+    ol: 'li',
+    table: 'tr',
+    tr: 'td',
+    tbody: 'tr',
+    thead: 'tr',
+    tfoot: 'tr',
+    colgroup: 'col',
+    select: 'option',
+    optgroup: 'option',
+    audio: 'source',
+    video: 'source',
+    object: 'param',
+    map: 'area'
+};
+function implicitTag(node, ancestors, config) {
+    if (!node.name && node.attributes) {
+        resolveImplicitTag(node, ancestors, config);
+    }
+}
+function resolveImplicitTag(node, ancestors, config) {
+    const parent = getParentElement(ancestors);
+    const contextName = config.context ? config.context.name : '';
+    const parentName = lowercase(parent ? parent.name : contextName);
+    node.name = elementMap[parentName]
+        || (isInline(parentName, config) ? 'span' : 'div');
+}
+function lowercase(str) {
+    return (str || '').toLowerCase();
+}
+/**
+ * Returns closest element node from given ancestors list
+ */
+function getParentElement(ancestors) {
+    for (let i = ancestors.length - 1; i >= 0; i--) {
+        const elem = ancestors[i];
+        if (isNode(elem)) {
+            return elem;
+        }
+    }
+}
+
+var latin = {
+	"common": ["lorem", "ipsum", "dolor", "sit", "amet", "consectetur", "adipisicing", "elit"],
+	"words": ["exercitationem", "perferendis", "perspiciatis", "laborum", "eveniet",
+		"sunt", "iure", "nam", "nobis", "eum", "cum", "officiis", "excepturi",
+		"odio", "consectetur", "quasi", "aut", "quisquam", "vel", "eligendi",
+		"itaque", "non", "odit", "tempore", "quaerat", "dignissimos",
+		"facilis", "neque", "nihil", "expedita", "vitae", "vero", "ipsum",
+		"nisi", "animi", "cumque", "pariatur", "velit", "modi", "natus",
+		"iusto", "eaque", "sequi", "illo", "sed", "ex", "et", "voluptatibus",
+		"tempora", "veritatis", "ratione", "assumenda", "incidunt", "nostrum",
+		"placeat", "aliquid", "fuga", "provident", "praesentium", "rem",
+		"necessitatibus", "suscipit", "adipisci", "quidem", "possimus",
+		"voluptas", "debitis", "sint", "accusantium", "unde", "sapiente",
+		"voluptate", "qui", "aspernatur", "laudantium", "soluta", "amet",
+		"quo", "aliquam", "saepe", "culpa", "libero", "ipsa", "dicta",
+		"reiciendis", "nesciunt", "doloribus", "autem", "impedit", "minima",
+		"maiores", "repudiandae", "ipsam", "obcaecati", "ullam", "enim",
+		"totam", "delectus", "ducimus", "quis", "voluptates", "dolores",
+		"molestiae", "harum", "dolorem", "quia", "voluptatem", "molestias",
+		"magni", "distinctio", "omnis", "illum", "dolorum", "voluptatum", "ea",
+		"quas", "quam", "corporis", "quae", "blanditiis", "atque", "deserunt",
+		"laboriosam", "earum", "consequuntur", "hic", "cupiditate",
+		"quibusdam", "accusamus", "ut", "rerum", "error", "minus", "eius",
+		"ab", "ad", "nemo", "fugit", "officia", "at", "in", "id", "quos",
+		"reprehenderit", "numquam", "iste", "fugiat", "sit", "inventore",
+		"beatae", "repellendus", "magnam", "recusandae", "quod", "explicabo",
+		"doloremque", "aperiam", "consequatur", "asperiores", "commodi",
+		"optio", "dolor", "labore", "temporibus", "repellat", "veniam",
+		"architecto", "est", "esse", "mollitia", "nulla", "a", "similique",
+		"eos", "alias", "dolore", "tenetur", "deleniti", "porro", "facere",
+		"maxime", "corrupti"]
+};
+
+var ru = {
+	"common": ["далеко-далеко", "за", "словесными", "горами", "в стране", "гласных", "и согласных", "живут", "рыбные", "тексты"],
+	"words": ["вдали", "от всех", "они", "буквенных", "домах", "на берегу", "семантика",
+		"большого", "языкового", "океана", "маленький", "ручеек", "даль",
+		"журчит", "по всей", "обеспечивает", "ее","всеми", "необходимыми",
+		"правилами", "эта", "парадигматическая", "страна", "которой", "жаренные",
+		"предложения", "залетают", "прямо", "рот", "даже", "всемогущая",
+		"пунктуация", "не", "имеет", "власти", "над", "рыбными", "текстами",
+		"ведущими", "безорфографичный", "образ", "жизни", "однажды", "одна",
+		"маленькая", "строчка","рыбного", "текста", "имени", "lorem", "ipsum",
+		"решила", "выйти", "большой", "мир", "грамматики", "великий", "оксмокс",
+		"предупреждал", "о", "злых", "запятых", "диких", "знаках", "вопроса",
+		"коварных", "точках", "запятой", "но", "текст", "дал", "сбить",
+		"себя", "толку", "он", "собрал", "семь", "своих", "заглавных", "букв",
+		"подпоясал", "инициал", "за", "пояс", "пустился", "дорогу",
+		"взобравшись", "первую", "вершину", "курсивных", "гор", "бросил",
+		"последний", "взгляд", "назад", "силуэт", "своего", "родного", "города",
+		"буквоград", "заголовок", "деревни", "алфавит", "подзаголовок", "своего",
+		"переулка", "грустный", "реторический", "вопрос", "скатился", "его",
+		"щеке", "продолжил", "свой", "путь", "дороге", "встретил", "рукопись",
+		"она", "предупредила",  "моей", "все", "переписывается", "несколько",
+		"раз", "единственное", "что", "меня", "осталось", "это", "приставка",
+		"возвращайся", "ты", "лучше", "свою", "безопасную", "страну", "послушавшись",
+		"рукописи", "наш", "продолжил", "свой", "путь", "вскоре", "ему",
+		"повстречался", "коварный", "составитель", "рекламных", "текстов",
+		"напоивший", "языком", "речью", "заманивший", "свое", "агентство",
+		"которое", "использовало", "снова", "снова", "своих", "проектах",
+		"если", "переписали", "то", "живет", "там", "до", "сих", "пор"]
+};
+
+var sp = {
+	"common": ["mujer", "uno", "dolor", "más", "de", "poder", "mismo", "si"],
+	"words": ["ejercicio", "preferencia", "perspicacia", "laboral", "paño",
+		"suntuoso", "molde", "namibia", "planeador", "mirar", "demás", "oficinista", "excepción",
+		"odio", "consecuencia", "casi", "auto", "chicharra", "velo", "elixir",
+		"ataque", "no", "odio", "temporal", "cuórum", "dignísimo",
+		"facilismo", "letra", "nihilista", "expedición", "alma", "alveolar", "aparte",
+		"león", "animal", "como", "paria", "belleza", "modo", "natividad",
+		"justo", "ataque", "séquito", "pillo", "sed", "ex", "y", "voluminoso",
+		"temporalidad", "verdades", "racional", "asunción", "incidente", "marejada",
+		"placenta", "amanecer", "fuga", "previsor", "presentación", "lejos",
+		"necesariamente", "sospechoso", "adiposidad", "quindío", "pócima",
+		"voluble", "débito", "sintió", "accesorio", "falda", "sapiencia",
+		"volutas", "queso", "permacultura", "laudo", "soluciones", "entero",
+		"pan", "litro", "tonelada", "culpa", "libertario", "mosca", "dictado",
+		"reincidente", "nascimiento", "dolor", "escolar", "impedimento", "mínima",
+		"mayores", "repugnante", "dulce", "obcecado", "montaña", "enigma",
+		"total", "deletéreo", "décima", "cábala", "fotografía", "dolores",
+		"molesto", "olvido", "paciencia", "resiliencia", "voluntad", "molestias",
+		"magnífico", "distinción", "ovni", "marejada", "cerro", "torre", "y",
+		"abogada", "manantial", "corporal", "agua", "crepúsculo", "ataque", "desierto",
+		"laboriosamente", "angustia", "afortunado", "alma", "encefalograma",
+		"materialidad", "cosas", "o", "renuncia", "error", "menos", "conejo",
+		"abadía", "analfabeto", "remo", "fugacidad", "oficio", "en", "almácigo", "vos", "pan",
+		"represión", "números", "triste", "refugiado", "trote", "inventor",
+		"corchea", "repelente", "magma", "recusado", "patrón", "explícito",
+		"paloma", "síndrome", "inmune", "autoinmune", "comodidad",
+		"ley", "vietnamita", "demonio", "tasmania", "repeler", "apéndice",
+		"arquitecto", "columna", "yugo", "computador", "mula", "a", "propósito",
+		"fantasía", "alias", "rayo", "tenedor", "deleznable", "ventana", "cara",
+		"anemia", "corrupto"]
+};
+
+const vocabularies = { ru, sp, latin };
+const reLorem = /^lorem([a-z]*)(\d*)(-\d*)?$/i;
+function lorem(node, ancestors, config) {
+    let m;
+    if (node.name && (m = node.name.match(reLorem))) {
+        const db = vocabularies[m[1]] || vocabularies.latin;
+        const minWordCount = m[2] ? Math.max(1, Number(m[2])) : 30;
+        const maxWordCount = m[3] ? Math.max(minWordCount, Number(m[3].slice(1))) : minWordCount;
+        const wordCount = rand(minWordCount, maxWordCount);
+        const repeat = node.repeat || findRepeater(ancestors);
+        node.name = node.attributes = void 0;
+        node.value = [paragraph(db, wordCount, !repeat || repeat.value === 0)];
+        if (node.repeat && ancestors.length > 1) {
+            resolveImplicitTag(node, ancestors, config);
+        }
+    }
+}
+/**
+ * Returns random integer between <code>from</code> and <code>to</code> values
+ */
+function rand(from, to) {
+    return Math.floor(Math.random() * (to - from) + from);
+}
+function sample(arr, count) {
+    const len = arr.length;
+    const iterations = Math.min(len, count);
+    const result = [];
+    while (result.length < iterations) {
+        const str = arr[rand(0, len)];
+        if (!result.includes(str)) {
+            result.push(str);
+        }
+    }
+    return result;
+}
+function choice(val) {
+    return val[rand(0, val.length - 1)];
+}
+function sentence(words, end) {
+    if (words.length) {
+        words = [capitalize(words[0])].concat(words.slice(1));
+    }
+    return words.join(' ') + (end || choice('?!...')); // more dots than question marks
+}
+function capitalize(word) {
+    return word[0].toUpperCase() + word.slice(1);
+}
+/**
+ * Insert commas at randomly selected words. This function modifies values
+ * inside `words` array
+ */
+function insertCommas(words) {
+    if (words.length < 2) {
+        return words;
+    }
+    words = words.slice();
+    const len = words.length;
+    const hasComma = /,$/;
+    let totalCommas = 0;
+    if (len > 3 && len <= 6) {
+        totalCommas = rand(0, 1);
+    }
+    else if (len > 6 && len <= 12) {
+        totalCommas = rand(0, 2);
+    }
+    else {
+        totalCommas = rand(1, 4);
+    }
+    for (let i = 0, pos; i < totalCommas; i++) {
+        pos = rand(0, len - 2);
+        if (!hasComma.test(words[pos])) {
+            words[pos] += ',';
+        }
+    }
+    return words;
+}
+/**
+ * Generate a paragraph of "Lorem ipsum" text
+ * @param dict Words dictionary
+ * @param wordCount Words count in paragraph
+ * @param startWithCommon Should paragraph start with common "lorem ipsum" sentence.
+ */
+function paragraph(dict, wordCount, startWithCommon) {
+    const result = [];
+    let totalWords = 0;
+    let words;
+    if (startWithCommon && dict.common) {
+        words = dict.common.slice(0, wordCount);
+        totalWords += words.length;
+        result.push(sentence(insertCommas(words), '.'));
+    }
+    while (totalWords < wordCount) {
+        words = sample(dict.words, Math.min(rand(2, 30), wordCount - totalWords));
+        totalWords += words.length;
+        result.push(sentence(insertCommas(words)));
+    }
+    return result.join(' ');
+}
+function findRepeater(ancestors) {
+    for (let i = ancestors.length - 1; i >= 0; i--) {
+        const element = ancestors[i];
+        if (element.type === 'AbbreviationNode' && element.repeat) {
+            return element.repeat;
+        }
+    }
+}
+
+/**
+ * JSX transformer: replaces `class` and `for` attributes with `className` and
+ * `htmlFor` attributes respectively
+ */
+function jsx(node) {
+    if (node.attributes) {
+        node.attributes.forEach(rename);
+    }
+}
+function rename(attr) {
+    if (attr.name === 'class') {
+        attr.name = 'className';
+    }
+    else if (attr.name === 'for') {
+        attr.name = 'htmlFor';
+    }
+}
+
+/**
+ * XSL transformer: removes `select` attributes from certain nodes that contain
+ * children
+ */
+function xsl(node) {
+    if (matchesName(node.name) && node.attributes && (node.children.length || node.value)) {
+        node.attributes = node.attributes.filter(isAllowed);
+    }
+}
+function isAllowed(attr) {
+    return attr.name !== 'select';
+}
+function matchesName(name) {
+    return name === 'xsl:variable' || name === 'xsl:with-param';
+}
+
+const reElement = /^(-+)([a-z0-9]+[a-z0-9-]*)/i;
+const reModifier = /^(_+)([a-z0-9]+[a-z0-9-_]*)/i;
+const blockCandidates1 = (className) => /^[a-z]\-/i.test(className);
+const blockCandidates2 = (className) => /^[a-z]/i.test(className);
+function bem(node, ancestors, config) {
+    expandClassNames(node);
+    expandShortNotation(node, ancestors, config);
+}
+/**
+ * Expands existing class names in BEM notation in given `node`.
+ * For example, if node contains `b__el_mod` class name, this method ensures
+ * that element contains `b__el` class as well
+ */
+function expandClassNames(node) {
+    const data = getBEMData(node);
+    const classNames = [];
+    for (const cl of data.classNames) {
+        // remove all modifiers and element prefixes from class name to get a base element name
+        const ix = cl.indexOf('_');
+        if (ix > 0 && !cl.startsWith('-')) {
+            classNames.push(cl.slice(0, ix));
+            classNames.push(cl.slice(ix));
+        }
+        else {
+            classNames.push(cl);
+        }
+    }
+    if (classNames.length) {
+        data.classNames = classNames.filter(uniqueClass);
+        data.block = findBlockName(data.classNames);
+        updateClass(node, data.classNames.join(' '));
+    }
+}
+/**
+ * Expands short BEM notation, e.g. `-element` and `_modifier`
+ */
+function expandShortNotation(node, ancestors, config) {
+    const data = getBEMData(node);
+    const classNames = [];
+    const { options } = config;
+    const path = ancestors.slice(1).concat(node);
+    for (let cl of data.classNames) {
+        let prefix = '';
+        let m;
+        const originalClass = cl;
+        // parse element definition (could be only one)
+        if (m = cl.match(reElement)) {
+            prefix = getBlockName(path, m[1].length, config.context) + options['bem.element'] + m[2];
+            classNames.push(prefix);
+            cl = cl.slice(m[0].length);
+        }
+        // parse modifiers definitions
+        if (m = cl.match(reModifier)) {
+            if (!prefix) {
+                prefix = getBlockName(path, m[1].length);
+                classNames.push(prefix);
+            }
+            classNames.push(`${prefix}${options['bem.modifier']}${m[2]}`);
+            cl = cl.slice(m[0].length);
+        }
+        if (cl === originalClass) {
+            // class name wasn’t modified: it’s not a BEM-specific class,
+            // add it as-is into output
+            classNames.push(originalClass);
+        }
+    }
+    const arrClassNames = classNames.filter(uniqueClass);
+    if (arrClassNames.length) {
+        updateClass(node, arrClassNames.join(' '));
+    }
+}
+/**
+ * Returns BEM data from given abbreviation node
+ */
+function getBEMData(node) {
+    if (!node._bem) {
+        let classValue = '';
+        if (node.attributes) {
+            for (const attr of node.attributes) {
+                if (attr.name === 'class' && attr.value) {
+                    classValue = stringifyValue$1(attr.value);
+                    break;
+                }
+            }
+        }
+        node._bem = parseBEM(classValue);
+    }
+    return node._bem;
+}
+function getBEMDataFromContext(context) {
+    if (!context._bem) {
+        context._bem = parseBEM(context.attributes && context.attributes.class || '');
+    }
+    return context._bem;
+}
+/**
+ * Parses BEM data from given class name
+ */
+function parseBEM(classValue) {
+    const classNames = classValue ? classValue.split(/\s+/) : [];
+    return {
+        classNames,
+        block: findBlockName(classNames)
+    };
+}
+/**
+ * Returns block name for given `node` by `prefix`, which tells the depth of
+ * of parent node lookup
+ */
+function getBlockName(ancestors, depth = 0, context) {
+    const maxParentIx = 0;
+    let parentIx = Math.max(ancestors.length - depth, maxParentIx);
+    do {
+        const parent = ancestors[parentIx];
+        if (parent) {
+            const data = getBEMData(parent);
+            if (data.block) {
+                return data.block;
+            }
+        }
+    } while (maxParentIx < parentIx--);
+    if (context) {
+        const data = getBEMDataFromContext(context);
+        if (data.block) {
+            return data.block;
+        }
+    }
+    return '';
+}
+function findBlockName(classNames) {
+    return find(classNames, blockCandidates1)
+        || find(classNames, blockCandidates2)
+        || void 0;
+}
+/**
+ * Finds class name from given list which may be used as block name
+ */
+function find(classNames, filter) {
+    for (const cl of classNames) {
+        if (reElement.test(cl) || reModifier.test(cl)) {
+            break;
+        }
+        if (filter(cl)) {
+            return cl;
+        }
+    }
+}
+function updateClass(node, value) {
+    for (const attr of node.attributes) {
+        if (attr.name === 'class') {
+            attr.value = [value];
+            break;
+        }
+    }
+}
+function stringifyValue$1(value) {
+    let result = '';
+    for (const t of value) {
+        result += typeof t === 'string' ? t : t.name;
+    }
+    return result;
+}
+function uniqueClass(item, ix, arr) {
+    return !!item && arr.indexOf(item) === ix;
+}
+
+function walk$1(abbr, visitor, state) {
+    const callback = (ctx, index, items) => {
+        const { parent, current } = state;
+        state.parent = current;
+        state.current = ctx;
+        visitor(ctx, index, items, state, next);
+        state.current = current;
+        state.parent = parent;
+    };
+    const next = (node, index, items) => {
+        state.ancestors.push(state.current);
+        callback(node, index, items);
+        state.ancestors.pop();
+    };
+    abbr.children.forEach(callback);
+}
+function createWalkState(config) {
+    return {
+        // @ts-ignore: Will set value in iterator
+        current: null,
+        parent: void 0,
+        ancestors: [],
+        config,
+        field: 1,
+        out: createOutputStream(config.options)
+    };
+}
+
+const caret = [{ type: 'Field', index: 0, name: '' }];
+/**
+ * Check if given node is a snippet: a node without name and attributes
+ */
+function isSnippet(node) {
+    return node ? !node.name && !node.attributes : false;
+}
+/**
+ * Check if given node is inline-level element, e.g. element with explicitly
+ * defined node name
+ */
+function isInlineElement(node, config) {
+    return node ? isInline(node, config) : false;
+}
+/**
+ * Check if given value token is a field
+ */
+function isField$1(token) {
+    return typeof token === 'object' && token.type === 'Field';
+}
+function pushTokens(tokens, state) {
+    const { out } = state;
+    let largestIndex = -1;
+    for (const t of tokens) {
+        if (typeof t === 'string') {
+            pushString(out, t);
+        }
+        else {
+            pushField(out, state.field + t.index, t.name);
+            if (t.index > largestIndex) {
+                largestIndex = t.index;
+            }
+        }
+    }
+    if (largestIndex !== -1) {
+        state.field += largestIndex + 1;
+    }
+}
+/**
+ * Splits given value token by lines: returns array where each entry is a token list
+ * for a single line
+ */
+function splitByLines$1(tokens) {
+    const result = [];
+    let line = [];
+    for (const t of tokens) {
+        if (typeof t === 'string') {
+            const lines = t.split(/\r\n?|\n/g);
+            line.push(lines.shift() || '');
+            while (lines.length) {
+                result.push(line);
+                line = [lines.shift() || ''];
+            }
+        }
+        else {
+            line.push(t);
+        }
+    }
+    line.length && result.push(line);
+    return result;
+}
+/**
+ * Check if given attribute should be outputted
+ */
+function shouldOutputAttribute(attr) {
+    // In case if attribute is implied, check if it has a defined value:
+    // either non-empty value or quoted empty value
+    return !attr.implied || attr.valueType !== 'raw' || (!!attr.value && attr.value.length > 0);
+}
+
+/**
+ * Splits given string into template tokens.
+ * Template is a string which contains placeholders which are uppercase names
+ * between `[` and `]`, for example: `[PLACEHOLDER]`.
+ * Unlike other templates, a placeholder may contain extra characters before and
+ * after name: `[%PLACEHOLDER.]`. If data for `PLACEHOLDER` is defined, it will
+ * be outputted with with these extra character, otherwise will be completely omitted.
+ */
+function template(text) {
+    const tokens = [];
+    const scanner = { pos: 0, text };
+    let placeholder;
+    let offset = scanner.pos;
+    let pos = scanner.pos;
+    while (scanner.pos < scanner.text.length) {
+        pos = scanner.pos;
+        if (placeholder = consumePlaceholder$2(scanner)) {
+            if (offset !== scanner.pos) {
+                tokens.push(text.slice(offset, pos));
+            }
+            tokens.push(placeholder);
+            offset = scanner.pos;
+        }
+        else {
+            scanner.pos++;
+        }
+    }
+    if (offset !== scanner.pos) {
+        tokens.push(text.slice(offset));
+    }
+    return tokens;
+}
+/**
+ * Consumes placeholder like `[#ID]` from given scanner
+ */
+function consumePlaceholder$2(scanner) {
+    if (peek$2(scanner) === 91 /* Start */) {
+        const start = ++scanner.pos;
+        let namePos = start;
+        let afterPos = start;
+        let stack = 1;
+        while (scanner.pos < scanner.text.length) {
+            const code = peek$2(scanner);
+            if (isTokenStart(code)) {
+                namePos = scanner.pos;
+                while (isToken(peek$2(scanner))) {
+                    scanner.pos++;
+                }
+                afterPos = scanner.pos;
+            }
+            else {
+                if (code === 91 /* Start */) {
+                    stack++;
+                }
+                else if (code === 93 /* End */) {
+                    if (--stack === 0) {
+                        return {
+                            before: scanner.text.slice(start, namePos),
+                            after: scanner.text.slice(afterPos, scanner.pos++),
+                            name: scanner.text.slice(namePos, afterPos)
+                        };
+                    }
+                }
+                scanner.pos++;
+            }
+        }
+    }
+}
+function peek$2(scanner, pos = scanner.pos) {
+    return scanner.text.charCodeAt(pos);
+}
+function isTokenStart(code) {
+    return code >= 65 && code <= 90; // A-Z
+}
+function isToken(code) {
+    return isTokenStart(code)
+        || (code > 47 && code < 58) /* 0-9 */
+        || code === 95 /* Underscore */
+        || code === 45 /* Dash */;
+}
+
+function createCommentState(config) {
+    const { options } = config;
+    return {
+        enabled: options['comment.enabled'],
+        trigger: options['comment.trigger'],
+        before: options['comment.before'] ? template(options['comment.before']) : void 0,
+        after: options['comment.after'] ? template(options['comment.after']) : void 0
+    };
+}
+/**
+ * Adds comment prefix for given node, if required
+ */
+function commentNodeBefore(node, state) {
+    if (shouldComment(node, state) && state.comment.before) {
+        output(node, state.comment.before, state);
+    }
+}
+/**
+ * Adds comment suffix for given node, if required
+ */
+function commentNodeAfter(node, state) {
+    if (shouldComment(node, state) && state.comment.after) {
+        output(node, state.comment.after, state);
+    }
+}
+/**
+ * Check if given node should be commented
+ */
+function shouldComment(node, state) {
+    const { comment } = state;
+    if (!comment.enabled || !comment.trigger || !node.name || !node.attributes) {
+        return false;
+    }
+    for (const attr of node.attributes) {
+        if (attr.name && comment.trigger.includes(attr.name)) {
+            return true;
+        }
+    }
+    return false;
+}
+/**
+ * Pushes given template tokens into output stream
+ */
+function output(node, tokens, state) {
+    const attrs = {};
+    const { out } = state;
+    // Collect attributes payload
+    for (const attr of node.attributes) {
+        if (attr.name && attr.value) {
+            attrs[attr.name.toUpperCase()] = attr.value;
+        }
+    }
+    // Output parsed tokens
+    for (const token of tokens) {
+        if (typeof token === 'string') {
+            pushString(out, token);
+        }
+        else if (attrs[token.name]) {
+            pushString(out, token.before);
+            pushTokens(attrs[token.name], state);
+            pushString(out, token.after);
+        }
+    }
+}
+
+function html(abbr, config) {
+    const state = createWalkState(config);
+    state.comment = createCommentState(config);
+    walk$1(abbr, element$1, state);
+    return state.out.value;
+}
+/**
+ * Outputs `node` content to output stream of `state`
+ * @param node Context node
+ * @param index Index of `node` in `items`
+ * @param items List of `node`’s siblings
+ * @param state Current walk state
+ */
+function element$1(node, index, items, state, next) {
+    const { out, config } = state;
+    const format = shouldFormat(node, index, items, state);
+    // Pick offset level for current node
+    const level = getIndent(state);
+    out.level += level;
+    format && pushNewline(out, true);
+    if (node.name) {
+        const name = tagName(node.name, config);
+        commentNodeBefore(node, state);
+        pushString(out, `<${name}`);
+        if (node.attributes) {
+            for (const attr of node.attributes) {
+                if (shouldOutputAttribute(attr)) {
+                    pushAttribute(attr, state);
+                }
+            }
+        }
+        if (node.selfClosing && !node.children.length && !node.value) {
+            pushString(out, `${selfClose(config)}>`);
+        }
+        else {
+            pushString(out, '>');
+            if (!pushSnippet(node, state, next)) {
+                if (node.value) {
+                    const innerFormat = node.value.some(hasNewline);
+                    innerFormat && pushNewline(state.out, ++out.level);
+                    pushTokens(node.value, state);
+                    innerFormat && pushNewline(state.out, --out.level);
+                }
+                node.children.forEach(next);
+                if (!node.value && !node.children.length) {
+                    const innerFormat = config.options['output.formatLeafNode']
+                        || config.options['output.formatForce'].includes(node.name);
+                    innerFormat && pushNewline(state.out, ++out.level);
+                    pushTokens(caret, state);
+                    innerFormat && pushNewline(state.out, --out.level);
+                }
+            }
+            pushString(out, `</${name}>`);
+            commentNodeAfter(node, state);
+        }
+    }
+    else if (!pushSnippet(node, state, next) && node.value) {
+        // A text-only node (snippet)
+        pushTokens(node.value, state);
+        node.children.forEach(next);
+    }
+    if (format && index === items.length - 1 && state.parent) {
+        const offset = isSnippet(state.parent) ? 0 : 1;
+        pushNewline(out, out.level - offset);
+    }
+    out.level -= level;
+}
+/**
+ * Outputs given attribute’s content into output stream
+ */
+function pushAttribute(attr, state) {
+    const { out, config } = state;
+    if (attr.name) {
+        const name = attrName(attr.name, config);
+        const lQuote = attrQuote(attr, config, true);
+        const rQuote = attrQuote(attr, config);
+        let value = attr.value;
+        if (isBooleanAttribute(attr, config) && !value) {
+            // If attribute value is omitted and it’s a boolean value, check for
+            // `compactBoolean` option: if it’s disabled, set value to attribute name
+            // (XML style)
+            if (!config.options['output.compactBoolean']) {
+                value = [name];
+            }
+        }
+        else if (!value) {
+            value = caret;
+        }
+        pushString(out, ' ' + name);
+        if (value) {
+            pushString(out, '=' + lQuote);
+            pushTokens(value, state);
+            pushString(out, rQuote);
+        }
+        else if (config.options['output.selfClosingStyle'] !== 'html') {
+            pushString(out, '=' + lQuote + rQuote);
+        }
+    }
+}
+function pushSnippet(node, state, next) {
+    if (node.value && node.children.length) {
+        // We have a value and child nodes. In case if value contains fields,
+        // we should output children as a content of first field
+        const fieldIx = node.value.findIndex(isField$1);
+        if (fieldIx !== -1) {
+            pushTokens(node.value.slice(0, fieldIx), state);
+            const line = state.out.line;
+            let pos = fieldIx + 1;
+            node.children.forEach(next);
+            // If there was a line change, trim leading whitespace for better result
+            if (state.out.line !== line && typeof node.value[pos] === 'string') {
+                pushString(state.out, node.value[pos++].trimLeft());
+            }
+            pushTokens(node.value.slice(pos), state);
+            return true;
+        }
+    }
+    return false;
+}
+/**
+ * Check if given node should be formatted in its parent context
+ */
+function shouldFormat(node, index, items, state) {
+    const { config, parent } = state;
+    if (!config.options['output.format']) {
+        return false;
+    }
+    if (index === 0 && !parent) {
+        // Do not format very first node
+        return false;
+    }
+    // Do not format single child of snippet
+    if (parent && isSnippet(parent) && items.length === 1) {
+        return false;
+    }
+    /**
+     * Adjacent text-only/snippet nodes
+     */
+    if (isSnippet(node)) {
+        // Adjacent text-only/snippet nodes
+        const format = isSnippet(items[index - 1]) || isSnippet(items[index + 1])
+            // Has newlines: looks like wrapping code fragment
+            || node.value.some(hasNewline)
+            // Format as wrapper: contains children which will be outputted as field content
+            || (node.value.some(isField$1) && node.children.length);
+        if (format) {
+            return true;
+        }
+    }
+    if (isInline(node, config)) {
+        // Check if inline node is the next sibling of block-level node
+        if (index === 0) {
+            // First node in parent: format if it’s followed by a block-level element
+            for (let i = 0; i < items.length; i++) {
+                if (!isInline(items[i], config)) {
+                    return true;
+                }
+            }
+        }
+        else if (!isInline(items[index - 1], config)) {
+            // Node is right after block-level element
+            return true;
+        }
+        if (config.options['output.inlineBreak']) {
+            // check for adjacent inline elements before and after current element
+            let adjacentInline = 1;
+            let before = index;
+            let after = index;
+            while (isInlineElement(items[--before], config)) {
+                adjacentInline++;
+            }
+            while (isInlineElement(items[++after], config)) {
+                adjacentInline++;
+            }
+            if (adjacentInline >= config.options['output.inlineBreak']) {
+                return true;
+            }
+        }
+        // Edge case: inline node contains node that should receive formatting
+        for (let i = 0, il = node.children.length; i < il; i++) {
+            if (shouldFormat(node.children[i], i, node.children, state)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    return true;
+}
+/**
+ * Returns indentation offset for given node
+ */
+function getIndent(state) {
+    const { config, parent } = state;
+    if (!parent || isSnippet(parent) || (parent.name && config.options['output.formatSkip'].includes(parent.name))) {
+        return 0;
+    }
+    return 1;
+}
+/**
+ * Check if given node value contains newlines
+ */
+function hasNewline(value) {
+    return typeof value === 'string' && /\r|\n/.test(value);
+}
+
+function indentFormat(abbr, config, options) {
+    const state = createWalkState(config);
+    state.options = options || {};
+    walk$1(abbr, element$2, state);
+    return state.out.value;
+}
+/**
+ * Outputs `node` content to output stream of `state`
+ * @param node Context node
+ * @param index Index of `node` in `items`
+ * @param items List of `node`’s siblings
+ * @param state Current walk state
+ */
+function element$2(node, index, items, state, next) {
+    const { out, options } = state;
+    const { primary, secondary } = collectAttributes(node);
+    // Pick offset level for current node
+    const level = state.parent ? 1 : 0;
+    out.level += level;
+    // Do not indent top-level elements
+    if (shouldFormat$1(node, index, items, state)) {
+        pushNewline(out, true);
+    }
+    if (node.name && (node.name !== 'div' || !primary.length)) {
+        pushString(out, (options.beforeName || '') + node.name + (options.afterName || ''));
+    }
+    pushPrimaryAttributes(primary, state);
+    pushSecondaryAttributes(secondary.filter(shouldOutputAttribute), state);
+    if (node.selfClosing && !node.value && !node.children.length) {
+        if (state.options.selfClose) {
+            pushString(out, state.options.selfClose);
+        }
+    }
+    else {
+        pushValue(node, state);
+        node.children.forEach(next);
+    }
+    out.level -= level;
+}
+/**
+ * From given node, collects all attributes as `primary` (id, class) and
+ * `secondary` (all the rest) lists. In most indent-based syntaxes, primary attribute
+ * has special syntax
+ */
+function collectAttributes(node) {
+    const primary = [];
+    const secondary = [];
+    if (node.attributes) {
+        for (const attr of node.attributes) {
+            if (isPrimaryAttribute(attr)) {
+                primary.push(attr);
+            }
+            else {
+                secondary.push(attr);
+            }
+        }
+    }
+    return { primary, secondary };
+}
+/**
+ * Outputs given attributes as primary into output stream
+ */
+function pushPrimaryAttributes(attrs, state) {
+    for (const attr of attrs) {
+        if (attr.value) {
+            if (attr.name === 'class') {
+                pushString(state.out, '.');
+                // All whitespace characters must be replaced with dots in class names
+                const tokens = attr.value.map(t => typeof t === 'string' ? t.replace(/\s+/g, '.') : t);
+                pushTokens(tokens, state);
+            }
+            else {
+                // ID attribute
+                pushString(state.out, '#');
+                pushTokens(attr.value, state);
+            }
+        }
+    }
+}
+/**
+ * Outputs given attributes as secondary into output stream
+ */
+function pushSecondaryAttributes(attrs, state) {
+    if (attrs.length) {
+        const { out, config, options } = state;
+        options.beforeAttribute && pushString(out, options.beforeAttribute);
+        for (let i = 0; i < attrs.length; i++) {
+            const attr = attrs[i];
+            pushString(out, attrName(attr.name || '', config));
+            if (isBooleanAttribute(attr, config) && !attr.value) {
+                if (!config.options['output.compactBoolean'] && options.booleanValue) {
+                    pushString(out, '=' + options.booleanValue);
+                }
+            }
+            else {
+                pushString(out, '=' + attrQuote(attr, config, true));
+                pushTokens(attr.value || caret, state);
+                pushString(out, attrQuote(attr, config));
+            }
+            if (i !== attrs.length - 1 && options.glueAttribute) {
+                pushString(out, options.glueAttribute);
+            }
+        }
+        options.afterAttribute && pushString(out, options.afterAttribute);
+    }
+}
+/**
+ * Outputs given node value into state output stream
+ */
+function pushValue(node, state) {
+    // We should either output value or add caret but for leaf nodes only (no children)
+    if (!node.value && node.children.length) {
+        return;
+    }
+    const value = node.value || caret;
+    const lines = splitByLines$1(value);
+    const { out, options } = state;
+    if (lines.length === 1) {
+        if (node.name || node.attributes) {
+            push(out, ' ');
+        }
+        pushTokens(value, state);
+    }
+    else {
+        // We should format multi-line value with terminating `|` character
+        // and same line length
+        const lineLengths = [];
+        let maxLength = 0;
+        // Calculate lengths of all lines and max line length
+        for (const line of lines) {
+            const len = valueLength(line);
+            lineLengths.push(len);
+            if (len > maxLength) {
+                maxLength = len;
+            }
+        }
+        // Output each line, padded to max length
+        out.level++;
+        for (let i = 0; i < lines.length; i++) {
+            pushNewline(out, true);
+            options.beforeTextLine && push(out, options.beforeTextLine);
+            pushTokens(lines[i], state);
+            if (options.afterTextLine) {
+                push(out, ' '.repeat(maxLength - lineLengths[i]));
+                push(out, options.afterTextLine);
+            }
+        }
+        out.level--;
+    }
+}
+function isPrimaryAttribute(attr) {
+    return attr.name === 'class' || attr.name === 'id';
+}
+/**
+ * Calculates string length from given tokens
+ */
+function valueLength(tokens) {
+    let len = 0;
+    for (const token of tokens) {
+        len += typeof token === 'string' ? token.length : token.name.length;
+    }
+    return len;
+}
+function shouldFormat$1(node, index, items, state) {
+    // Do not format first top-level element or snippets
+    if (!state.parent && index === 0) {
+        return false;
+    }
+    return !isSnippet(node);
+}
+
+function haml(abbr, config) {
+    return indentFormat(abbr, config, {
+        beforeName: '%',
+        beforeAttribute: '(',
+        afterAttribute: ')',
+        glueAttribute: ' ',
+        afterTextLine: ' |',
+        booleanValue: 'true',
+        selfClose: '/'
+    });
+}
+
+function slim(abbr, config) {
+    return indentFormat(abbr, config, {
+        beforeAttribute: ' ',
+        glueAttribute: ' ',
+        beforeTextLine: '| ',
+        selfClose: '/'
+    });
+}
+
+function pug(abbr, config) {
+    return indentFormat(abbr, config, {
+        beforeAttribute: '(',
+        afterAttribute: ')',
+        glueAttribute: ', ',
+        beforeTextLine: '| ',
+        selfClose: config.options['output.selfClosingStyle'] === 'xml' ? '/' : ''
+    });
+}
+
+const formatters = { html, haml, slim, pug };
+/**
+ * Parses given Emmet abbreviation into a final abbreviation tree with all
+ * required transformations applied
+ */
+function parse$1(abbr, config) {
+    if (typeof abbr === 'string') {
+        let parseOpt = config;
+        if (config.options['jsx.enabled']) {
+            parseOpt = Object.assign(Object.assign({}, parseOpt), { jsx: true });
+        }
+        abbr = parseAbbreviation(abbr, parseOpt);
+    }
+    // Run abbreviation resolve in two passes:
+    // 1. Map each node to snippets, which are abbreviations as well. A single snippet
+    // may produce multiple nodes
+    // 2. Transform every resolved node
+    abbr = resolveSnippets(abbr, config);
+    walk(abbr, transform, config);
+    return abbr;
+}
+/**
+ * Converts given abbreviation to string according to provided `config`
+ */
+function stringify$1(abbr, config) {
+    const formatter = formatters[config.syntax] || html;
+    return formatter(abbr, config);
+}
+/**
+ * Modifies given node and prepares it for output
+ */
+function transform(node, ancestors, config) {
+    implicitTag(node, ancestors, config);
+    mergeAttributes(node, config);
+    lorem(node, ancestors, config);
+    if (config.syntax === 'xsl') {
+        xsl(node);
+    }
+    if (config.options['jsx.enabled']) {
+        jsx(node);
+    }
+    if (config.options['bem.enabled']) {
+        bem(node, ancestors, config);
+    }
+}
+
+const reProperty = /^([a-z-]+)(?:\s*:\s*([^\n\r;]+?);*)?$/;
+const opt = { value: true };
+/**
+ * Creates structure for holding resolved CSS snippet
+ */
+function createSnippet(key, value) {
+    // A snippet could be a raw text snippet (e.g. arbitrary text string) or a
+    // CSS property with possible values separated by `|`.
+    // In latter case, we have to parse snippet as CSS abbreviation
+    const m = value.match(reProperty);
+    if (m) {
+        const keywords = {};
+        const parsed = m[2] ? m[2].split('|').map(parseValue) : [];
+        for (const item of parsed) {
+            for (const cssVal of item) {
+                collectKeywords(cssVal, keywords);
+            }
+        }
+        return {
+            type: "Property" /* Property */,
+            key,
+            property: m[1],
+            value: parsed,
+            keywords,
+            dependencies: []
+        };
+    }
+    return { type: "Raw" /* Raw */, key, value };
+}
+/**
+ * Nests more specific CSS properties into shorthand ones, e.g.
+ * `background-position-x` -> `background-position` -> `background`
+ */
+function nest(snippets) {
+    snippets = snippets.slice().sort(snippetsSort);
+    const stack = [];
+    let prev;
+    // For sorted list of CSS properties, create dependency graph where each
+    // shorthand property contains its more specific one, e.g.
+    // background -> background-position -> background-position-x
+    for (const cur of snippets.filter(isProperty)) {
+        // Check if current property belongs to one from parent stack.
+        // Since `snippets` array is sorted, items are perfectly aligned
+        // from shorthands to more specific variants
+        while (stack.length) {
+            prev = stack[stack.length - 1];
+            if (cur.property.startsWith(prev.property)
+                && cur.property.charCodeAt(prev.property.length) === 45 /* - */) {
+                prev.dependencies.push(cur);
+                stack.push(cur);
+                break;
+            }
+            stack.pop();
+        }
+        if (!stack.length) {
+            stack.push(cur);
+        }
+    }
+    return snippets;
+}
+/**
+ * A sorting function for array of snippets
+ */
+function snippetsSort(a, b) {
+    if (a.key === b.key) {
+        return 0;
+    }
+    return a.key < b.key ? -1 : 1;
+}
+function parseValue(value) {
+    return parse(value.trim(), opt)[0].value;
+}
+function isProperty(snippet) {
+    return snippet.type === "Property" /* Property */;
+}
+function collectKeywords(cssVal, dest) {
+    for (const v of cssVal.value) {
+        if (v.type === 'Literal') {
+            dest[v.value] = v;
+        }
+        else if (v.type === 'FunctionCall') {
+            dest[v.name] = v;
+        }
+        else if (v.type === 'Field') {
+            // Create literal from field, if available
+            const value = v.name.trim();
+            if (value) {
+                dest[value] = { type: 'Literal', value };
+            }
+        }
+    }
+}
+
+/**
+ * Calculates fuzzy match score of how close `abbr` matches given `string`.
+ * @param abbr Abbreviation to score
+ * @param str String to match
+ * @return Match score
+ */
+function calculateScore(abbr, str) {
+    abbr = abbr.toLowerCase();
+    str = str.toLowerCase();
+    if (abbr === str) {
+        return 1;
+    }
+    // a string MUST start with the same character as abbreviation
+    if (!str || abbr.charCodeAt(0) !== str.charCodeAt(0)) {
+        return 0;
+    }
+    const abbrLength = abbr.length;
+    const stringLength = str.length;
+    let i = 1;
+    let j = 1;
+    let score = stringLength;
+    let ch1;
+    let ch2;
+    let found;
+    let acronym;
+    while (i < abbrLength) {
+        ch1 = abbr.charCodeAt(i);
+        found = false;
+        acronym = false;
+        while (j < stringLength) {
+            ch2 = str.charCodeAt(j);
+            if (ch1 === ch2) {
+                found = true;
+                score += (stringLength - j) * (acronym ? 2 : 1);
+                break;
+            }
+            // add acronym bonus for exactly next match after unmatched `-`
+            acronym = ch2 === 45 /* - */;
+            j++;
+        }
+        if (!found) {
+            break;
+        }
+        i++;
+    }
+    return score && score * (i / abbrLength) / sum(stringLength);
+}
+/**
+ * Calculates sum of first `n` numbers, e.g. 1+2+3+...n
+ */
+function sum(n) {
+    return n * (n + 1) / 2;
+}
+
+function color(token, shortHex) {
+    if (!token.r && !token.g && !token.b && !token.a) {
+        return 'transparent';
+    }
+    else if (token.a === 1) {
+        return asHex(token, shortHex);
+    }
+    return asRGB(token);
+}
+/**
+ * Output given color as hex value
+ * @param short Produce short value (e.g. #fff instead of #ffffff), if possible
+ */
+function asHex(token, short) {
+    const fn = (short && isShortHex(token.r) && isShortHex(token.g) && isShortHex(token.b))
+        ? toShortHex : toHex;
+    return '#' + fn(token.r) + fn(token.g) + fn(token.b);
+}
+/**
+ * Output current color as `rgba?(...)` CSS color
+ */
+function asRGB(token) {
+    const values = [token.r, token.g, token.b];
+    if (token.a !== 1) {
+        values.push(frac(token.a, 8));
+    }
+    return `${values.length === 3 ? 'rgb' : 'rgba'}(${values.join(', ')})`;
+}
+function frac(num, digits = 4) {
+    return num.toFixed(digits).replace(/\.?0+$/, '');
+}
+function isShortHex(hex) {
+    return !(hex % 17);
+}
+function toShortHex(num) {
+    return (num >> 4).toString(16);
+}
+function toHex(num) {
+    return pad(num.toString(16), 2);
+}
+function pad(value, len) {
+    while (value.length < len) {
+        value = '0' + value;
+    }
+    return value;
+}
+
+function css(abbr, config) {
+    const out = createOutputStream(config.options);
+    const format = config.options['output.format'];
+    for (let i = 0; i < abbr.length; i++) {
+        if (format && i !== 0) {
+            pushNewline(out, true);
+        }
+        property(abbr[i], out, config);
+    }
+    return out.value;
+}
+/**
+ * Outputs given abbreviation node into output stream
+ */
+function property(node, out, config) {
+    const isJSON = config.options['stylesheet.json'];
+    if (node.name) {
+        // It’s a CSS property
+        const name = isJSON ? toCamelCase(node.name) : node.name;
+        pushString(out, name + config.options['stylesheet.between']);
+        if (node.value.length) {
+            propertyValue(node, out, config);
+        }
+        else {
+            pushField(out, 0, '');
+        }
+        if (isJSON) {
+            // For CSS-in-JS, always finalize property with comma
+            // NB: seems like `important` is not available in CSS-in-JS syntaxes
+            push(out, ',');
+        }
+        else {
+            outputImportant(node, out, true);
+            push(out, config.options['stylesheet.after']);
+        }
+    }
+    else {
+        // It’s a regular snippet, output plain tokens without any additional formatting
+        for (const cssVal of node.value) {
+            for (const v of cssVal.value) {
+                outputToken(v, out, config);
+            }
+        }
+        outputImportant(node, out, node.value.length > 0);
+    }
+}
+function propertyValue(node, out, config) {
+    const isJSON = config.options['stylesheet.json'];
+    const num = isJSON ? getSingleNumeric(node) : null;
+    if (num && (!num.unit || num.unit === 'px')) {
+        // For CSS-in-JS, if property contains single numeric value, output it
+        // as JS number
+        push(out, String(num.value));
+    }
+    else {
+        const quote = getQuote(config);
+        isJSON && push(out, quote);
+        for (let i = 0; i < node.value.length; i++) {
+            if (i !== 0) {
+                push(out, ', ');
+            }
+            outputValue(node.value[i], out, config);
+        }
+        isJSON && push(out, quote);
+    }
+}
+function outputImportant(node, out, separator) {
+    if (node.important) {
+        if (separator) {
+            push(out, ' ');
+        }
+        push(out, '!important');
+    }
+}
+function outputValue(value, out, config) {
+    for (let i = 0; i < value.value.length; i++) {
+        const token = value.value[i];
+        if (i !== 0) {
+            push(out, ' ');
+        }
+        outputToken(token, out, config);
+    }
+}
+function outputToken(token, out, config) {
+    if (token.type === 'ColorValue') {
+        push(out, color(token, config.options['stylesheet.shortHex']));
+    }
+    else if (token.type === 'Literal') {
+        pushString(out, token.value);
+    }
+    else if (token.type === 'NumberValue') {
+        pushString(out, frac(token.value, 4) + token.unit);
+    }
+    else if (token.type === 'StringValue') {
+        const quote = token.quote === 'double' ? '"' : '\'';
+        pushString(out, quote + token.value + quote);
+    }
+    else if (token.type === 'Field') {
+        pushField(out, token.index, token.name);
+    }
+    else if (token.type === 'FunctionCall') {
+        push(out, token.name + '(');
+        for (let i = 0; i < token.arguments.length; i++) {
+            if (i) {
+                push(out, ', ');
+            }
+            outputValue(token.arguments[i], out, config);
+        }
+        push(out, ')');
+    }
+}
+/**
+ * If value of given property is a single numeric value, returns this token
+ */
+function getSingleNumeric(node) {
+    if (node.value.length === 1) {
+        const cssVal = node.value[0];
+        if (cssVal.value.length === 1 && cssVal.value[0].type === 'NumberValue') {
+            return cssVal.value[0];
+        }
+    }
+}
+/**
+ * Converts kebab-case string to camelCase
+ */
+function toCamelCase(str) {
+    return str.replace(/\-(\w)/g, (_, letter) => letter.toUpperCase());
+}
+function getQuote(config) {
+    return config.options['stylesheet.jsonDoubleQuotes'] ? '"' : '\'';
+}
+
+const gradientName = 'lg';
+/**
+ * Parses given Emmet abbreviation into a final abbreviation tree with all
+ * required transformations applied
+ */
+function parse$2(abbr, config, snippets = convertSnippets(config.snippets)) {
+    if (typeof abbr === 'string') {
+        abbr = parse(abbr, { value: !!config.context });
+    }
+    for (const node of abbr) {
+        resolveNode(node, snippets, config);
+    }
+    return abbr;
+}
+/**
+ * Converts given raw snippets into internal snippets representation
+ */
+function convertSnippets(snippets) {
+    const result = [];
+    for (const key of Object.keys(snippets)) {
+        result.push(createSnippet(key, snippets[key]));
+    }
+    return nest(result);
+}
+/**
+ * Resolves given node: finds matched CSS snippets using fuzzy match and resolves
+ * keyword aliases from node value
+ */
+function resolveNode(node, snippets, config) {
+    if (!resolveGradient(node, config)) {
+        const score = config.options['stylesheet.fuzzySearchMinScore'];
+        if (config.context) {
+            // Resolve as value of given CSS property
+            const propName = config.context.name;
+            const snippet = snippets.find(s => s.type === "Property" /* Property */ && s.property === propName);
+            resolveValueKeywords(node, config, snippet, score);
+        }
+        else if (node.name) {
+            const snippet = findBestMatch(node.name, snippets, score);
+            if (snippet) {
+                if (snippet.type === "Property" /* Property */) {
+                    resolveAsProperty(node, snippet, config);
+                }
+                else {
+                    resolveAsSnippet(node, snippet);
+                }
+            }
+        }
+    }
+    if (node.name || config.context) {
+        // Resolve numeric values for CSS properties only
+        resolveNumericValue(node, config);
+    }
+    return node;
+}
+/**
+ * Resolves CSS gradient shortcut from given property, if possible
+ */
+function resolveGradient(node, config) {
+    let gradientFn = null;
+    const cssVal = node.value.length === 1 ? node.value[0] : null;
+    if (cssVal && cssVal.value.length === 1) {
+        const v = cssVal.value[0];
+        if (v.type === 'FunctionCall' && v.name === gradientName) {
+            gradientFn = v;
+        }
+    }
+    if (gradientFn || node.name === gradientName) {
+        if (!gradientFn) {
+            gradientFn = {
+                type: 'FunctionCall',
+                name: 'linear-gradient',
+                arguments: [cssValue(field$2(0, ''))]
+            };
+        }
+        else {
+            gradientFn = Object.assign(Object.assign({}, gradientFn), { name: 'linear-gradient' });
+        }
+        if (!config.context) {
+            node.name = 'background-image';
+        }
+        node.value = [cssValue(gradientFn)];
+        return true;
+    }
+    return false;
+}
+/**
+ * Resolves given parsed abbreviation node as CSS property
+ */
+function resolveAsProperty(node, snippet, config) {
+    const abbr = node.name;
+    node.name = snippet.property;
+    if (!node.value.length) {
+        // No value defined in abbreviation node, try to resolve unmatched part
+        // as a keyword alias
+        const inlineValue = getUnmatchedPart(abbr, snippet.key);
+        const kw = inlineValue ? resolveKeyword(inlineValue, config, snippet) : null;
+        if (kw) {
+            node.value.push(cssValue(kw));
+        }
+        else if (snippet.value.length) {
+            const defaultValue = snippet.value[0];
+            // https://github.com/emmetio/emmet/issues/558
+            // We should auto-select inserted value only if there’s multiple value
+            // choice
+            node.value = snippet.value.length === 1 || defaultValue.some(hasField)
+                ? defaultValue
+                : defaultValue.map(n => wrapWithField(n, config));
+        }
+    }
+    else {
+        // Replace keyword alias from current abbreviation node with matched keyword
+        resolveValueKeywords(node, config, snippet);
+    }
+    return node;
+}
+function resolveValueKeywords(node, config, snippet, minScore) {
+    for (const cssVal of node.value) {
+        const value = [];
+        for (const token of cssVal.value) {
+            if (token.type === 'Literal') {
+                value.push(resolveKeyword(token.value, config, snippet, minScore) || token);
+            }
+            else if (token.type === 'FunctionCall') {
+                // For function calls, we should find matching function call
+                // and merge arguments
+                const match = resolveKeyword(token.name, config, snippet, minScore);
+                if (match && match.type === 'FunctionCall') {
+                    value.push(Object.assign(Object.assign({}, match), { arguments: token.arguments.concat(match.arguments.slice(token.arguments.length)) }));
+                }
+                else {
+                    value.push(token);
+                }
+            }
+            else {
+                value.push(token);
+            }
+        }
+        cssVal.value = value;
+    }
+}
+/**
+ * Resolves given parsed abbreviation node as a snippet: a plain code chunk
+ */
+function resolveAsSnippet(node, snippet) {
+    // When resolving snippets, we have to do the following:
+    // 1. Replace field placeholders with actual field tokens.
+    // 2. If input values given, put them instead of fields
+    let offset = 0;
+    let m;
+    const reField = /\$\{(\d+)(:[^}]+)?\}/g;
+    const inputValue = node.value[0];
+    const outputValue = [];
+    while (m = reField.exec(snippet.value)) {
+        if (offset !== m.index) {
+            outputValue.push(literal$3(snippet.value.slice(offset, m.index)));
+        }
+        offset = m.index + m[0].length;
+        if (inputValue && inputValue.value.length) {
+            outputValue.push(inputValue.value.shift());
+        }
+        else {
+            outputValue.push(field$2(Number(m[1]), m[2] ? m[2].slice(1) : ''));
+        }
+    }
+    const tail = snippet.value.slice(offset);
+    if (tail) {
+        outputValue.push(literal$3(tail));
+    }
+    node.name = void 0;
+    node.value = [cssValue(...outputValue)];
+    return node;
+}
+/**
+ * Finds best matching item from `items` array
+ * @param abbr  Abbreviation to match
+ * @param items List of items for match
+ * @param minScore The minimum score the best matched item should have to be a valid match.
+ */
+function findBestMatch(abbr, items, minScore = 0) {
+    let matchedItem = null;
+    let maxScore = 0;
+    for (const item of items) {
+        const score = calculateScore(abbr, getScoringPart(item));
+        if (score === 1) {
+            // direct hit, no need to look further
+            return item;
+        }
+        if (score && score >= maxScore) {
+            maxScore = score;
+            matchedItem = item;
+        }
+    }
+    return maxScore >= minScore ? matchedItem : null;
+}
+function getScoringPart(item) {
+    return typeof item === 'string' ? item : item.key;
+}
+/**
+ * Returns a part of `abbr` that wasn’t directly matched against `str`.
+ * For example, if abbreviation `poas` is matched against `position`,
+ * the unmatched part will be `as` since `a` wasn’t found in string stream
+ */
+function getUnmatchedPart(abbr, str) {
+    for (let i = 0, lastPos = 0; i < abbr.length; i++) {
+        lastPos = str.indexOf(abbr[i], lastPos);
+        if (lastPos === -1) {
+            return abbr.slice(i);
+        }
+        lastPos++;
+    }
+    return '';
+}
+/**
+ * Resolves given keyword shorthand into matched snippet keyword or global keyword,
+ * if possible
+ */
+function resolveKeyword(kw, config, snippet, minScore) {
+    let ref;
+    if (snippet) {
+        if (ref = findBestMatch(kw, Object.keys(snippet.keywords), minScore)) {
+            return snippet.keywords[ref];
+        }
+        for (const dep of snippet.dependencies) {
+            if (ref = findBestMatch(kw, Object.keys(dep.keywords), minScore)) {
+                return dep.keywords[ref];
+            }
+        }
+    }
+    if (ref = findBestMatch(kw, config.options['stylesheet.keywords'], minScore)) {
+        return literal$3(ref);
+    }
+    return null;
+}
+/**
+ * Resolves numeric values in given abbreviation node
+ */
+function resolveNumericValue(node, config) {
+    const aliases = config.options['stylesheet.unitAliases'];
+    const unitless = config.options['stylesheet.unitless'];
+    for (const v of node.value) {
+        for (const t of v.value) {
+            if (t.type === 'NumberValue') {
+                if (t.unit) {
+                    t.unit = aliases[t.unit] || t.unit;
+                }
+                else if (t.value !== 0 && !unitless.includes(node.name)) {
+                    t.unit = t.rawValue.includes('.')
+                        ? config.options['stylesheet.floatUnit']
+                        : config.options['stylesheet.intUnit'];
+                }
+            }
+        }
+    }
+}
+/**
+ * Constructs CSS value token
+ */
+function cssValue(...args) {
+    return {
+        type: 'CSSValue',
+        value: args
+    };
+}
+/**
+ * Constructs literal token
+ */
+function literal$3(value) {
+    return { type: 'Literal', value };
+}
+/**
+ * Constructs field token
+ */
+function field$2(index, name) {
+    return { type: 'Field', index, name };
+}
+/**
+ * Check if given value contains fields
+ */
+function hasField(value) {
+    for (const v of value.value) {
+        if (v.type === 'Field' || (v.type === 'FunctionCall' && v.arguments.some(hasField))) {
+            return true;
+        }
+    }
+    return false;
+}
+/**
+ * Wraps tokens of given abbreviation with fields
+ */
+function wrapWithField(node, config, state = { index: 1 }) {
+    let value = [];
+    for (const v of node.value) {
+        switch (v.type) {
+            case 'ColorValue':
+                value.push(field$2(state.index++, color(v, config.options['stylesheet.shortHex'])));
+                break;
+            case 'Literal':
+                value.push(field$2(state.index++, v.value));
+                break;
+            case 'NumberValue':
+                value.push(field$2(state.index++, `${v.value}${v.unit}`));
+                break;
+            case 'StringValue':
+                const q = v.quote === 'single' ? '\'' : '"';
+                value.push(field$2(state.index++, q + v.value + q));
+                break;
+            case 'FunctionCall':
+                value.push(field$2(state.index++, v.name), literal$3('('));
+                for (let i = 0, il = v.arguments.length; i < il; i++) {
+                    value = value.concat(wrapWithField(v.arguments[i], config, state).value);
+                    if (i !== il - 1) {
+                        value.push(literal$3(', '));
+                    }
+                }
+                value.push(literal$3(')'));
+                break;
+            default:
+                value.push(v);
+        }
+    }
+    return Object.assign(Object.assign({}, node), { value });
+}
+
+var markupSnippets = {
+	"a": "a[href]",
+	"a:blank": "a[href='http://${0}' target='_blank' rel='noopener noreferrer']",
+	"a:link": "a[href='http://${0}']",
+	"a:mail": "a[href='mailto:${0}']",
+	"a:tel": "a[href='tel:+${0}']",
+	"abbr": "abbr[title]",
+	"acr|acronym": "acronym[title]",
+	"base": "base[href]/",
+	"basefont": "basefont/",
+	"br": "br/",
+	"frame": "frame/",
+	"hr": "hr/",
+	"bdo": "bdo[dir]",
+	"bdo:r": "bdo[dir=rtl]",
+	"bdo:l": "bdo[dir=ltr]",
+	"col": "col/",
+	"link": "link[rel=stylesheet href]/",
+	"link:css": "link[href='${1:style}.css']",
+	"link:print": "link[href='${1:print}.css' media=print]",
+	"link:favicon": "link[rel='shortcut icon' type=image/x-icon href='${1:favicon.ico}']",
+	"link:mf|link:manifest": "link[rel='manifest' href='${1:manifest.json}']",
+	"link:touch": "link[rel=apple-touch-icon href='${1:favicon.png}']",
+	"link:rss": "link[rel=alternate type=application/rss+xml title=RSS href='${1:rss.xml}']",
+	"link:atom": "link[rel=alternate type=application/atom+xml title=Atom href='${1:atom.xml}']",
+	"link:im|link:import": "link[rel=import href='${1:component}.html']",
+	"meta": "meta/",
+	"meta:utf": "meta[http-equiv=Content-Type content='text/html;charset=UTF-8']",
+	"meta:vp": "meta[name=viewport content='width=${1:device-width}, initial-scale=${2:1.0}']",
+	"meta:compat": "meta[http-equiv=X-UA-Compatible content='${1:IE=7}']",
+	"meta:edge": "meta:compat[content='${1:ie=edge}']",
+	"meta:redirect": "meta[http-equiv=refresh content='0; url=${1:http://example.com}']",
+	"meta:kw": "meta[name=keywords content]",
+	"meta:desc": "meta[name=description content]",
+	"style": "style",
+	"script": "script",
+	"script:src": "script[src]",
+	"img": "img[src alt]/",
+	"img:s|img:srcset": "img[srcset src alt]",
+	"img:z|img:sizes": "img[sizes srcset src alt]",
+	"picture": "picture",
+	"src|source": "source/",
+	"src:sc|source:src": "source[src type]",
+	"src:s|source:srcset": "source[srcset]",
+	"src:t|source:type": "source[srcset type='${1:image/}']",
+	"src:z|source:sizes": "source[sizes srcset]",
+	"src:m|source:media": "source[media='(${1:min-width: })' srcset]",
+	"src:mt|source:media:type": "source:media[type='${2:image/}']",
+	"src:mz|source:media:sizes": "source:media[sizes srcset]",
+	"src:zt|source:sizes:type": "source[sizes srcset type='${1:image/}']",
+	"iframe": "iframe[src frameborder=0]",
+	"embed": "embed[src type]/",
+	"object": "object[data type]",
+	"param": "param[name value]/",
+	"map": "map[name]",
+	"area": "area[shape coords href alt]/",
+	"area:d": "area[shape=default]",
+	"area:c": "area[shape=circle]",
+	"area:r": "area[shape=rect]",
+	"area:p": "area[shape=poly]",
+	"form": "form[action]",
+	"form:get": "form[method=get]",
+	"form:post": "form[method=post]",
+	"label": "label[for]",
+	"input": "input[type=${1:text}]/",
+	"inp": "input[name=${1} id=${1}]",
+	"input:h|input:hidden": "input[type=hidden name]",
+	"input:t|input:text": "inp[type=text]",
+	"input:search": "inp[type=search]",
+	"input:email": "inp[type=email]",
+	"input:url": "inp[type=url]",
+	"input:p|input:password": "inp[type=password]",
+	"input:datetime": "inp[type=datetime]",
+	"input:date": "inp[type=date]",
+	"input:datetime-local": "inp[type=datetime-local]",
+	"input:month": "inp[type=month]",
+	"input:week": "inp[type=week]",
+	"input:time": "inp[type=time]",
+	"input:tel": "inp[type=tel]",
+	"input:number": "inp[type=number]",
+	"input:color": "inp[type=color]",
+	"input:c|input:checkbox": "inp[type=checkbox]",
+	"input:r|input:radio": "inp[type=radio]",
+	"input:range": "inp[type=range]",
+	"input:f|input:file": "inp[type=file]",
+	"input:s|input:submit": "input[type=submit value]",
+	"input:i|input:image": "input[type=image src alt]",
+	"input:b|input:button": "input[type=button value]",
+	"input:reset": "input:button[type=reset]",
+	"isindex": "isindex/",
+	"select": "select[name=${1} id=${1}]",
+	"select:d|select:disabled": "select[disabled.]",
+	"opt|option": "option[value]",
+	"textarea": "textarea[name=${1} id=${1} cols=${2:30} rows=${3:10}]",
+	"marquee": "marquee[behavior direction]",
+	"menu:c|menu:context": "menu[type=context]",
+	"menu:t|menu:toolbar": "menu[type=toolbar]",
+	"video": "video[src]",
+	"audio": "audio[src]",
+	"html:xml": "html[xmlns=http://www.w3.org/1999/xhtml]",
+	"keygen": "keygen/",
+	"command": "command/",
+	"btn:s|button:s|button:submit" : "button[type=submit]",
+	"btn:r|button:r|button:reset" : "button[type=reset]",
+	"btn:d|button:d|button:disabled" : "button[disabled.]",
+	"fst:d|fset:d|fieldset:d|fieldset:disabled" : "fieldset[disabled.]",
+
+	"bq": "blockquote",
+	"fig": "figure",
+	"figc": "figcaption",
+	"pic": "picture",
+	"ifr": "iframe",
+	"emb": "embed",
+	"obj": "object",
+	"cap": "caption",
+	"colg": "colgroup",
+	"fst": "fieldset",
+	"btn": "button",
+	"optg": "optgroup",
+	"tarea": "textarea",
+	"leg": "legend",
+	"sect": "section",
+	"art": "article",
+	"hdr": "header",
+	"ftr": "footer",
+	"adr": "address",
+	"dlg": "dialog",
+	"str": "strong",
+	"prog": "progress",
+	"mn": "main",
+	"tem": "template",
+	"fset": "fieldset",
+	"datag": "datagrid",
+	"datal": "datalist",
+	"kg": "keygen",
+	"out": "output",
+	"det": "details",
+	"sum": "summary",
+	"cmd": "command",
+
+	"ri:d|ri:dpr": "img:s",
+	"ri:v|ri:viewport": "img:z",
+	"ri:a|ri:art": "pic>src:m+img",
+	"ri:t|ri:type": "pic>src:t+img",
+
+	"!!!": "{<!DOCTYPE html>}",
+	"doc": "html[lang=${lang}]>(head>meta[charset=${charset}]+meta:vp+title{${1:Document}})+body",
+	"!|html:5": "!!!+doc",
+
+	"c": "{<!-- ${0} -->}",
+	"cc:ie": "{<!--[if IE]>${0}<![endif]-->}",
+	"cc:noie": "{<!--[if !IE]><!-->${0}<!--<![endif]-->}"
+};
+
+var stylesheetSnippets = {
+	"@f": "@font-face {\n\tfont-family: ${1};\n\tsrc: url(${1});\n}",
+	"@ff": "@font-face {\n\tfont-family: '${1:FontName}';\n\tsrc: url('${2:FileName}.eot');\n\tsrc: url('${2:FileName}.eot?#iefix') format('embedded-opentype'),\n\t\t url('${2:FileName}.woff') format('woff'),\n\t\t url('${2:FileName}.ttf') format('truetype'),\n\t\t url('${2:FileName}.svg#${1:FontName}') format('svg');\n\tfont-style: ${3:normal};\n\tfont-weight: ${4:normal};\n}",
+	"@i|@import": "@import url(${0});",
+	"@kf": "@keyframes ${1:identifier} {\n\t${2}\n}",
+	"@m|@media": "@media ${1:screen} {\n\t${0}\n}",
+	"ac": "align-content:start|end|flex-start|flex-end|center|space-between|space-around|stretch|space-evenly",
+	"ai": "align-items:start|end|flex-start|flex-end|center|baseline|stretch",
+	"anim": "animation:${1:name} ${2:duration} ${3:timing-function} ${4:delay} ${5:iteration-count} ${6:direction} ${7:fill-mode}",
+	"animdel": "animation-delay:time",
+	"animdir": "animation-direction:normal|reverse|alternate|alternate-reverse",
+	"animdur": "animation-duration:${1:0}s",
+	"animfm": "animation-fill-mode:both|forwards|backwards",
+	"animic": "animation-iteration-count:1|infinite",
+	"animn": "animation-name",
+	"animps": "animation-play-state:running|paused",
+	"animtf": "animation-timing-function:linear|ease|ease-in|ease-out|ease-in-out|cubic-bezier(${1:0.1}, ${2:0.7}, ${3:1.0}, ${3:0.1})",
+	"ap": "appearance:none",
+	"as": "align-self:start|end|auto|flex-start|flex-end|center|baseline|stretch",
+	"b": "bottom",
+	"bd": "border:${1:1px} ${2:solid} ${3:#000}",
+	"bdb": "border-bottom:${1:1px} ${2:solid} ${3:#000}",
+	"bdbc": "border-bottom-color:${1:#000}",
+	"bdbi": "border-bottom-image:url(${0})",
+	"bdbk": "border-break:close",
+	"bdbli": "border-bottom-left-image:url(${0})|continue",
+	"bdblrs": "border-bottom-left-radius",
+	"bdbri": "border-bottom-right-image:url(${0})|continue",
+	"bdbrrs": "border-bottom-right-radius",
+	"bdbs": "border-bottom-style",
+	"bdbw": "border-bottom-width",
+	"bdc": "border-color:${1:#000}",
+	"bdci": "border-corner-image:url(${0})|continue",
+	"bdcl": "border-collapse:collapse|separate",
+	"bdf": "border-fit:repeat|clip|scale|stretch|overwrite|overflow|space",
+	"bdi": "border-image:url(${0})",
+	"bdl": "border-left:${1:1px} ${2:solid} ${3:#000}",
+	"bdlc": "border-left-color:${1:#000}",
+	"bdlen": "border-length",
+	"bdli": "border-left-image:url(${0})",
+	"bdls": "border-left-style",
+	"bdlw": "border-left-width",
+	"bdr": "border-right:${1:1px} ${2:solid} ${3:#000}",
+	"bdrc": "border-right-color:${1:#000}",
+	"bdri": "border-right-image:url(${0})",
+	"bdrs": "border-radius",
+	"bdrst": "border-right-style",
+	"bdrw": "border-right-width",
+	"bds": "border-style:none|hidden|dotted|dashed|solid|double|dot-dash|dot-dot-dash|wave|groove|ridge|inset|outset",
+	"bdsp": "border-spacing",
+	"bdt": "border-top:${1:1px} ${2:solid} ${3:#000}",
+	"bdtc": "border-top-color:${1:#000}",
+	"bdti": "border-top-image:url(${0})",
+	"bdtli": "border-top-left-image:url(${0})|continue",
+	"bdtlrs": "border-top-left-radius",
+	"bdtri": "border-top-right-image:url(${0})|continue",
+	"bdtrrs": "border-top-right-radius",
+	"bdts": "border-top-style",
+	"bdtw": "border-top-width",
+	"bdw": "border-width",
+	"bfv": "backface-visibility:hidden|visible",
+	"bg": "background:${1:#000}",
+	"bga": "background-attachment:fixed|scroll",
+	"bgbk": "background-break:bounding-box|each-box|continuous",
+	"bgc": "background-color:#${1:fff}",
+	"bgcp": "background-clip:padding-box|border-box|content-box|no-clip",
+	"bgi": "background-image:url(${0})",
+	"bgo": "background-origin:padding-box|border-box|content-box",
+	"bgp": "background-position:${1:0} ${2:0}",
+	"bgpx": "background-position-x",
+	"bgpy": "background-position-y",
+	"bgr": "background-repeat:no-repeat|repeat-x|repeat-y|space|round",
+	"bgsz": "background-size:contain|cover",
+	"bxsh": "box-shadow:${1:inset }${2:hoff} ${3:voff} ${4:blur} ${5:#000}|none",
+	"bxsz": "box-sizing:border-box|content-box|border-box",
+	"c": "color:${1:#000}",
+	"cl": "clear:both|left|right|none",
+	"cm": "/* ${0} */",
+	"cnt": "content:'${0}'|normal|open-quote|no-open-quote|close-quote|no-close-quote|attr(${0})|counter(${0})|counters(${0})",
+	"coi": "counter-increment",
+	"colm": "columns",
+	"colmc": "column-count",
+	"colmf": "column-fill",
+	"colmg": "column-gap",
+	"colmr": "column-rule",
+	"colmrc": "column-rule-color",
+	"colmrs": "column-rule-style",
+	"colmrw": "column-rule-width",
+	"colms": "column-span",
+	"colmw": "column-width",
+	"cor": "counter-reset",
+	"cp": "clip:auto|rect(${1:top} ${2:right} ${3:bottom} ${4:left})",
+	"cps": "caption-side:top|bottom",
+	"cur": "cursor:pointer|auto|default|crosshair|hand|help|move|pointer|text",
+	"d": "display:grid|inline-grid|subgrid|block|none|flex|inline-flex|inline|inline-block|list-item|run-in|compact|table|inline-table|table-caption|table-column|table-column-group|table-header-group|table-footer-group|table-row|table-row-group|table-cell|ruby|ruby-base|ruby-base-group|ruby-text|ruby-text-group",
+	"ec": "empty-cells:show|hide",
+	"f": "font:${1:1em} ${2:sans-serif}",
+	"fd": "font-display:auto|block|swap|fallback|optional",
+	"fef": "font-effect:none|engrave|emboss|outline",
+	"fem": "font-emphasize",
+	"femp": "font-emphasize-position:before|after",
+	"fems": "font-emphasize-style:none|accent|dot|circle|disc",
+	"ff": "font-family:serif|sans-serif|cursive|fantasy|monospace",
+	"fft": "font-family:\"Times New Roman\", Times, Baskerville, Georgia, serif",
+	"ffa": "font-family:Arial, \"Helvetica Neue\", Helvetica, sans-serif",
+	"ffv": "font-family:Verdana, Geneva, sans-serif",
+	"fl": "float:left|right|none",
+	"fs": "font-style:italic|normal|oblique",
+	"fsm": "font-smoothing:antialiased|subpixel-antialiased|none",
+	"fst": "font-stretch:normal|ultra-condensed|extra-condensed|condensed|semi-condensed|semi-expanded|expanded|extra-expanded|ultra-expanded",
+	"fv": "font-variant:normal|small-caps",
+	"fvs": "font-variation-settings:normal|inherit|initial|unset",
+	"fw": "font-weight:normal|bold|bolder|lighter",
+	"fx": "flex",
+	"fxb": "flex-basis:fill|max-content|min-content|fit-content|content",
+	"fxd": "flex-direction:row|row-reverse|column|column-reverse",
+	"fxf": "flex-flow",
+	"fxg": "flex-grow",
+	"fxsh": "flex-shrink",
+	"fxw": "flex-wrap:nowrap|wrap|wrap-reverse",
+	"fsz": "font-size",
+	"fsza": "font-size-adjust",
+	"gtc": "grid-template-columns:repeat()|minmax()",
+	"gtr": "grid-template-rows:repeat()|minmax()",
+	"gta": "grid-template-areas",
+	"gt": "grid-template",
+	"gg": "grid-gap",
+	"gcg": "grid-column-gap",
+	"grg": "grid-row-gap",
+	"gac": "grid-auto-columns:auto|minmax()",
+	"gar": "grid-auto-rows:auto|minmax()",
+	"gaf": "grid-auto-flow:row|column|dense|inherit|initial|unset",
+	"gd": "grid",
+	"gc": "grid-column",
+	"gcs": "grid-column-start",
+	"gce": "grid-column-end",
+	"gr": "grid-row",
+	"grs": "grid-row-start",
+	"gre": "grid-row-end",
+	"ga": "grid-area",
+	"h": "height",
+	"jc": "justify-content:start|end|stretch|flex-start|flex-end|center|space-between|space-around|space-evenly",
+	"ji": "justify-items:start|end|center|stretch",
+	"js": "justify-self:start|end|center|stretch",
+	"l": "left",
+	"lg": "background-image:linear-gradient(${1})",
+	"lh": "line-height",
+	"lis": "list-style",
+	"lisi": "list-style-image",
+	"lisp": "list-style-position:inside|outside",
+	"list": "list-style-type:disc|circle|square|decimal|decimal-leading-zero|lower-roman|upper-roman",
+	"lts": "letter-spacing:normal",
+	"m": "margin",
+	"mah": "max-height",
+	"mar": "max-resolution",
+	"maw": "max-width",
+	"mb": "margin-bottom",
+	"mih": "min-height",
+	"mir": "min-resolution",
+	"miw": "min-width",
+	"ml": "margin-left",
+	"mr": "margin-right",
+	"mt": "margin-top",
+	"ol": "outline",
+	"olc": "outline-color:${1:#000}|invert",
+	"olo": "outline-offset",
+	"ols": "outline-style:none|dotted|dashed|solid|double|groove|ridge|inset|outset",
+	"olw": "outline-width|thin|medium|thick",
+	"op": "opacity",
+	"ord": "order",
+	"ori": "orientation:landscape|portrait",
+	"orp": "orphans",
+	"ov": "overflow:hidden|visible|hidden|scroll|auto",
+	"ovs": "overflow-style:scrollbar|auto|scrollbar|panner|move|marquee",
+	"ovx": "overflow-x:hidden|visible|hidden|scroll|auto",
+	"ovy": "overflow-y:hidden|visible|hidden|scroll|auto",
+	"p": "padding",
+	"pb": "padding-bottom",
+	"pgba": "page-break-after:auto|always|left|right",
+	"pgbb": "page-break-before:auto|always|left|right",
+	"pgbi": "page-break-inside:auto|avoid",
+	"pl": "padding-left",
+	"pos": "position:relative|absolute|relative|fixed|static",
+	"pr": "padding-right",
+	"pt": "padding-top",
+	"q": "quotes",
+	"qen": "quotes:'\\201C' '\\201D' '\\2018' '\\2019'",
+	"qru": "quotes:'\\00AB' '\\00BB' '\\201E' '\\201C'",
+	"r": "right",
+	"rsz": "resize:none|both|horizontal|vertical",
+	"t": "top",
+	"ta": "text-align:left|center|right|justify",
+	"tal": "text-align-last:left|center|right",
+	"tbl": "table-layout:fixed",
+	"td": "text-decoration:none|underline|overline|line-through",
+	"te": "text-emphasis:none|accent|dot|circle|disc|before|after",
+	"th": "text-height:auto|font-size|text-size|max-size",
+	"ti": "text-indent",
+	"tj": "text-justify:auto|inter-word|inter-ideograph|inter-cluster|distribute|kashida|tibetan",
+	"to": "text-outline:${1:0} ${2:0} ${3:#000}",
+	"tov": "text-overflow:ellipsis|clip",
+	"tr": "text-replace",
+	"trf": "transform:${1}|skewX(${1:angle})|skewY(${1:angle})|scale(${1:x}, ${2:y})|scaleX(${1:x})|scaleY(${1:y})|scaleZ(${1:z})|scale3d(${1:x}, ${2:y}, ${3:z})|rotate(${1:angle})|rotateX(${1:angle})|rotateY(${1:angle})|rotateZ(${1:angle})|translate(${1:x}, ${2:y})|translateX(${1:x})|translateY(${1:y})|translateZ(${1:z})|translate3d(${1:tx}, ${2:ty}, ${3:tz})",
+	"trfo": "transform-origin",
+	"trfs": "transform-style:preserve-3d",
+	"trs": "transition:${1:prop} ${2:time}",
+	"trsde": "transition-delay:${1:time}",
+	"trsdu": "transition-duration:${1:time}",
+	"trsp": "transition-property:${1:prop}",
+	"trstf": "transition-timing-function:${1:fn}",
+	"tsh": "text-shadow:${1:hoff} ${2:voff} ${3:blur} ${4:#000}",
+	"tt": "text-transform:uppercase|lowercase|capitalize|none",
+	"tw": "text-wrap:none|normal|unrestricted|suppress",
+	"us": "user-select:none",
+	"v": "visibility:hidden|visible|collapse",
+	"va": "vertical-align:top|super|text-top|middle|baseline|bottom|text-bottom|sub",
+	"w": "width",
+	"whs": "white-space:nowrap|pre|pre-wrap|pre-line|normal",
+	"whsc": "white-space-collapse:normal|keep-all|loose|break-strict|break-all",
+	"wid": "widows",
+	"wm": "writing-mode:lr-tb|lr-tb|lr-bt|rl-tb|rl-bt|tb-rl|tb-lr|bt-lr|bt-rl",
+	"wob": "word-break:normal|keep-all|break-all",
+	"wos": "word-spacing",
+	"wow": "word-wrap:none|unrestricted|suppress|break-word|normal",
+	"z": "z-index",
+	"zom": "zoom:1"
+};
+
+var xslSnippets = {
+    "tm|tmatch": "xsl:template[match mode]",
+    "tn|tname": "xsl:template[name]",
+    "call": "xsl:call-template[name]",
+    "ap": "xsl:apply-templates[select mode]",
+    "api": "xsl:apply-imports",
+    "imp": "xsl:import[href]",
+    "inc": "xsl:include[href]",
+    "ch": "xsl:choose",
+    "wh|xsl:when": "xsl:when[test]",
+    "ot": "xsl:otherwise",
+    "if": "xsl:if[test]",
+    "par": "xsl:param[name]",
+    "pare": "xsl:param[name select]",
+    "var": "xsl:variable[name]",
+    "vare": "xsl:variable[name select]",
+    "wp": "xsl:with-param[name select]",
+    "key": "xsl:key[name match use]",
+    "elem": "xsl:element[name]",
+    "attr": "xsl:attribute[name]",
+    "attrs": "xsl:attribute-set[name]",
+    "cp": "xsl:copy[select]",
+    "co": "xsl:copy-of[select]",
+    "val": "xsl:value-of[select]",
+    "for|each": "xsl:for-each[select]",
+    "tex": "xsl:text",
+    "com": "xsl:comment",
+    "msg": "xsl:message[terminate=no]",
+    "fall": "xsl:fallback",
+    "num": "xsl:number[value]",
+    "nam": "namespace-alias[stylesheet-prefix result-prefix]",
+    "pres": "xsl:preserve-space[elements]",
+    "strip": "xsl:strip-space[elements]",
+    "proc": "xsl:processing-instruction[name]",
+    "sort": "xsl:sort[select order]",
+    "choose": "xsl:choose>xsl:when+xsl:otherwise",
+    "xsl": "!!!+xsl:stylesheet[version=1.0 xmlns:xsl=http://www.w3.org/1999/XSL/Transform]>{\n|}",
+    "!!!": "{<?xml version=\"1.0\" encoding=\"UTF-8\"?>}"
+};
+
+var pugSnippets = {
+	"!!!": "{doctype html}"
+};
+
+var variables = {
+	"lang": "en",
+	"locale": "en-US",
+	"charset": "UTF-8",
+	"indentation": "\t",
+	"newline": "\n"
+};
+
+/**
+ * Default syntaxes for abbreviation types
+ */
+const defaultSyntaxes = {
+    markup: 'html',
+    stylesheet: 'css'
+};
+const defaultOptions = {
+    'inlineElements': [
+        'a', 'abbr', 'acronym', 'applet', 'b', 'basefont', 'bdo',
+        'big', 'br', 'button', 'cite', 'code', 'del', 'dfn', 'em', 'font', 'i',
+        'iframe', 'img', 'input', 'ins', 'kbd', 'label', 'map', 'object', 'q',
+        's', 'samp', 'select', 'small', 'span', 'strike', 'strong', 'sub', 'sup',
+        'textarea', 'tt', 'u', 'var'
+    ],
+    'output.indent': '\t',
+    'output.baseIndent': '',
+    'output.newline': '\n',
+    'output.tagCase': '',
+    'output.attributeCase': '',
+    'output.attributeQuotes': 'double',
+    'output.format': true,
+    'output.formatLeafNode': false,
+    'output.formatSkip': ['html'],
+    'output.formatForce': ['body'],
+    'output.inlineBreak': 3,
+    'output.compactBoolean': false,
+    'output.booleanAttributes': [
+        'contenteditable', 'seamless', 'async', 'autofocus',
+        'autoplay', 'checked', 'controls', 'defer', 'disabled', 'formnovalidate',
+        'hidden', 'ismap', 'loop', 'multiple', 'muted', 'novalidate', 'readonly',
+        'required', 'reversed', 'selected', 'typemustmatch'
+    ],
+    'output.reverseAttributes': false,
+    'output.selfClosingStyle': 'html',
+    'output.field': (index, placeholder) => placeholder,
+    'output.text': text => text,
+    'comment.enabled': false,
+    'comment.trigger': ['id', 'class'],
+    'comment.before': '',
+    'comment.after': '\n<!-- /[#ID][.CLASS] -->',
+    'bem.enabled': false,
+    'bem.element': '__',
+    'bem.modifier': '_',
+    'jsx.enabled': false,
+    'stylesheet.keywords': ['auto', 'inherit', 'unset'],
+    'stylesheet.unitless': ['z-index', 'line-height', 'opacity', 'font-weight', 'zoom', 'flex', 'flex-grow', 'flex-shrink'],
+    'stylesheet.shortHex': true,
+    'stylesheet.between': ': ',
+    'stylesheet.after': ';',
+    'stylesheet.intUnit': 'px',
+    'stylesheet.floatUnit': 'em',
+    'stylesheet.unitAliases': { e: 'em', p: '%', x: 'ex', r: 'rem' },
+    'stylesheet.json': false,
+    'stylesheet.jsonDoubleQuotes': false,
+    'stylesheet.fuzzySearchMinScore': 0.3
+};
+const defaultConfig = {
+    type: 'markup',
+    syntax: 'html',
+    variables,
+    snippets: {},
+    options: defaultOptions
+};
+/**
+ * Default per-syntax config
+ */
+const syntaxConfig = {
+    markup: {
+        snippets: parseSnippets(markupSnippets),
+    },
+    xhtml: {
+        options: {
+            'output.selfClosingStyle': 'xhtml'
+        }
+    },
+    xml: {
+        options: {
+            'output.selfClosingStyle': 'xml'
+        }
+    },
+    xsl: {
+        snippets: parseSnippets(xslSnippets),
+        options: {
+            'output.selfClosingStyle': 'xml'
+        }
+    },
+    jsx: {
+        options: {
+            'jsx.enabled': true
+        }
+    },
+    pug: {
+        snippets: parseSnippets(pugSnippets)
+    },
+    stylesheet: {
+        snippets: parseSnippets(stylesheetSnippets)
+    },
+    sass: {
+        options: {
+            'stylesheet.after': ''
+        }
+    },
+    stylus: {
+        options: {
+            'stylesheet.between': ' ',
+            'stylesheet.after': '',
+        }
+    }
+};
+/**
+ * Parses raw snippets definitions with possibly multiple keys into a plan
+ * snippet map
+ */
+function parseSnippets(snippets) {
+    const result = {};
+    Object.keys(snippets).forEach(k => {
+        for (const name of k.split('|')) {
+            result[name] = snippets[k];
+        }
+    });
+    return result;
+}
+function resolveConfig(config = {}, globals = {}) {
+    const type = config.type || 'markup';
+    const syntax = config.syntax || defaultSyntaxes[type];
+    return Object.assign(Object.assign(Object.assign({}, defaultConfig), config), { type,
+        syntax, variables: mergedData(type, syntax, 'variables', config, globals), snippets: mergedData(type, syntax, 'snippets', config, globals), options: mergedData(type, syntax, 'options', config, globals) });
+}
+function mergedData(type, syntax, key, config, globals = {}) {
+    const typeDefaults = syntaxConfig[type];
+    const typeOverride = globals[type];
+    const syntaxDefaults = syntaxConfig[syntax];
+    const syntaxOverride = globals[syntax];
+    return Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, defaultConfig[key]), (typeDefaults && typeDefaults[key])), (syntaxDefaults && syntaxDefaults[key])), (typeOverride && typeOverride[key])), (syntaxOverride && syntaxOverride[key])), config[key]);
+}
+
+/**
+ * Creates structure for scanning given string in backward direction
+ */
+function backwardScanner(text, start = 0) {
+    return { text, start, pos: text.length };
+}
+/**
+ * Check if given scanner position is at start of scanned text
+ */
+function sol(scanner) {
+    return scanner.pos === scanner.start;
+}
+/**
+ * “Peeks” character code an current scanner location without advancing it
+ */
+function peek$3(scanner, offset = 0) {
+    return scanner.text.charCodeAt(scanner.pos - 1 + offset);
+}
+/**
+ * Returns current character code and moves character location one symbol back
+ */
+function previous(scanner) {
+    if (!sol(scanner)) {
+        return scanner.text.charCodeAt(--scanner.pos);
+    }
+}
+/**
+ * Consumes current character code if it matches given `match` code or function
+ */
+function consume$2(scanner, match) {
+    if (sol(scanner)) {
+        return false;
+    }
+    const ok = typeof match === 'function'
+        ? match(peek$3(scanner))
+        : match === peek$3(scanner);
+    if (ok) {
+        scanner.pos--;
+    }
+    return !!ok;
+}
+function consumeWhile(scanner, match) {
+    const start = scanner.pos;
+    while (consume$2(scanner, match)) {
+        // empty
+    }
+    return scanner.pos < start;
+}
+
+/**
+ * Check if given character code is a quote
+ */
+function isQuote$3(c) {
+    return c === 39 /* SingleQuote */ || c === 34 /* DoubleQuote */;
+}
+/**
+ * Consumes quoted value, if possible
+ * @return Returns `true` is value was consumed
+ */
+function consumeQuoted(scanner) {
+    const start = scanner.pos;
+    const quote = previous(scanner);
+    if (isQuote$3(quote)) {
+        while (!sol(scanner)) {
+            if (previous(scanner) === quote && peek$3(scanner) !== 92 /* Escape */) {
+                return true;
+            }
+        }
+    }
+    scanner.pos = start;
+    return false;
+}
+
+const bracePairs = {
+    [91 /* SquareL */]: 93 /* SquareR */,
+    [40 /* RoundL */]: 41 /* RoundR */,
+    [123 /* CurlyL */]: 125 /* CurlyR */,
+};
+
+/**
+ * Check if given reader’s current position points at the end of HTML tag
+ */
+function isHtml(scanner) {
+    const start = scanner.pos;
+    if (!consume$2(scanner, 62 /* AngleRight */)) {
+        return false;
+    }
+    let ok = false;
+    consume$2(scanner, 47 /* Slash */); // possibly self-closed element
+    while (!sol(scanner)) {
+        consumeWhile(scanner, isWhiteSpace$4);
+        if (consumeIdent(scanner)) {
+            // ate identifier: could be a tag name, boolean attribute or unquoted
+            // attribute value
+            if (consume$2(scanner, 47 /* Slash */)) {
+                // either closing tag or invalid tag
+                ok = consume$2(scanner, 60 /* AngleLeft */);
+                break;
+            }
+            else if (consume$2(scanner, 60 /* AngleLeft */)) {
+                // opening tag
+                ok = true;
+                break;
+            }
+            else if (consume$2(scanner, isWhiteSpace$4)) {
+                // boolean attribute
+                continue;
+            }
+            else if (consume$2(scanner, 61 /* Equals */)) {
+                // simple unquoted value or invalid attribute
+                if (consumeIdent(scanner)) {
+                    continue;
+                }
+                break;
+            }
+            else if (consumeAttributeWithUnquotedValue(scanner)) {
+                // identifier was a part of unquoted value
+                ok = true;
+                break;
+            }
+            // invalid tag
+            break;
+        }
+        if (consumeAttribute(scanner)) {
+            continue;
+        }
+        break;
+    }
+    scanner.pos = start;
+    return ok;
+}
+/**
+ * Consumes HTML attribute from given string.
+ * @return `true` if attribute was consumed.
+ */
+function consumeAttribute(scanner) {
+    return consumeAttributeWithQuotedValue(scanner) || consumeAttributeWithUnquotedValue(scanner);
+}
+function consumeAttributeWithQuotedValue(scanner) {
+    const start = scanner.pos;
+    if (consumeQuoted(scanner) && consume$2(scanner, 61 /* Equals */) && consumeIdent(scanner)) {
+        return true;
+    }
+    scanner.pos = start;
+    return false;
+}
+function consumeAttributeWithUnquotedValue(scanner) {
+    const start = scanner.pos;
+    const stack = [];
+    while (!sol(scanner)) {
+        const ch = peek$3(scanner);
+        if (isCloseBracket$1(ch)) {
+            stack.push(ch);
+        }
+        else if (isOpenBracket$2(ch)) {
+            if (stack.pop() !== bracePairs[ch]) {
+                // Unexpected open bracket
+                break;
+            }
+        }
+        else if (!isUnquotedValue(ch)) {
+            break;
+        }
+        scanner.pos--;
+    }
+    if (start !== scanner.pos && consume$2(scanner, 61 /* Equals */) && consumeIdent(scanner)) {
+        return true;
+    }
+    scanner.pos = start;
+    return false;
+}
+/**
+ * Consumes HTML identifier from stream
+ */
+function consumeIdent(scanner) {
+    return consumeWhile(scanner, isIdent);
+}
+/**
+ * Check if given character code belongs to HTML identifier
+ */
+function isIdent(ch) {
+    return ch === 58 /* Colon */ || ch === 45 /* Dash */ || isAlpha$2(ch) || isNumber$2(ch);
+}
+/**
+ * Check if given character code is alpha code (letter though A to Z)
+ */
+function isAlpha$2(ch) {
+    ch &= ~32; // quick hack to convert any char code to uppercase char code
+    return ch >= 65 && ch <= 90; // A-Z
+}
+/**
+ * Check if given code is a number
+ */
+function isNumber$2(ch) {
+    return ch > 47 && ch < 58;
+}
+/**
+ * Check if given code is a whitespace
+ */
+function isWhiteSpace$4(ch) {
+    return ch === 32 /* Space */ || ch === 9 /* Tab */;
+}
+/**
+ * Check if given code may belong to unquoted attribute value
+ */
+function isUnquotedValue(ch) {
+    return !isNaN(ch) && ch !== 61 /* Equals */ && !isWhiteSpace$4(ch) && !isQuote$3(ch);
+}
+function isOpenBracket$2(ch) {
+    return ch === 123 /* CurlyL */ || ch === 40 /* RoundL */ || ch === 91 /* SquareL */;
+}
+function isCloseBracket$1(ch) {
+    return ch === 125 /* CurlyR */ || ch === 41 /* RoundR */ || ch === 93 /* SquareR */;
+}
+
+const code = (ch) => ch.charCodeAt(0);
+const specialChars = '#.*:$-_!@%^+>/'.split('').map(code);
+const defaultOptions$1 = {
+    type: 'markup',
+    lookAhead: true,
+    prefix: ''
+};
+/**
+ * Extracts Emmet abbreviation from given string.
+ * The goal of this module is to extract abbreviation from current editor’s line,
+ * e.g. like this: `<span>.foo[title=bar|]</span>` -> `.foo[title=bar]`, where
+ * `|` is a current caret position.
+ * @param line A text line where abbreviation should be expanded
+ * @param pos Caret position in line. If not given, uses end of line
+ * @param options Extracting options
+ */
+function extractAbbreviation(line, pos = line.length, options = {}) {
+    // make sure `pos` is within line range
+    const opt = Object.assign(Object.assign({}, defaultOptions$1), options);
+    pos = Math.min(line.length, Math.max(0, pos == null ? line.length : pos));
+    if (opt.lookAhead) {
+        pos = offsetPastAutoClosed(line, pos, opt);
+    }
+    let ch;
+    const start = getStartOffset(line, pos, opt.prefix || '');
+    if (start === -1) {
+        return void 0;
+    }
+    const scanner = backwardScanner(line, start);
+    scanner.pos = pos;
+    const stack = [];
+    while (!sol(scanner)) {
+        ch = peek$3(scanner);
+        if (stack.includes(125 /* CurlyR */)) {
+            if (ch === 125 /* CurlyR */) {
+                stack.push(ch);
+                scanner.pos--;
+                continue;
+            }
+            if (ch !== 123 /* CurlyL */) {
+                scanner.pos--;
+                continue;
+            }
+        }
+        if (isCloseBrace(ch, opt.type)) {
+            stack.push(ch);
+        }
+        else if (isOpenBrace(ch, opt.type)) {
+            if (stack.pop() !== bracePairs[ch]) {
+                // unexpected brace
+                break;
+            }
+        }
+        else if (stack.includes(93 /* SquareR */) || stack.includes(125 /* CurlyR */)) {
+            // respect all characters inside attribute sets or text nodes
+            scanner.pos--;
+            continue;
+        }
+        else if (isHtml(scanner) || !isAbbreviation(ch)) {
+            break;
+        }
+        scanner.pos--;
+    }
+    if (!stack.length && scanner.pos !== pos) {
+        // Found something, remove some invalid symbols from the
+        // beginning and return abbreviation
+        const abbreviation = line.slice(scanner.pos, pos).replace(/^[*+>^]+/, '');
+        return {
+            abbreviation,
+            location: pos - abbreviation.length,
+            start: options.prefix
+                ? start - options.prefix.length
+                : pos - abbreviation.length,
+            end: pos
+        };
+    }
+}
+/**
+ * Returns new `line` index which is right after characters beyound `pos` that
+ * editor will likely automatically close, e.g. }, ], and quotes
+ */
+function offsetPastAutoClosed(line, pos, options) {
+    // closing quote is allowed only as a next character
+    if (isQuote$3(line.charCodeAt(pos))) {
+        pos++;
+    }
+    // offset pointer until non-autoclosed character is found
+    while (isCloseBrace(line.charCodeAt(pos), options.type)) {
+        pos++;
+    }
+    return pos;
+}
+/**
+ * Returns start offset (left limit) in `line` where we should stop looking for
+ * abbreviation: it’s nearest to `pos` location of `prefix` token
+ */
+function getStartOffset(line, pos, prefix) {
+    if (!prefix) {
+        return 0;
+    }
+    const scanner = backwardScanner(line);
+    const compiledPrefix = prefix.split('').map(code);
+    scanner.pos = pos;
+    let result;
+    while (!sol(scanner)) {
+        if (consumePair(scanner, 93 /* SquareR */, 91 /* SquareL */) || consumePair(scanner, 125 /* CurlyR */, 123 /* CurlyL */)) {
+            continue;
+        }
+        result = scanner.pos;
+        if (consumeArray(scanner, compiledPrefix)) {
+            return result;
+        }
+        scanner.pos--;
+    }
+    return -1;
+}
+/**
+ * Consumes full character pair, if possible
+ */
+function consumePair(scanner, close, open) {
+    const start = scanner.pos;
+    if (consume$2(scanner, close)) {
+        while (!sol(scanner)) {
+            if (consume$2(scanner, open)) {
+                return true;
+            }
+            scanner.pos--;
+        }
+    }
+    scanner.pos = start;
+    return false;
+}
+/**
+ * Consumes all character codes from given array, right-to-left, if possible
+ */
+function consumeArray(scanner, arr) {
+    const start = scanner.pos;
+    let consumed = false;
+    for (let i = arr.length - 1; i >= 0 && !sol(scanner); i--) {
+        if (!consume$2(scanner, arr[i])) {
+            break;
+        }
+        consumed = i === 0;
+    }
+    if (!consumed) {
+        scanner.pos = start;
+    }
+    return consumed;
+}
+function isAbbreviation(ch) {
+    return (ch > 64 && ch < 91) // uppercase letter
+        || (ch > 96 && ch < 123) // lowercase letter
+        || (ch > 47 && ch < 58) // number
+        || specialChars.includes(ch); // special character
+}
+function isOpenBrace(ch, syntax) {
+    return ch === 40 /* RoundL */ || (syntax === 'markup' && (ch === 91 /* SquareL */ || ch === 123 /* CurlyL */));
+}
+function isCloseBrace(ch, syntax) {
+    return ch === 41 /* RoundR */ || (syntax === 'markup' && (ch === 93 /* SquareR */ || ch === 125 /* CurlyR */));
+}
+
+function expandAbbreviation(abbr, config) {
+    const resolvedConfig = resolveConfig(config);
+    return resolvedConfig.type === 'stylesheet'
+        ? stylesheet(abbr, resolvedConfig)
+        : markup(abbr, resolvedConfig);
+}
+/**
+ * Expands given *markup* abbreviation (e.g. regular Emmet abbreviation that
+ * produces structured output like HTML) and outputs it according to options
+ * provided in config
+ */
+function markup(abbr, config) {
+    return stringify$1(parse$1(abbr, config), config);
+}
+/**
+ * Expands given *stylesheet* abbreviation (a special Emmet abbreviation designed for
+ * stylesheet languages like CSS, SASS etc.) and outputs it according to options
+ * provided in config
+ */
+function stylesheet(abbr, config, snippets) {
+    return css(parse$2(abbr, config, snippets), config);
+}

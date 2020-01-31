@@ -52,7 +52,7 @@ namespace Emmet.EditorExtensions
                 SnapshotSpan snapshotSpan;
                 try
                 {
-                    if (span.Length == 0)
+                    if (span.Length is 0)
                         snapshotSpan = new SnapshotSpan(_buffer.CurrentSnapshot, new Span(span.Start, 1));
                     else
                         snapshotSpan = new SnapshotSpan(_buffer.CurrentSnapshot, span);

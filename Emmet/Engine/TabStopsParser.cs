@@ -1,4 +1,5 @@
 ﻿using Emmet.Engine.ChakraInterop;
+using Microsoft.VisualStudio.Text;
 
 namespace Emmet.Engine
 {
@@ -17,17 +18,17 @@ namespace Emmet.Engine
         }
 
         /// <summary>
-        /// Gets or sets the content without tab stops markers.
+        /// Gets the content without tab stops markers.
         /// </summary>
         public string Content { get; private set; }
 
         /// <summary>
-        /// Gets or sets tab stops locations in the content.
+        /// Gets tab stops locations in the content.
         /// </summary>
-        public Range[] TabStops { get; private set; }
+        public Span[] TabStops { get; private set; }
 
         /// <summary>
-        /// Gets or sets the groups indexes array. It has the same length as the tab stops array and each
+        /// Gets the groups indexes array. It has the same length as the tab stops array and each
         /// element represents the number of the group that tab stop with the corresponding index belongs to.
         /// </summary>
         public int[] TabStopGroups { get; private set; }
@@ -50,7 +51,7 @@ namespace Emmet.Engine
             // 'this' should be the first argument
             JavaScriptValue extractResult = extractFunc.CallFunction(tabStopsUtil, content);
 
-            TabStopsParser retVal = new TabStopsParser();
+            var retVal = new TabStopsParser();
             retVal.Content = extractResult.GetProperty(@"text").ToString();
             JavaScriptValue tabStopsList = extractResult.GetProperty(@"tabstops");
 
@@ -59,7 +60,7 @@ namespace Emmet.Engine
 
             if (tabStopsCount > 0)
             {
-                retVal.TabStops = new Range[tabStopsCount];
+                retVal.TabStops = new Span[tabStopsCount];
                 retVal.TabStopGroups = new int[tabStopsCount];
 
                 for (int i = 0; i < tabStopsCount; i++)
@@ -69,7 +70,7 @@ namespace Emmet.Engine
                     int end = tabStopObj.GetProperty("end").ToInt32();
                     string group = tabStopObj.GetProperty("group").ToString();
 
-                    retVal.TabStops[i] = new Range(start, end);
+                    retVal.TabStops[i] = new Span(start, end);
                     retVal.TabStopGroups[i] = int.Parse(group);
                 }
             }

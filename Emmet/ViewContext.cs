@@ -7,10 +7,10 @@ namespace Emmet
     /// <summary>
     /// Contains context and provides helper methods for code editor view.
     /// </summary>
-    public struct ViewContext
+    public struct ViewContext : ICodeEditor
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ViewContext"/> class.
+        /// Initializes a new instance of the <see cref="ViewContext"/> struct.
         /// </summary>
         /// <param name="wpfView">The WPF interface for the editor.</param>
         /// <param name="textView">The text view interface for the editor.</param>
@@ -21,12 +21,12 @@ namespace Emmet
         }
 
         /// <summary>
-        /// Gets or sets the WPF view.
+        /// Gets the WPF view.
         /// </summary>
         public IWpfTextView WpfView { get; private set; }
 
         /// <summary>
-        /// Gets or sets the text view.
+        /// Gets the text view.
         /// </summary>
         public IVsTextView TextView { get; private set; }
 
@@ -37,5 +37,10 @@ namespace Emmet
         {
             get { return WpfView.TextBuffer; }
         }
+
+        /// <summary>
+        /// Returns content of the line under caret position.
+        /// </summary>
+        public string GetCurrentLine() => WpfView.Caret.Position.BufferPosition.GetContainingLine().GetText();
     }
 }

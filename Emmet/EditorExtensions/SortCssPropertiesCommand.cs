@@ -52,7 +52,7 @@ namespace Emmet.EditorExtensions
 
             bool IsCssRule(int lineNum)
             {
-                string line = pt.GetLines(currentLine, currentLine + 1);
+                string line = pt.GetLines(lineNum, lineNum + 1);
 
                 // We reached the edge of element styles definition.
                 if (line.Contains('}') || line.Contains('{'))

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using Emmet.Engine.ChakraInterop;
 using static Emmet.Diagnostics.Tracer;
 
@@ -13,8 +12,6 @@ namespace Emmet.Engine
         private static JavaScriptSourceContext currentSourceContext =
             JavaScriptSourceContext.FromIntPtr(IntPtr.Zero);
 
-        private static IDictionary<string, JavaScriptNativeFunction> _callbacks;
-
         private bool _initialized = false;
 
         private JavaScriptRuntime _engine;
@@ -22,8 +19,6 @@ namespace Emmet.Engine
         private JavaScriptContext _context;
 
         private string _extensionsDir = null;
-
-        private EmmetEditorCallbacks _editor = new EmmetEditorCallbacks();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="EngineWrapper"/> class.
@@ -38,32 +33,24 @@ namespace Emmet.Engine
         /// Executes Emmet command with the specified identifier on the specified editor view.
         /// </summary>
         /// <param name="cmdId">Identifier of the command to execute.</param>
-        /// <param name="editor">Editor to execute command in.</param>
+        /// <param name="view">Editor to execute command in.</param>
         /// <exception cref="ArgumentOutOfRangeException">
         /// Indicates that the specified command identifier was not found.
         /// </exception>
-        public bool RunCommand(int cmdId, IEmmetEditor editor)
+        public bool RunCommand(int cmdId, ICodeEditor view)
         {
             if (!_initialized)
                 InitializeEngine();
 
-            if (!_editor.Attach(editor))
-                return false;
-
-            string script = string.Empty;
+            string script;
             switch (cmdId)
             {
                 case PackageIds.CmdIDExpandAbbreviation:
-                    script = "window.emmet.run('expand_abbreviation', editor);";
+                    string code = view.GetCurrentLine();
+                    script = $"extractAbbreviation('{code}');";
                     break;
                 case PackageIds.CmdIDWrapWithAbbreviation:
                     script = "window.emmet.run('wrap_with_abbreviation', editor);";
-                    break;
-                case PackageIds.CmdIDToggleComment:
-                    script = "window.emmet.run('toggle_comment', editor);";
-                    break;
-                case PackageIds.CmdIDMergeLines:
-                    script = "window.emmet.run('merge_lines', editor);";
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(
@@ -74,7 +61,6 @@ namespace Emmet.Engine
 
             JavaScriptContext.Current = _context;
             JavaScriptValue result = JavaScriptContext.RunScript(script, currentSourceContext++);
-            _editor.Detach();
 
             if (!result.ToBoolean())
             {
@@ -110,10 +96,9 @@ namespace Emmet.Engine
             _engine = JavaScriptRuntime.Create(JavaScriptRuntimeAttributes.EnableIdleProcessing);
             _context = _engine.CreateContext();
             JavaScriptContext.Current = _context;
-            var compiler = new EngineCompiler(_engine);
+            var compiler = new EngineCompiler();
 
             compiler.CompileCore(currentSourceContext);
-            _callbacks = compiler.RegisterCallbacks(_editor, currentSourceContext);
             if (null != _extensionsDir)
                 compiler.LoadExtensions(_extensionsDir);
 

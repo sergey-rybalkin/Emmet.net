@@ -26,17 +26,17 @@ namespace Emmet.Tests.Engine
         public void Compile_CompilesEmmetEngineScript()
         {
             // Arrange
-            JavaScriptRuntime engine = JavaScriptRuntime.Create(JavaScriptRuntimeAttributes.None);
+            var engine = JavaScriptRuntime.Create(JavaScriptRuntimeAttributes.None);
             JavaScriptContext ctx = engine.CreateContext();
             JavaScriptContext.Current = ctx;
-            EngineCompiler compiler = new EngineCompiler(engine);
+            var compiler = new EngineCompiler();
 
             // Act
             compiler.CompileCore(JavaScriptSourceContext.None);
 
             // Assert
-            JavaScriptValue emmet = JavaScriptValue.GlobalObject.GetProperty("window").GetProperty("emmet");
-            emmet.ValueType.Should().Be(JavaScriptValueType.Object);
+            JavaScriptValue emmet = JavaScriptValue.GlobalObject.GetProperty("expandAbbreviation");
+            emmet.ValueType.Should().Be(JavaScriptValueType.Function);
 
             engine.Dispose();
         }
@@ -46,10 +46,10 @@ namespace Emmet.Tests.Engine
         public void LoadExtensions_PointedToPreferencesFile_LoadsCustomSnippets()
         {
             // Arrange
-            JavaScriptRuntime engine = JavaScriptRuntime.Create(JavaScriptRuntimeAttributes.None);
+            var engine = JavaScriptRuntime.Create(JavaScriptRuntimeAttributes.None);
             JavaScriptContext ctx = engine.CreateContext();
             JavaScriptContext.Current = ctx;
-            EngineCompiler compiler = new EngineCompiler(engine);
+            var compiler = new EngineCompiler();
 
             // Act
             compiler.CompileCore(JavaScriptSourceContext.None);

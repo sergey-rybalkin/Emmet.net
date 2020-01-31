@@ -17,7 +17,7 @@ namespace Emmet.Tests.Engine
         {
             // Arrange
             string template = GetSourceFromResource(DataHelper.Abbreviation);
-            EditorStub editor = EditorStub.BuildFromTemplate(template, "htmlx");
+            var editor = EditorStub.BuildFromTemplate(template, "htmlx");
 
             // Act
             bool retVal = _engine.RunCommand(PackageIds.CmdIDExpandAbbreviation, editor);
@@ -34,7 +34,7 @@ namespace Emmet.Tests.Engine
         {
             // Arrange
             string template = GetSourceFromResource(DataHelper.WrapWithAbbreviation);
-            EditorStub editor = EditorStub.BuildFromTemplate(template, "htmlx");
+            var editor = EditorStub.BuildFromTemplate(template, "htmlx");
 
             // Act
             bool retVal = _engine.RunCommand(PackageIds.CmdIDWrapWithAbbreviation, editor);
@@ -42,40 +42,6 @@ namespace Emmet.Tests.Engine
             // Assert
             retVal.Should().BeTrue();
             string gold = GetSourceFromResource(DataHelper.WrapWithAbbreviationGold);
-            string result = NormalizeWhiteSpace(editor.Content);
-            gold.Should().BeEquivalentTo(result);
-        }        
-
-        [TestMethod]
-        public void ToggleComment_GivenSelectedCode_WrapsItInComment()
-        {
-            // Arrange
-            string template = GetSourceFromResource(DataHelper.ToggleComment);
-            EditorStub editor = EditorStub.BuildFromTemplate(template, "htmlx");
-
-            // Act
-            bool retVal = _engine.RunCommand(PackageIds.CmdIDToggleComment, editor);
-
-            // Assert
-            retVal.Should().BeTrue();
-            string gold = GetSourceFromResource(DataHelper.ToggleCommentGold);
-            string result = NormalizeWhiteSpace(editor.Content);
-            gold.Should().BeEquivalentTo(result);
-        }
-
-        [TestMethod]
-        public void MergeLines_InvokedInsideMultilineTag_MergesItIntoSingleLine()
-        {
-            // Arrange
-            string template = GetSourceFromResource(DataHelper.MergeLines);
-            EditorStub editor = EditorStub.BuildFromTemplate(template, "htmlx");
-
-            // Act
-            bool retVal = _engine.RunCommand(PackageIds.CmdIDMergeLines, editor);
-
-            // Assert
-            retVal.Should().BeTrue();
-            string gold = GetSourceFromResource(DataHelper.MergeLinesGold);
             string result = NormalizeWhiteSpace(editor.Content);
             gold.Should().BeEquivalentTo(result);
         }

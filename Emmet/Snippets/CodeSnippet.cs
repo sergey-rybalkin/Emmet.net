@@ -36,10 +36,12 @@ namespace Emmet.Snippets
             var snapshot = view.CurrentBuffer.CurrentSnapshot;
             var tabStopTrackers = ConvertToTrackingSpans(view, tabStops);
 
-            CodeSnippet retVal = new CodeSnippet();
-            retVal._view = view;
-            retVal._tabStops = tabStopTrackers;
-            retVal._tabStopGroups = tabStopGroups;
+            var retVal = new CodeSnippet
+            {
+                _view = view,
+                _tabStops = tabStopTrackers,
+                _tabStopGroups = tabStopGroups,
+            };
 
             // Cleanup any existing snippets in this view.
             var viewProperties = view.WpfView.Properties;
@@ -104,7 +106,7 @@ namespace Emmet.Snippets
                 // If we are at the last tab stop in the list then start from the first one.
                 if (!reverse && ++index == _tabStops.Length)
                     index = 0;
-                else if (reverse && 0 == index--)
+                else if (reverse && index-- is 0)
                     index = _tabStops.Length - 1;
 
                 index = GetLastTabStopInGroup(index);
@@ -156,7 +158,7 @@ namespace Emmet.Snippets
                 SnapshotSpan selection = new SnapshotSpan(_view.WpfView.TextBuffer.CurrentSnapshot, target);
                 _view.WpfView.Selection.Select(target, false);
             }
-            else if (4 == content.Length)
+            else if (content.Length is 4)
             {
                 // special case for code formatting issues
                 _view.WpfView.Caret.MoveTo(target.Start + 2);
@@ -170,7 +172,7 @@ namespace Emmet.Snippets
         private int GetLastTabStopInGroup(int index = 0)
         {
             // Group zero does not apply here as it is used by default when no grouping is required.
-            if (0 == _tabStopGroups[index])
+            if (_tabStopGroups[index] is 0)
                 return index;
 
             for (int i = index; i < _tabStopGroups.Length; i++)

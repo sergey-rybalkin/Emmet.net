@@ -22,7 +22,7 @@ namespace Emmet.Tests.Engine
         {
             // Arrange
             string abbreviation = "p10";
-            EditorStub editor = EditorStub.BuildFromTemplate(abbreviation, "css");
+            var editor = EditorStub.BuildFromTemplate(abbreviation, "css");
 
             // Act
             bool retVal = _engine.RunCommand(PackageIds.CmdIDExpandAbbreviation, editor);

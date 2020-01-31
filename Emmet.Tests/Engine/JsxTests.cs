@@ -17,7 +17,7 @@ namespace Emmet.Tests.Engine
         {
             // Arrange
             string template = GetSourceFromResource(DataHelper.AbbreviationInJsx);
-            EditorStub editor = EditorStub.BuildFromTemplate(template, "typescript");
+            var editor = EditorStub.BuildFromTemplate(template, "typescript");
 
             // Act
             bool retVal = _engine.RunCommand(PackageIds.CmdIDExpandAbbreviation, editor);

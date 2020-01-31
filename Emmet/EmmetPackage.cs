@@ -53,7 +53,7 @@ namespace Emmet
         /// </summary>
         /// <param name="context">The view context to execute command in.</param>
         /// <param name="cmdId">Identifier of the command to execute.</param>
-        internal bool RunCommand(EmmetEditor context, int cmdId)
+        internal bool RunCommand(ViewContext context, int cmdId)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             DTE2 dte = GetService(typeof(DTE)) as DTE2;
