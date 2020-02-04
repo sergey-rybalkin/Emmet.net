@@ -9,7 +9,7 @@ namespace Emmet.Tests.Engine
     /// </summary>
     [TestClass]
     [DeploymentItem(@"..\..\..\Emmet\lib")]
-    [DeploymentItem(@"..\..\..\Emmet\emmet-min.js")]
+    [DeploymentItem(@"..\..\..\Emmet\emmet.js")]
     [DeploymentItem(@"..\..\Resources\", @"Resources\")]
     public class CssTests : EngineTestsBase
     {
@@ -22,7 +22,7 @@ namespace Emmet.Tests.Engine
         {
             // Arrange
             string abbreviation = "p10";
-            EditorStub editor = EditorStub.BuildFromTemplate(abbreviation, "css");
+            var editor = EditorStub.BuildFromTemplate(abbreviation, "css");
 
             // Act
             bool retVal = _engine.RunCommand(PackageIds.CmdIDExpandAbbreviation, editor);
@@ -45,21 +45,6 @@ namespace Emmet.Tests.Engine
             // Assert
             retVal.Should().BeTrue();
             "padding: 10px;\nmargin: 10px;".Should().BeEquivalentTo(editor.Content);
-        }
-
-        [TestMethod]
-        public void ExpandAbbreviation_WithLoadedPreferences_ExpandsCustomSnippets()
-        {
-            // Arrange
-            string abbreviation = "cst";
-            EditorStub editor = EditorStub.BuildFromTemplate(abbreviation, "css");
-
-            // Act
-            bool retVal = _engine.RunCommand(PackageIds.CmdIDExpandAbbreviation, editor);
-
-            // Assert
-            retVal.Should().BeTrue();
-            "custom".Should().BeEquivalentTo(editor.Content);
-        }        
+        }  
     }
 }

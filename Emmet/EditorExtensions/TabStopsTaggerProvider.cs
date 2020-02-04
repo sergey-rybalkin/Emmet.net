@@ -30,9 +30,9 @@ namespace Emmet.EditorExtensions
         {
             // Make sure that each view has only one tagger associated with it. If view has several buffers
             // (e.g. html file with css code) only the top level buffer will have a tagger associated with it.
-            IProjectionBuffer projectionBuffer = textView.TextBuffer as IProjectionBuffer;
+            var projectionBuffer = textView.TextBuffer as IProjectionBuffer;
 
-            if (null == projectionBuffer || buffer == projectionBuffer.SourceBuffers[0])
+            if (projectionBuffer is null || buffer == projectionBuffer.SourceBuffers[0])
                 return new TabStopsTagger(textView, buffer) as ITagger<T>;
             else
                 return null;

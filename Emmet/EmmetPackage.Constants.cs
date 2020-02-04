@@ -38,8 +38,6 @@ namespace Emmet
         public const int IDEmmetHtmlContextMenu = 0x1041;
         public const int CmdIDExpandAbbreviation = 0x0100;
         public const int CmdIDWrapWithAbbreviation = 0x0101;
-        public const int CmdIDToggleComment = 0x0102;
-        public const int CmdIDMergeLines = 0x0103;
         public const int CmdIDExpandMnemonic = 0x0104;
         public const int CmdIDSortCssProperties = 0x0105;
         public const int IDVisualStudioHtmlContextMenu = 0x0001;

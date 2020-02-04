@@ -1,5 +1,6 @@
 # Version history
 
+* v4.2 - Updated ChakraCore to v1.11.15, Emmet engine to version 2.0.0-rc.10. Removed deprecated commands, improved JSX/TSX support.
 * v4.1 - Added experimental 'Sort CSS properties' command.
 * v4.0 - Upgrade to Visual Studio 2019.
 * v3.3 - ChakraCore updated to version 1.8.4. Package converted to async and is loaded in background according to new Microsoft requirements.

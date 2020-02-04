@@ -79,12 +79,13 @@ namespace Emmet.EditorExtensions
         public override int Exec(
             ref Guid pguidCmdGroup, uint nCmdID, uint nCmdexecopt, IntPtr pvaIn, IntPtr pvaOut)
         {
-            if (VSConstants.VSStd2K == pguidCmdGroup)
+            // Since VS extensions became async make sure that initialization has finished.
+            if (VSConstants.VSStd2K == pguidCmdGroup && EmmetPackage.Instance != null)
             {
                 if (InterceptNativeEvents(nCmdID))
                     return VSConstants.S_OK;
             }
-            else if (PackageGuids.GuidEmmetPackageCmdSet == pguidCmdGroup)
+            else if (PackageGuids.GuidEmmetPackageCmdSet == pguidCmdGroup && EmmetPackage.Instance != null)
             {
                 // Actual Emmet commands handling goes here. All new commands should be added to the switch
                 // statement below.
@@ -100,9 +101,6 @@ namespace Emmet.EditorExtensions
                         break;
                     default:
                         // Other commands do not require post processing and can be invoked directly.
-                        EmmetPackage.Instance.RunCommand(
-                            new EmmetEditor(View.WpfView, View.TextView),
-                            (int)nCmdID);
                         return VSConstants.S_OK;
                 }
             }
@@ -164,8 +162,7 @@ namespace Emmet.EditorExtensions
                 return false;
 
             _completionBroker.DismissAllSessions(View.WpfView);
-            var editor = new EmmetEditor(View.WpfView, View.TextView);
-            bool retVal = EmmetPackage.Instance.RunCommand(editor, PackageIds.CmdIDExpandAbbreviation);
+            bool retVal = EmmetPackage.Instance.RunCommand(View, PackageIds.CmdIDExpandAbbreviation);
 
             if (HasActiveTabStops)
             {
@@ -182,8 +179,7 @@ namespace Emmet.EditorExtensions
             if (View.WpfView.Selection.IsEmpty)
                 return false;
 
-            var editor = new EmmetEditor(View.WpfView, View.TextView);
-            bool retVal = EmmetPackage.Instance.RunCommand(editor, PackageIds.CmdIDWrapWithAbbreviation);
+            bool retVal = EmmetPackage.Instance.RunCommand(View, PackageIds.CmdIDWrapWithAbbreviation);
 
             if (HasActiveTabStops)
             {

@@ -24,6 +24,11 @@ namespace Emmet.EditorExtensions
     public class ViewCreationListener : IVsTextViewCreationListener
     {
         /// <summary>
+        /// Abbreviation prefix for JSX files, required to avoid collision with JavaScript intellisense.
+        /// </summary>
+        public const string JsxPrefix = "<";
+
+        /// <summary>
         /// Gets or sets the editor adapters factory service, injected through MEF.
         /// </summary>
         [Import]
@@ -45,17 +50,17 @@ namespace Emmet.EditorExtensions
             ViewContext context = new ViewContext(textView, textViewAdapter);
             string contentType = textView.TextBuffer.ContentType.TypeName;
 
+            // As of v2019 Visual Studio does not use projection buffer for JSX files and thus we cannot
+            // detect JS and HTML buffers. So, in order to prevent unintended JS and Emmet snippets
+            // collisions we require prefix for emmet abbreviations to work correctly.
+            if (contentType.EndsWith("script", StringComparison.InvariantCultureIgnoreCase))
+                context.AbbreviationPrefix = JsxPrefix;
+
             if ("CSharp" != contentType)
             {
                 EmmetCommandTarget target = textView.Properties.GetOrCreateSingletonProperty(
                     "EmmetCommandTarget",
                     () => new EmmetCommandTarget(context, CompletionBroker));
-
-                // As of v2019 Visual Studio does not use projection buffer for JSX files and thus we cannot
-                // detect JS and HTML buffers. So, in order to prevent unintended JS and Emmet snippets
-                // collisions we support only hotkey based commands invocation.
-                if (contentType.EndsWith("script", StringComparison.InvariantCultureIgnoreCase))
-                    target.ExpandAbbreviationOnTab = false;
             }
             else
             {

@@ -11,7 +11,7 @@ namespace Emmet.Tests.Engine
     /// </summary>
     [TestClass]
     [DeploymentItem(@"..\..\..\Emmet\lib")]
-    [DeploymentItem(@"..\..\..\Emmet\emmet-min.js")]
+    [DeploymentItem(@"..\..\..\Emmet\emmet.js")]
     [DeploymentItem(@"..\..\Resources\", @"Resources\")]
     public class EngineCompilerTests
     {
@@ -21,22 +21,21 @@ namespace Emmet.Tests.Engine
         /// </summary>
         public TestContext TestContext { get; set; }
 
-
         [TestMethod]
         public void Compile_CompilesEmmetEngineScript()
         {
             // Arrange
-            JavaScriptRuntime engine = JavaScriptRuntime.Create(JavaScriptRuntimeAttributes.None);
+            var engine = JavaScriptRuntime.Create(JavaScriptRuntimeAttributes.None);
             JavaScriptContext ctx = engine.CreateContext();
             JavaScriptContext.Current = ctx;
-            EngineCompiler compiler = new EngineCompiler(engine);
+            var compiler = new EngineCompiler();
 
             // Act
             compiler.CompileCore(JavaScriptSourceContext.None);
 
             // Assert
-            JavaScriptValue emmet = JavaScriptValue.GlobalObject.GetProperty("window").GetProperty("emmet");
-            emmet.ValueType.Should().Be(JavaScriptValueType.Object);
+            JavaScriptValue emmet = JavaScriptValue.GlobalObject.GetProperty("expandAbbreviation");
+            emmet.ValueType.Should().Be(JavaScriptValueType.Function);
 
             engine.Dispose();
         }
@@ -46,22 +45,24 @@ namespace Emmet.Tests.Engine
         public void LoadExtensions_PointedToPreferencesFile_LoadsCustomSnippets()
         {
             // Arrange
-            JavaScriptRuntime engine = JavaScriptRuntime.Create(JavaScriptRuntimeAttributes.None);
+            var engine = JavaScriptRuntime.Create(JavaScriptRuntimeAttributes.None);
             JavaScriptContext ctx = engine.CreateContext();
             JavaScriptContext.Current = ctx;
-            EngineCompiler compiler = new EngineCompiler(engine);
+            var compiler = new EngineCompiler();
 
             // Act
             compiler.CompileCore(JavaScriptSourceContext.None);
-            compiler.LoadExtensions(Path.Combine(TestContext.DeploymentDirectory, "Resources"));
+            compiler.LoadExtensions(
+                Path.Combine(TestContext.DeploymentDirectory, "Resources"),
+                JavaScriptSourceContext.None);
 
             // Assert
-            string script = "window.emmet.resources.fuzzyFindSnippet('css', 'cst')";
+            string script = "replaceAbbreviation('cst', '3', 'markup')";
             JavaScriptValue result = JavaScriptContext.RunScript(script, JavaScriptSourceContext.None);
 
-            // preferences.json file contains "cst" abbreviation for css. If we are able to find it then
+            // preferences.json file contains "cst" abbreviation. If we are able to find it then
             // our extension has been loaded correctly. 
-            result.IsValid.Should().BeTrue();
+            result.ValueType.Should().Be(JavaScriptValueType.String);
 
             engine.Dispose();
         }

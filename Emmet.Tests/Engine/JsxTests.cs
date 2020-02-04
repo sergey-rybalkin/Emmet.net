@@ -9,7 +9,7 @@ namespace Emmet.Tests.Engine
     /// </summary>
     [TestClass]
     [DeploymentItem(@"..\..\..\Emmet\lib")]
-    [DeploymentItem(@"..\..\..\Emmet\emmet-min.js")]
+    [DeploymentItem(@"..\..\..\Emmet\emmet.js")]
     public class JsxTests : EngineTestsBase
     {
         [TestMethod]
@@ -17,7 +17,8 @@ namespace Emmet.Tests.Engine
         {
             // Arrange
             string template = GetSourceFromResource(DataHelper.AbbreviationInJsx);
-            EditorStub editor = EditorStub.BuildFromTemplate(template, "typescript");
+            var editor = EditorStub.BuildFromTemplate(template, "typescript");
+            editor.AbbreviationPrefix = "<";
 
             // Act
             bool retVal = _engine.RunCommand(PackageIds.CmdIDExpandAbbreviation, editor);
