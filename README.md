@@ -18,7 +18,7 @@ Below is the list of actions that are currently implemented in this extension. T
 
 ### Expand Abbreviation (Ctrl+Shift+Alt+X)
 
-Supported in HTML and CSS-like syntaxes (Razor views, LESS, SCSS). Can be bound to TAB in options.
+Supported in HTML and CSS-like syntaxes (Razor views, LESS, SCSS). Can be bound to TAB in options. JSX/TSX files require `<` (e.g. `<div>p>lorem5`) abbreviation prefix to avoid conflicts with JavaScript code.
 
 ![Demo](docs/i/expand.gif)
 
@@ -29,18 +29,6 @@ Supported in HTML and CSS-like syntaxes (Razor views, LESS, SCSS). Can be bound 
 ![Demo](docs/i/wrap.gif)
 
 [Details](http://docs.emmet.io/actions/wrap-with-abbreviation/)
-
-### Toggle Comment (Ctrl+Alt+Num /) 
-
-![Demo](docs/i/comment.gif)
-
-[Details](http://docs.emmet.io/actions/toggle-comment/)
-
-### Merge Lines (Ctrl+Alt+Shift+M) 
-
-![Demo](docs/i/merge.gif)
-
-[Details](http://docs.emmet.io/actions/merge-lines/)
 
 ### Configuration and Extensions
 

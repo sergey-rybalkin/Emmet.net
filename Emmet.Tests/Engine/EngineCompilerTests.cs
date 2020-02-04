@@ -21,7 +21,6 @@ namespace Emmet.Tests.Engine
         /// </summary>
         public TestContext TestContext { get; set; }
 
-
         [TestMethod]
         public void Compile_CompilesEmmetEngineScript()
         {
@@ -58,12 +57,12 @@ namespace Emmet.Tests.Engine
                 JavaScriptSourceContext.None);
 
             // Assert
-            string script = "window.emmet.resources.fuzzyFindSnippet('css', 'cst')";
+            string script = "replaceAbbreviation('cst', '3', 'markup')";
             JavaScriptValue result = JavaScriptContext.RunScript(script, JavaScriptSourceContext.None);
 
-            // preferences.json file contains "cst" abbreviation for css. If we are able to find it then
+            // preferences.json file contains "cst" abbreviation. If we are able to find it then
             // our extension has been loaded correctly. 
-            result.IsValid.Should().BeTrue();
+            result.ValueType.Should().Be(JavaScriptValueType.String);
 
             engine.Dispose();
         }

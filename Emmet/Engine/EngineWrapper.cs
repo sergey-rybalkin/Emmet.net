@@ -10,7 +10,7 @@ namespace Emmet.Engine
     public class EngineWrapper : IDisposable
     {
         private const string ScriptTemplate =
-            "replaceAbbreviation('{0}', '{1}', '{2}', '{3}', '{4}');";
+            "replaceAbbreviation('{0}', '{1}', '{2}', {3}, '{4}');";
 
         private static JavaScriptSourceContext _currentSourceContext =
             JavaScriptSourceContext.FromIntPtr(IntPtr.Zero);
@@ -139,7 +139,7 @@ namespace Emmet.Engine
                 currentLine,
                 caretPos,
                 syntax,
-                string.Empty,
+                "null",
                 view.AbbreviationPrefix);
         }
 
@@ -159,7 +159,7 @@ namespace Emmet.Engine
                 abbreviation,
                 abbreviation.Length,
                 syntax,
-                selection,
+                "'" + selection + "'",
                 string.Empty);
         }
     }
