@@ -100,7 +100,10 @@ namespace Emmet.Engine
             }
         }
 
-        private static string JavaScriptEscape(string value) => value.Replace("'", "''");
+        private static string JavaScriptEscape(string value)
+        {
+            return value.Replace("'", "''").Replace("\r", string.Empty).Replace("\n", "\\n");
+        }
 
         private static string ContentTypeToSyntax(string contentType)
         {
