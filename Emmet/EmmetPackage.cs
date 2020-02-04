@@ -22,8 +22,9 @@ namespace Emmet
     [Guid(PackageGuids.GuidEmmetPackageString)]
     [InstalledProductRegistration("#110", "#112", Vsix.Version, IconResourceID = 400)]
     [PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
-    [ProvideAutoLoad(
-        VSConstants.UICONTEXT.SolutionExistsAndFullyLoaded_string, PackageAutoLoadFlags.BackgroundLoad)]
+    [ProvideAutoLoad(VSConstants.UICONTEXT.CodeWindow_string, PackageAutoLoadFlags.BackgroundLoad)]
+    [ProvideAutoLoad(VSConstants.UICONTEXT.SolutionOpening_string, PackageAutoLoadFlags.BackgroundLoad)]
+    [ProvideAutoLoad(VSConstants.UICONTEXT.SolutionExists_string, PackageAutoLoadFlags.BackgroundLoad)]
     [ProvideOptionPage(typeof(Options), Vsix.Name, "General", 0, 0, true)]
     [ProvideMenuResource("Menus.ctmenu", 1)]
     public sealed class EmmetPackage : AsyncPackage
@@ -114,8 +115,8 @@ namespace Emmet
         /// is the place where you can put all the initialization code that rely on services provided by
         /// Visual Studio.
         /// </summary>
-        /// <param name="token">The token.</param>
-        /// <param name="progress">The progress.</param>
+        /// <param name="token">Cancellation token that can signal abort.</param>
+        /// <param name="progress">The progress indicator.</param>
         protected override async System.Threading.Tasks.Task InitializeAsync(
             CancellationToken token,
             IProgress<ServiceProgressData> progress)
@@ -176,7 +177,7 @@ namespace Emmet
         private static void ShowCriticalError(string message)
         {
             VsShellUtilities.ShowMessageBox(
-                null,
+                Instance,
                 message,
                 $"{Vsix.Name}: Unexpected error.",
                 OLEMSGICON.OLEMSGICON_CRITICAL,

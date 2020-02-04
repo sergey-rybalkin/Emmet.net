@@ -13,10 +13,6 @@ namespace Emmet.Snippets
 
         private ITrackingSpan[] _tabStops;
 
-        // Each element of array is a group number of the tab stop with the corresponding index in tab stops
-        // array.
-        private int[] _tabStopGroups;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="CodeSnippet"/> class. Constructor that prevents a
         /// default instance of this class from being created.
@@ -30,8 +26,7 @@ namespace Emmet.Snippets
         /// </summary>
         /// <param name="view">Editor view that contains snippet.</param>
         /// <param name="tabStops">Tab stops collection.</param>
-        /// <param name="tabStopGroups">Groups the tab stop belongs to.</param>
-        public static CodeSnippet CreateSnippetInView(ViewContext view, Span[] tabStops, int[] tabStopGroups)
+        public static CodeSnippet CreateSnippetInView(ViewContext view, Span[] tabStops)
         {
             var snapshot = view.CurrentBuffer.CurrentSnapshot;
             var tabStopTrackers = ConvertToTrackingSpans(view, tabStops);
@@ -40,7 +35,6 @@ namespace Emmet.Snippets
             {
                 _view = view,
                 _tabStops = tabStopTrackers,
-                _tabStopGroups = tabStopGroups,
             };
 
             // Cleanup any existing snippets in this view.
@@ -71,11 +65,10 @@ namespace Emmet.Snippets
         /// </summary>
         public void BeginEditSnippet()
         {
-            int index = GetLastTabStopInGroup(0);
-            MoveToSpan(_tabStops[index]);
+            MoveToSpan(_tabStops[0]);
 
             // There is no need to track anything if there is only one tab stop.
-            if (1 == _tabStops.Length)
+            if (_tabStops.Length is 1)
                 EndEditSnippet();
         }
 
@@ -109,7 +102,6 @@ namespace Emmet.Snippets
                 else if (reverse && index-- is 0)
                     index = _tabStops.Length - 1;
 
-                index = GetLastTabStopInGroup(index);
                 MoveToSpan(_tabStops[index]);
 
                 return true;
@@ -154,34 +146,11 @@ namespace Emmet.Snippets
 
             string content = target.GetText();
             if (!string.IsNullOrWhiteSpace(content))
-            {
-                SnapshotSpan selection = new SnapshotSpan(_view.WpfView.TextBuffer.CurrentSnapshot, target);
                 _view.WpfView.Selection.Select(target, false);
-            }
-            else if (content.Length is 4)
-            {
-                // special case for code formatting issues
+            else if (content.Length is 4) // special case for code formatting issues
                 _view.WpfView.Caret.MoveTo(target.Start + 2);
-            }
             else
-            {
                 _view.WpfView.Caret.MoveTo(target.End);
-            }
-        }
-
-        private int GetLastTabStopInGroup(int index = 0)
-        {
-            // Group zero does not apply here as it is used by default when no grouping is required.
-            if (_tabStopGroups[index] is 0)
-                return index;
-
-            for (int i = index; i < _tabStopGroups.Length; i++)
-            {
-                if (_tabStopGroups[i] == _tabStopGroups[index])
-                    index = i;
-            }
-
-            return index;
         }
     }
 }

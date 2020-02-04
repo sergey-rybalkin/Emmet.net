@@ -5011,3 +5011,42 @@ function markup(abbr, config) {
 function stylesheet(abbr, config, snippets) {
     return css(parse$2(abbr, config, snippets), config);
 }
+
+/* CUSTOM EMMET.NET CODE STARTS HERE */
+
+var globalExpandConfig = {
+    options: {
+        'output.compactBoolean': true,
+        'output.field': (index, placeholder) => '{' + placeholder + '}'
+    }
+};
+
+function loadPreferences(config) {
+    // Restore default options if not overriden
+    config.options = config.options || {};
+    config.options['output.compactBoolean'] = config.options['output.compactBoolean'] || true;
+    if (!config.options['output.field']) {
+        config.options['output.field'] = (index, placeholder) => '{' + placeholder + '}';
+    }
+    globalExpandConfig = config;
+}
+
+function replaceAbbreviation(codeLine, caretPos, contentType, contentToWrap, prefix) {
+    var abbreviation = extractAbbreviation(codeLine, caretPos, { type: contentType, prefix: prefix});
+    if (!abbreviation) {
+        return false;
+    }
+
+    globalExpandConfig.text = contentToWrap;
+    globalExpandConfig.type = contentType;
+    if (prefix) {
+        globalExpandConfig.options['jsx.enabled'] = true;
+    } else {
+        globalExpandConfig.options['jsx.enabled'] = false;
+    }
+
+    var replacement = expandAbbreviation(abbreviation.abbreviation, globalExpandConfig);
+    var retVal = codeLine.slice(0, abbreviation.start) + replacement + codeLine.slice(abbreviation.end); 
+
+    return retVal;
+}

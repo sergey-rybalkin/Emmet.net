@@ -11,7 +11,7 @@ namespace Emmet.Tests.Engine
     /// </summary>
     [TestClass]
     [DeploymentItem(@"..\..\..\Emmet\lib")]
-    [DeploymentItem(@"..\..\..\Emmet\emmet-min.js")]
+    [DeploymentItem(@"..\..\..\Emmet\emmet.js")]
     [DeploymentItem(@"..\..\Resources\", @"Resources\")]
     public class EngineCompilerTests
     {
@@ -53,7 +53,9 @@ namespace Emmet.Tests.Engine
 
             // Act
             compiler.CompileCore(JavaScriptSourceContext.None);
-            compiler.LoadExtensions(Path.Combine(TestContext.DeploymentDirectory, "Resources"));
+            compiler.LoadExtensions(
+                Path.Combine(TestContext.DeploymentDirectory, "Resources"),
+                JavaScriptSourceContext.None);
 
             // Assert
             string script = "window.emmet.resources.fuzzyFindSnippet('css', 'cst')";

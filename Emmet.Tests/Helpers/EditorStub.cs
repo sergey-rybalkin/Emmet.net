@@ -30,6 +30,10 @@ namespace Emmet.Tests.Helpers
             get { return _content; }
         }
 
+        public string UserInput { get; set; }
+
+        public string AbbreviationPrefix { get; set; }
+
         private EditorStub(string syntax)
         {
             _syntax = syntax;
@@ -69,7 +73,7 @@ namespace Emmet.Tests.Helpers
                 _selectionStart = _content.Length;
 
             if (_selectionEnd is 0)
-                _selectionEnd = _selectionStart;            
+                _selectionEnd = _selectionStart;
 
             // Calculate current line and its range
             int index = 0, lineStart = 0, lineEnd = 0;
@@ -87,9 +91,9 @@ namespace Emmet.Tests.Helpers
                 }
             }
             while (++index < _content.Length);
-            
+
             if (lineEnd is 0)
-                lineEnd = _content.Length - 1;
+                lineEnd = _content.Length;
 
             _currentLineStart = lineStart;
             _currentLineEnd = lineEnd;
@@ -98,6 +102,35 @@ namespace Emmet.Tests.Helpers
         public string GetCurrentLine()
         {
             return _content.Substring(_currentLineStart, _currentLineEnd - _currentLineStart);
+        }
+
+        public int GetCaretPosColumn()
+        {
+            return _selectionStart - _currentLineStart;
+        }
+
+        public string GetContentTypeInActiveBuffer()
+        {
+            return _syntax;
+        }
+
+        public void ReplaceCurrentLine(string newContent)
+        {
+            _content = _content.Remove(_currentLineStart, _currentLineEnd - _currentLineStart)
+                               .Insert(_currentLineStart, newContent);
+        }
+
+        public string Prompt() => UserInput;
+
+        public string GetSelection()
+        {
+            return _content.Substring(_selectionStart, _selectionEnd - _selectionStart);
+        }
+
+        public void ReplaceSelection(string newContent)
+        {
+            _content = _content.Remove(_selectionStart, _selectionEnd - _selectionStart)
+                               .Insert(_selectionStart, newContent);
         }
     }
 }

@@ -79,12 +79,13 @@ namespace Emmet.EditorExtensions
         public override int Exec(
             ref Guid pguidCmdGroup, uint nCmdID, uint nCmdexecopt, IntPtr pvaIn, IntPtr pvaOut)
         {
-            if (VSConstants.VSStd2K == pguidCmdGroup)
+            // Since VS extensions became async make sure that initialization has finished.
+            if (VSConstants.VSStd2K == pguidCmdGroup && EmmetPackage.Instance != null)
             {
                 if (InterceptNativeEvents(nCmdID))
                     return VSConstants.S_OK;
             }
-            else if (PackageGuids.GuidEmmetPackageCmdSet == pguidCmdGroup)
+            else if (PackageGuids.GuidEmmetPackageCmdSet == pguidCmdGroup && EmmetPackage.Instance != null)
             {
                 // Actual Emmet commands handling goes here. All new commands should be added to the switch
                 // statement below.

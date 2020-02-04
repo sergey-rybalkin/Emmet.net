@@ -9,7 +9,7 @@ namespace Emmet.Tests.Engine
     /// </summary>
     [TestClass]
     [DeploymentItem(@"..\..\..\Emmet\lib")]
-    [DeploymentItem(@"..\..\..\Emmet\emmet-min.js")]
+    [DeploymentItem(@"..\..\..\Emmet\emmet.js")]
     [DeploymentItem(@"..\..\Resources\", @"Resources\")]
     public class CssTests : EngineTestsBase
     {
@@ -59,7 +59,7 @@ namespace Emmet.Tests.Engine
 
             // Assert
             retVal.Should().BeTrue();
-            "custom".Should().BeEquivalentTo(editor.Content);
+            "custom: ${0};".Should().BeEquivalentTo(editor.Content);
         }        
     }
 }

@@ -9,7 +9,7 @@ namespace Emmet.Tests.Engine
     /// </summary>
     [TestClass]
     [DeploymentItem(@"..\..\..\Emmet\lib")]
-    [DeploymentItem(@"..\..\..\Emmet\emmet-min.js")]
+    [DeploymentItem(@"..\..\..\Emmet\emmet.js")]
     public class HtmlTests : EngineTestsBase
     {
         [TestMethod]
@@ -35,6 +35,7 @@ namespace Emmet.Tests.Engine
             // Arrange
             string template = GetSourceFromResource(DataHelper.WrapWithAbbreviation);
             var editor = EditorStub.BuildFromTemplate(template, "htmlx");
+            editor.UserInput = "div";
 
             // Act
             bool retVal = _engine.RunCommand(PackageIds.CmdIDWrapWithAbbreviation, editor);

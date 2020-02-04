@@ -10,7 +10,9 @@ namespace Emmet.Engine
     /// </summary>
     public class EngineCompiler
     {
-        public const string PreferencesFileName = "preferences.json";
+        private const string EmmetScript = "emmet.js";
+
+        private const string PreferencesFileName = "preferences.json";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="EngineCompiler"/> class.
@@ -30,13 +32,10 @@ namespace Emmet.Engine
         public void CompileCore(JavaScriptSourceContext sourceContext)
         {
             string extensionFolder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            string emmetScriptPath = Path.Combine(extensionFolder, @"emmet-min.js");
+            string emmetScriptPath = Path.Combine(extensionFolder, EmmetScript);
 
             if (!File.Exists(emmetScriptPath))
                 throw new FileNotFoundException("Emmet script not found.", emmetScriptPath);
-
-            JavaScriptValue window = JavaScriptValue.CreateObject();
-            JavaScriptValue.GlobalObject.SetProperty("window", window, true);
 
             string script = File.ReadAllText(emmetScriptPath);
             JavaScriptContext.RunScript(script, sourceContext);
@@ -48,19 +47,19 @@ namespace Emmet.Engine
         /// Loads JavaScript extensions and preferences from the specified directory.
         /// </summary>
         /// <param name="extensionsDirectory">Pathname of the extensions directory.</param>
-        public void LoadExtensions(string extensionsDirectory)
+        /// <param name="sourceContext">Source context to use during compilation.</param>
+        public void LoadExtensions(string extensionsDirectory, JavaScriptSourceContext sourceContext)
         {
             var files = Directory.EnumerateFiles(extensionsDirectory, "*.*");
-            JavaScriptValue emmet = JavaScriptValue.GlobalObject.GetProperty("window").GetProperty("emmet");
 
             foreach (string filePath in files)
             {
                 if (0 != string.Compare(Path.GetFileName(filePath), PreferencesFileName, true))
                     continue;
 
-                string content = File.ReadAllText(filePath);
-                var parameter = JavaScriptValue.FromString(content);
-                emmet.GetProperty("loadUserData").CallFunction(emmet, parameter);
+                // There is no native JSON API available so we need to create object string from file.
+                string content = string.Join(" ", File.ReadAllLines(filePath));
+                JavaScriptContext.RunScript($"loadPreferences({content});", sourceContext);
 
                 Trace($"Successfully loaded Emmet preferences from {filePath}");
             }

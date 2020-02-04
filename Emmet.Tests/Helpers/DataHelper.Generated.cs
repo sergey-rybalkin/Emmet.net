@@ -14,11 +14,9 @@ namespace Emmet.Tests.Helpers
         public const string AbbreviationGold = "AbbreviationGold.html";
         public const string AbbreviationInJsx = "AbbreviationInJsx.jsx";
         public const string AbbreviationInJsxGold = "AbbreviationInJsxGold.jsx";
-        public const string MergeLines = "MergeLines.html";
-        public const string MergeLinesGold = "MergeLinesGold.html";
         public const string preferences = "preferences.json";
-        public const string ToggleComment = "ToggleComment.html";
-        public const string ToggleCommentGold = "ToggleCommentGold.html";
+        public const string TabStops = "TabStops.html";
+        public const string TabStopsGold = "TabStopsGold.html";
         public const string WrapWithAbbreviation = "WrapWithAbbreviation.html";
         public const string WrapWithAbbreviationGold = "WrapWithAbbreviationGold.html";
     }

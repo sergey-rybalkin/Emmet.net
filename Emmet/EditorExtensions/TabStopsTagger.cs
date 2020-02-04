@@ -25,8 +25,7 @@ namespace Emmet.EditorExtensions
             _view = view;
             _buffer = sourceBuffer;
 
-            EmmetCommandTarget filter;
-            if (_view.Properties.TryGetProperty("EmmetCommandTarget", out filter))
+            if (_view.Properties.TryGetProperty("EmmetCommandTarget", out EmmetCommandTarget filter))
                 filter.TabStopsChanged += TabStopsChanged;
         }
 
