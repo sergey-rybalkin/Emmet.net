@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Windows.Forms;
 using Emmet.Engine;
-using Emmet.Snippets;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Text.Projection;
@@ -128,11 +127,11 @@ namespace Emmet
         /// </summary>
         public string Prompt()
         {
-            var dlg = new AbbreviationPrompt();
-            if (DialogResult.OK != dlg.ShowDialog() || string.IsNullOrWhiteSpace(dlg.Abbreviation))
+            var prompt = new Prompt();
+            if (!prompt.ShowModal().Value || string.IsNullOrWhiteSpace(prompt.Abbreviation))
                 return null;
 
-            return dlg.Abbreviation;
+            return prompt.Abbreviation;
         }
 
         /// <summary>

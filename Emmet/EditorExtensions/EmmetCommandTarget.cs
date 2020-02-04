@@ -1,5 +1,5 @@
 ﻿using System;
-using Emmet.Snippets;
+using Emmet.Engine;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Language.Intellisense;
 using Microsoft.VisualStudio.Text;

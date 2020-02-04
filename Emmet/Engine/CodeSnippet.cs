@@ -1,6 +1,6 @@
 ﻿using Microsoft.VisualStudio.Text;
 
-namespace Emmet.Snippets
+namespace Emmet.Engine
 {
     /// <summary>
     /// Represents a region of source code in the editor that has some tab stops in it.
