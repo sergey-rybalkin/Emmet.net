@@ -1,12 +1,8 @@
 {
-    "preferences": {
-        "caniuse.era": "e-2"
+    "options": {
+        "output.indent": "  "
     },
     "snippets": {
-        "css": {
-            "snippets": {
-                "section": "/**\n * |\n ****/"
-            }
-        }
+        "section": "/* {}\n ************************************/"
     }
 }

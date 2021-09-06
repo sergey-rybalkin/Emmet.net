@@ -13,6 +13,12 @@ function isAlpha(code, from, to) {
     code &= ~32; // quick hack to convert any char code to uppercase char code
     return code >= from && code <= to;
 }
+function isAlphaNumericWord(code) {
+    return isNumber(code) || isAlphaWord(code);
+}
+function isAlphaWord(code) {
+    return code === 95 /* _ */ || isAlpha(code);
+}
 /**
  * Check if given character code is a white-space character: a space character
  * or line breaks
@@ -223,9 +229,8 @@ function group(scanner, options) {
         const token = next(scanner);
         if (isBracket(token, 'group', false)) {
             result.repeat = repeater(scanner);
-            return result;
         }
-        throw error(scanner, 'Expecting )', token);
+        return result;
     }
 }
 /**
@@ -535,11 +540,9 @@ function isCloseOperator(token) {
  */
 function escaped(scanner) {
     if (scanner.eat(92 /* Escape */)) {
-        if (scanner.eof()) {
-            scanner.start = scanner.pos - 1;
-        }
-        else {
-            scanner.start = scanner.pos++;
+        scanner.start = scanner.pos;
+        if (!scanner.eof()) {
+            scanner.pos++;
         }
         return true;
     }
@@ -559,15 +562,7 @@ function tokenize(source) {
     let token;
     while (!scanner.eof()) {
         ch = scanner.peek();
-        token = field(scanner, ctx)
-            || repeaterPlaceholder(scanner)
-            || repeaterNumber(scanner)
-            || repeater$1(scanner)
-            || whiteSpace(scanner)
-            || literal$1(scanner, ctx)
-            || operator(scanner)
-            || quote(scanner)
-            || bracket(scanner);
+        token = getToken(scanner, ctx);
         if (token) {
             result.push(token);
             if (token.type === 'Quote') {
@@ -584,12 +579,31 @@ function tokenize(source) {
     return result;
 }
 /**
+ * Returns next token from given scanner, if possible
+ */
+function getToken(scanner, ctx) {
+    return field(scanner, ctx)
+        || repeaterPlaceholder(scanner)
+        || repeaterNumber(scanner)
+        || repeater$1(scanner)
+        || whiteSpace(scanner)
+        || literal$1(scanner, ctx)
+        || operator(scanner)
+        || quote(scanner)
+        || bracket(scanner);
+}
+/**
  * Consumes literal from given scanner
  */
 function literal$1(scanner, ctx) {
     const start = scanner.pos;
     let value = '';
     while (!scanner.eof()) {
+        // Consume escaped sequence no matter of context
+        if (escaped(scanner)) {
+            value += scanner.current();
+            continue;
+        }
         const ch = scanner.peek();
         if (ch === ctx.quote || ch === 36 /* Dollar */ || isAllowedOperator(ch, ctx)) {
             // 1. Found matching quote
@@ -600,13 +614,17 @@ function literal$1(scanner, ctx) {
         if (ctx.expression && ch === 125 /* CurlyBracketClose */) {
             break;
         }
-        if (!ctx.quote && !ctx.expression && (isAllowedSpace(ch, ctx) || isAllowedRepeater(ch, ctx) || isQuote(ch) || bracketType(ch))) {
-            // Stop for characters not allowed in unquoted literal
-            break;
+        if (!ctx.quote && !ctx.expression) {
+            // Consuming element name
+            if (!ctx.attribute && !isElementName$1(ch)) {
+                break;
+            }
+            if (isAllowedSpace(ch, ctx) || isAllowedRepeater(ch, ctx) || isQuote(ch) || bracketType(ch)) {
+                // Stop for characters not allowed in unquoted literal
+                break;
+            }
         }
-        value += escaped(scanner)
-            ? scanner.current()
-            : scanner.string[scanner.pos++];
+        value += scanner.string[scanner.pos++];
     }
     if (start !== scanner.pos) {
         scanner.start = start;
@@ -627,7 +645,8 @@ function whiteSpace(scanner) {
         return {
             type: 'WhiteSpace',
             start,
-            end: scanner.pos
+            end: scanner.pos,
+            value: scanner.substring(start, scanner.pos)
         };
     }
 }
@@ -866,6 +885,15 @@ function isOpenBracket(ch) {
         || ch === 91 /* SquareBracketOpen */
         || ch === 40 /* RoundBracketOpen */;
 }
+/**
+ * Check if given character is allowed in element name
+ */
+function isElementName$1(ch) {
+    return isAlphaNumericWord(ch)
+        || ch === 45 /* Dash */
+        || ch === 58 /* Colon */
+        || ch === 33 /* Excl */;
+}
 
 const operators = {
     child: '>',
@@ -945,8 +973,8 @@ const tokenVisitor = {
         }
         return result;
     },
-    WhiteSpace() {
-        return ' ';
+    WhiteSpace(token) {
+        return token.value;
     }
 };
 /**
@@ -959,25 +987,45 @@ function stringify(token, state) {
     return tokenVisitor[token.type](token, state);
 }
 
+const urlRegex = /^((https?:|ftp:|file:)?\/\/|(www|ftp)\.)[^ ]*$/;
+const emailRegex = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,5}$/;
 /**
  * Converts given token-based abbreviation into simplified and unrolled node-based
  * abbreviation
  */
 function convert(abbr, options = {}) {
     let textInserted = false;
+    let cleanText;
+    if (options.text) {
+        if (Array.isArray(options.text)) {
+            cleanText = options.text.filter(s => s.trim());
+        }
+        else {
+            cleanText = options.text;
+        }
+    }
     const result = {
         type: 'Abbreviation',
         children: convertGroup(abbr, {
             inserted: false,
             repeaters: [],
             text: options.text,
+            cleanText,
             repeatGuard: options.maxRepeat || Number.POSITIVE_INFINITY,
             getText(pos) {
+                var _a;
                 textInserted = true;
-                const value = Array.isArray(options.text)
-                    ? (pos != null ? options.text[pos] : options.text.join('\n'))
-                    : options.text;
-                return value != null ? value : '';
+                let value;
+                if (Array.isArray(options.text)) {
+                    if (pos !== undefined && pos >= 0 && pos < cleanText.length) {
+                        return cleanText[pos];
+                    }
+                    value = pos !== undefined ? options.text[pos] : options.text.join('\n');
+                }
+                else {
+                    value = (_a = options.text) !== null && _a !== void 0 ? _a : '';
+                }
+                return value;
             },
             getVariable(name) {
                 const varValue = options.variables && options.variables[name];
@@ -992,6 +1040,10 @@ function convert(abbr, options = {}) {
         if (deepest) {
             const text = Array.isArray(options.text) ? options.text.join('\n') : options.text;
             insertText(deepest, text);
+            if (deepest.name === 'a' && options.href) {
+                // Automatically update value of `<a>` element if inserting URL or email
+                insertHref(deepest, text);
+            }
         }
     }
     return result;
@@ -1007,7 +1059,7 @@ function convertStatement(node, state) {
         const original = node.repeat;
         const repeat = Object.assign({}, original);
         repeat.count = repeat.implicit && Array.isArray(state.text)
-            ? state.text.length
+            ? state.cleanText.length
             : (repeat.count || 1);
         let items;
         state.repeaters.push(repeat);
@@ -1193,6 +1245,26 @@ function insertText(node, text) {
         node.value = [text];
     }
 }
+function insertHref(node, text) {
+    var _a;
+    let href = '';
+    if (urlRegex.test(text)) {
+        href = text;
+        if (!/\w+:/.test(href) && !href.startsWith('//')) {
+            href = `http://${href}`;
+        }
+    }
+    else if (emailRegex.test(text)) {
+        href = `mailto:${text}`;
+    }
+    const hrefAttribute = (_a = node.attributes) === null || _a === void 0 ? void 0 : _a.find(attr => attr.name === 'href');
+    if (!hrefAttribute) {
+        node.attributes = [{ name: 'href', value: [href], valueType: 'doubleQuote' }];
+    }
+    else if (!hrefAttribute.value) {
+        hrefAttribute.value = [href];
+    }
+}
 function attachRepeater(items, repeater) {
     for (const item of items) {
         if (!item.repeat) {
@@ -1218,166 +1290,13 @@ function parseAbbreviation(abbr, options) {
     }
 }
 
-/**
- * Check if given code is a number
- */
-function isNumber$1(code) {
-    return code > 47 && code < 58;
-}
-/**
- * Check if given character code is alpha code (letter through A to Z)
- */
-function isAlpha$1(code, from, to) {
-    from = from || 65; // A
-    to = to || 90; // Z
-    code &= ~32; // quick hack to convert any char code to uppercase char code
-    return code >= from && code <= to;
-}
-function isAlphaNumericWord(code) {
-    return isNumber$1(code) || isAlphaWord(code);
-}
-function isAlphaWord(code) {
-    return code === 95 /* _ */ || isAlpha$1(code);
-}
-/**
- * Check if given character code is a white-space character: a space character
- * or line breaks
- */
-function isWhiteSpace$2(code) {
-    return code === 32 /* space */
-        || code === 9 /* tab */
-        || code === 160; /* non-breaking space */
-}
-/**
- * Check if given character code is a space character
- */
-function isSpace$1(code) {
-    return isWhiteSpace$2(code)
-        || code === 10 /* LF */
-        || code === 13; /* CR */
-}
-/**
- * Check if given character code is a quote character
- */
-function isQuote$2(code) {
-    return code === 39 /* ' */ || code === 34 /* " */;
-}
-
-/**
- * A streaming, character code-based string reader
- */
-class Scanner$1 {
-    constructor(str, start, end) {
-        if (end == null && typeof str === 'string') {
-            end = str.length;
-        }
-        this.string = str;
-        this.pos = this.start = start || 0;
-        this.end = end || 0;
-    }
-    /**
-     * Returns true only if the stream is at the end of the file.
-     */
-    eof() {
-        return this.pos >= this.end;
-    }
-    /**
-     * Creates a new stream instance which is limited to given `start` and `end`
-     * range. E.g. its `eof()` method will look at `end` property, not actual
-     * stream end
-     */
-    limit(start, end) {
-        return new Scanner$1(this.string, start, end);
-    }
-    /**
-     * Returns the next character code in the stream without advancing it.
-     * Will return NaN at the end of the file.
-     */
-    peek() {
-        return this.string.charCodeAt(this.pos);
-    }
-    /**
-     * Returns the next character in the stream and advances it.
-     * Also returns <code>undefined</code> when no more characters are available.
-     */
-    next() {
-        if (this.pos < this.string.length) {
-            return this.string.charCodeAt(this.pos++);
-        }
-    }
-    /**
-     * `match` can be a character code or a function that takes a character code
-     * and returns a boolean. If the next character in the stream 'matches'
-     * the given argument, it is consumed and returned.
-     * Otherwise, `false` is returned.
-     */
-    eat(match) {
-        const ch = this.peek();
-        const ok = typeof match === 'function' ? match(ch) : ch === match;
-        if (ok) {
-            this.next();
-        }
-        return ok;
-    }
-    /**
-     * Repeatedly calls <code>eat</code> with the given argument, until it
-     * fails. Returns <code>true</code> if any characters were eaten.
-     */
-    eatWhile(match) {
-        const start = this.pos;
-        while (!this.eof() && this.eat(match)) { /* */ }
-        return this.pos !== start;
-    }
-    /**
-     * Backs up the stream n characters. Backing it up further than the
-     * start of the current token will cause things to break, so be careful.
-     */
-    backUp(n) {
-        this.pos -= (n || 1);
-    }
-    /**
-     * Get the string between the start of the current token and the
-     * current stream position.
-     */
-    current() {
-        return this.substring(this.start, this.pos);
-    }
-    /**
-     * Returns substring for given range
-     */
-    substring(start, end) {
-        return this.string.slice(start, end);
-    }
-    /**
-     * Creates error object with current stream state
-     */
-    error(message, pos = this.pos) {
-        return new ScannerError$1(`${message} at ${pos + 1}`, pos, this.string);
-    }
-}
-class ScannerError$1 extends Error {
-    constructor(message, pos, str) {
-        super(message);
-        this.pos = pos;
-        this.string = str;
-    }
-}
-
 function tokenize$1(abbr, isValue) {
     let brackets = 0;
     let token;
-    const scanner = new Scanner$1(abbr);
+    const scanner = new Scanner(abbr);
     const tokens = [];
     while (!scanner.eof()) {
-        token = field$1(scanner)
-            || numberValue(scanner)
-            || colorValue(scanner)
-            || stringValue(scanner)
-            || bracket$1(scanner)
-            || operator$1(scanner)
-            || whiteSpace$1(scanner)
-            || literal$2(scanner, brackets === 0 && !isValue)
-            || void 0;
+        token = getToken$1(scanner, brackets === 0 && !isValue);
         if (!token) {
             throw scanner.error('Unexpected character');
         }
@@ -1399,18 +1318,31 @@ function tokenize$1(abbr, isValue) {
     }
     return tokens;
 }
+/**
+ * Returns next token from given scanner, if possible
+ */
+function getToken$1(scanner, short) {
+    return field$1(scanner)
+        || numberValue(scanner)
+        || colorValue(scanner)
+        || stringValue(scanner)
+        || bracket$1(scanner)
+        || operator$1(scanner)
+        || whiteSpace$1(scanner)
+        || literal$2(scanner, short);
+}
 function field$1(scanner) {
     const start = scanner.pos;
     if (scanner.eat(36 /* Dollar */) && scanner.eat(123 /* CurlyBracketOpen */)) {
         scanner.start = scanner.pos;
         let index;
         let name = '';
-        if (scanner.eatWhile(isNumber$1)) {
+        if (scanner.eatWhile(isNumber)) {
             // It’s a field
             index = Number(scanner.current());
             name = scanner.eat(58 /* Colon */) ? consumePlaceholder$1(scanner) : '';
         }
-        else if (isAlpha$1(scanner.peek())) {
+        else if (isAlpha(scanner.peek())) {
             // It’s a variable
             name = consumePlaceholder$1(scanner);
         }
@@ -1520,7 +1452,7 @@ function stringValue(scanner) {
     const ch = scanner.peek();
     const start = scanner.pos;
     let finished = false;
-    if (isQuote$2(ch)) {
+    if (isQuote(ch)) {
         scanner.pos++;
         while (!scanner.eof()) {
             // Do not throw error on malformed string
@@ -1553,31 +1485,57 @@ function colorValue(scanner) {
     // #t     → transparent
     const start = scanner.pos;
     if (scanner.eat(35 /* Hash */)) {
-        scanner.start = scanner.pos;
-        scanner.eat(116 /* Transparent */) || scanner.eatWhile(isHex);
-        const color = scanner.current();
-        let alpha;
-        // a hex color can be followed by `.num` alpha value
-        scanner.start = scanner.pos;
-        if (scanner.eat(46 /* Dot */) && scanner.eatWhile(isNumber$1)) {
-            alpha = scanner.current();
+        const valueStart = scanner.pos;
+        let color = '';
+        let alpha = '';
+        if (scanner.eatWhile(isHex)) {
+            color = scanner.substring(valueStart, scanner.pos);
+            alpha = colorAlpha(scanner);
         }
-        const { r, g, b, a } = parseColor(color, alpha);
-        return {
-            type: 'ColorValue',
-            r, g, b, a,
-            raw: scanner.substring(start + 1, scanner.pos),
-            start,
-            end: scanner.pos
-        };
+        else if (scanner.eat(116 /* Transparent */)) {
+            color = '0';
+            alpha = colorAlpha(scanner) || '0';
+        }
+        else {
+            alpha = colorAlpha(scanner);
+        }
+        if (color || alpha || scanner.eof()) {
+            const { r, g, b, a } = parseColor(color, alpha);
+            return {
+                type: 'ColorValue',
+                r, g, b, a,
+                raw: scanner.substring(start + 1, scanner.pos),
+                start,
+                end: scanner.pos
+            };
+        }
+        else {
+            // Consumed # but no actual value: invalid color value, treat it as literal
+            return createLiteral$1(scanner, start);
+        }
     }
+    scanner.pos = start;
+}
+/**
+ * Consumes alpha value of color: `.1`
+ */
+function colorAlpha(scanner) {
+    const start = scanner.pos;
+    if (scanner.eat(46 /* Dot */)) {
+        scanner.start = start;
+        if (scanner.eatWhile(isNumber)) {
+            return scanner.current();
+        }
+        return '1';
+    }
+    return '';
 }
 /**
  * Consumes white space characters as string literal from given scanner
  */
 function whiteSpace$1(scanner) {
     const start = scanner.pos;
-    if (scanner.eatWhile(isSpace$1)) {
+    if (scanner.eatWhile(isSpace)) {
         return {
             type: 'WhiteSpace',
             start,
@@ -1621,12 +1579,12 @@ function consumeNumber(stream) {
     const start = stream.pos;
     stream.eat(45 /* Dash */);
     const afterNegative = stream.pos;
-    const hasDecimal = stream.eatWhile(isNumber$1);
+    const hasDecimal = stream.eatWhile(isNumber);
     const prevPos = stream.pos;
     if (stream.eat(46 /* Dot */)) {
         // It’s perfectly valid to have numbers like `1.`, which enforces
         // value to float unit type
-        const hasFloat = stream.eatWhile(isNumber$1);
+        const hasFloat = stream.eatWhile(isNumber);
         if (!hasDecimal && !hasFloat) {
             // Lone dot
             stream.pos = prevPos;
@@ -1656,7 +1614,7 @@ function operatorType$1(ch) {
  * Check if given code is a hex value (/0-9a-f/)
  */
 function isHex(code) {
-    return isNumber$1(code) || isAlpha$1(code, 65, 70); // A-F
+    return isNumber(code) || isAlpha(code, 65, 70); // A-F
 }
 function isKeyword(code) {
     return isAlphaNumericWord(code) || code === 45 /* Dash */;
@@ -1665,7 +1623,7 @@ function isBracket$1(code) {
     return code === 40 /* RoundBracketOpen */ || code === 41 /* RoundBracketClose */;
 }
 function isLiteral$1(code) {
-    return isAlphaWord(code) || code === 37 /* Percent */;
+    return isAlphaWord(code) || code === 37 /* Percent */ || code === 47 /* Slash */;
 }
 /**
  * Parses given color value from abbreviation into RGBA format
@@ -1799,19 +1757,22 @@ function consumeProperty(scanner, options) {
     let valueFragment;
     const value = [];
     const token = peek$1(scanner);
-    if (!options.value && isLiteral$1$1(token) && !isFunctionStart(scanner)) {
+    const valueMode = !!options.value;
+    if (!valueMode && isLiteral$1$1(token) && !isFunctionStart(scanner)) {
         scanner.pos++;
         name = token.value;
         // Consume any following value delimiter after property name
         consume$1(scanner, isValueDelimiter);
     }
     // Skip whitespace right after property name, if any
-    consume$1(scanner, isWhiteSpace$3);
+    if (valueMode) {
+        consume$1(scanner, isWhiteSpace$2);
+    }
     while (readable$1(scanner)) {
         if (consume$1(scanner, isImportant)) {
             important = true;
         }
-        else if (valueFragment = consumeValue(scanner)) {
+        else if (valueFragment = consumeValue(scanner, valueMode)) {
             value.push(valueFragment);
         }
         else if (!consume$1(scanner, isFragmentDelimiter)) {
@@ -1825,7 +1786,7 @@ function consumeProperty(scanner, options) {
 /**
  * Consumes single value fragment, e.g. all value tokens before comma
  */
-function consumeValue(scanner) {
+function consumeValue(scanner, inArgument) {
     const result = [];
     let token;
     let args;
@@ -1844,7 +1805,7 @@ function consumeValue(scanner) {
                 result.push(token);
             }
         }
-        else if (isValueDelimiter(token)) {
+        else if (isValueDelimiter(token) || (inArgument && isWhiteSpace$2(token))) {
             scanner.pos++;
         }
         else {
@@ -1861,10 +1822,10 @@ function consumeArguments(scanner) {
         const args = [];
         let value;
         while (readable$1(scanner) && !consume$1(scanner, isCloseBracket)) {
-            if (value = consumeValue(scanner)) {
+            if (value = consumeValue(scanner, true)) {
                 args.push(value);
             }
-            else if (!consume$1(scanner, isWhiteSpace$3) && !consume$1(scanner, isArgumentDelimiter)) {
+            else if (!consume$1(scanner, isWhiteSpace$2) && !consume$1(scanner, isArgumentDelimiter)) {
                 throw error$1(scanner, 'Unexpected token');
             }
         }
@@ -1884,7 +1845,7 @@ function isOpenBracket$1(token) {
 function isCloseBracket(token) {
     return isBracket$1$1(token, false);
 }
-function isWhiteSpace$3(token) {
+function isWhiteSpace$2(token) {
     return token && token.type === 'WhiteSpace';
 }
 function isOperator$1(token, operator) {
@@ -1897,7 +1858,7 @@ function isArgumentDelimiter(token) {
     return isOperator$1(token, "," /* ArgumentDelimiter */);
 }
 function isFragmentDelimiter(token) {
-    return isArgumentDelimiter(token) || isWhiteSpace$3(token);
+    return isArgumentDelimiter(token);
 }
 function isImportant(token) {
     return isOperator$1(token, "!" /* Important */);
@@ -1910,8 +1871,7 @@ function isValue(token) {
         || token.type === 'Field';
 }
 function isValueDelimiter(token) {
-    return isWhiteSpace$3(token)
-        || isOperator$1(token, ":" /* PropertyDelimiter */)
+    return isOperator$1(token, ":" /* PropertyDelimiter */)
         || isOperator$1(token, "-" /* ValueDelimiter */);
 }
 function isFunctionStart(scanner) {
@@ -1929,7 +1889,7 @@ function parse(abbr, options) {
         return parser(tokens, options);
     }
     catch (err) {
-        if (err instanceof ScannerError$1 && typeof abbr === 'string') {
+        if (err instanceof ScannerError && typeof abbr === 'string') {
             err.message += `\n${abbr}\n${'-'.repeat(err.pos)}^`;
         }
         throw err;
@@ -2085,7 +2045,7 @@ function resolveSnippets(abbr, config) {
     walkResolve(abbr, resolve);
     return abbr;
 }
-function walkResolve(node, resolve) {
+function walkResolve(node, resolve, config) {
     let children = [];
     for (const child of node.children) {
         const resolved = resolve(child);
@@ -2938,6 +2898,7 @@ function output(node, tokens, state) {
     }
 }
 
+const htmlTagRegex = /^<([\w\-:]+)[\s>]/;
 function html(abbr, config) {
     const state = createWalkState(config);
     state.comment = createCommentState(config);
@@ -2976,7 +2937,7 @@ function element$1(node, index, items, state, next) {
             pushString(out, '>');
             if (!pushSnippet(node, state, next)) {
                 if (node.value) {
-                    const innerFormat = node.value.some(hasNewline);
+                    const innerFormat = node.value.some(hasNewline) || startsWithBlockTag(node.value, config);
                     innerFormat && pushNewline(state.out, ++out.level);
                     pushTokens(node.value, state);
                     innerFormat && pushNewline(state.out, --out.level);
@@ -3141,6 +3102,18 @@ function getIndent(state) {
  */
 function hasNewline(value) {
     return typeof value === 'string' && /\r|\n/.test(value);
+}
+/**
+ * Check if given node value starts with block-level tag
+ */
+function startsWithBlockTag(value, config) {
+    if (value.length && typeof value[0] === 'string') {
+        const matches = htmlTagRegex.exec(value[0]);
+        if ((matches === null || matches === void 0 ? void 0 : matches.length) && !config.options['inlineElements'].includes(matches[1].toLowerCase())) {
+            return true;
+        }
+    }
+    return false;
 }
 
 function indentFormat(abbr, config, options) {
@@ -3351,12 +3324,20 @@ const formatters = { html, haml, slim, pug };
  * required transformations applied
  */
 function parse$1(abbr, config) {
+    let oldTextValue;
     if (typeof abbr === 'string') {
         let parseOpt = config;
         if (config.options['jsx.enabled']) {
             parseOpt = Object.assign(Object.assign({}, parseOpt), { jsx: true });
         }
+        if (config.options['markup.href']) {
+            parseOpt = Object.assign(Object.assign({}, parseOpt), { href: true });
+        }
         abbr = parseAbbreviation(abbr, parseOpt);
+        // remove text field before snippets(abbr, config) call
+        // as abbreviation(abbr, parseOpt) already handled it
+        oldTextValue = config.text;
+        config.text = undefined;
     }
     // Run abbreviation resolve in two passes:
     // 1. Map each node to snippets, which are abbreviations as well. A single snippet
@@ -3364,6 +3345,7 @@ function parse$1(abbr, config) {
     // 2. Transform every resolved node
     abbr = resolveSnippets(abbr, config);
     walk(abbr, transform, config);
+    config.text = oldTextValue !== null && oldTextValue !== void 0 ? oldTextValue : config.text;
     return abbr;
 }
 /**
@@ -3485,39 +3467,57 @@ function collectKeywords(cssVal, dest) {
 }
 
 /**
- * Calculates fuzzy match score of how close `abbr` matches given `string`.
- * @param abbr Abbreviation to score
- * @param str String to match
- * @return Match score
+ * Calculates how close `str1` matches `str2` using fuzzy match.
+ * How matching works:
+ * – first characters of both `str1` and `str2` *must* match
+ * – `str1` length larger than `str2` length is allowed only when `unmatched` is true
+ * – ideal match is when `str1` equals to `str2` (score: 1)
+ * – next best match is `str2` starts with `str1` (score: 1 × percent of matched characters)
+ * – other scores depend on how close characters of `str1` to the beginning of `str2`
+ * @param partialMatch Allow length `str1` to be greater than `str2` length
  */
-function calculateScore(abbr, str) {
-    abbr = abbr.toLowerCase();
-    str = str.toLowerCase();
-    if (abbr === str) {
+function scoreMatch(str1, str2, partialMatch = false) {
+    str1 = str1.toLowerCase();
+    str2 = str2.toLowerCase();
+    if (str1 === str2) {
         return 1;
     }
-    // a string MUST start with the same character as abbreviation
-    if (!str || abbr.charCodeAt(0) !== str.charCodeAt(0)) {
+    // Both strings MUST start with the same character
+    if (!str1 || !str2 || str1.charCodeAt(0) !== str2.charCodeAt(0)) {
         return 0;
     }
-    const abbrLength = abbr.length;
-    const stringLength = str.length;
+    const str1Len = str1.length;
+    const str2Len = str2.length;
+    if (!partialMatch && str1Len > str2Len) {
+        return 0;
+    }
+    // Characters from `str1` which are closer to the beginning of a `str2` should
+    // have higher score.
+    // For example, if `str2` is `abcde`, it’s max score is:
+    // 5 + 4 + 3 + 2 + 1 = 15 (sum of character positions in reverse order)
+    // Matching `abd` against `abcde` should produce:
+    // 5 + 4 + 2 = 11
+    // Acronym bonus for match right after `-`. Matching `abd` against `abc-de`
+    // should produce:
+    // 6 + 5 + 4 (use `d` position in `abd`, not in abc-de`)
+    const minLength = Math.min(str1Len, str2Len);
+    const maxLength = Math.max(str1Len, str2Len);
     let i = 1;
     let j = 1;
-    let score = stringLength;
-    let ch1;
-    let ch2;
-    let found;
-    let acronym;
-    while (i < abbrLength) {
-        ch1 = abbr.charCodeAt(i);
+    let score = maxLength;
+    let ch1 = 0;
+    let ch2 = 0;
+    let found = false;
+    let acronym = false;
+    while (i < str1Len) {
+        ch1 = str1.charCodeAt(i);
         found = false;
         acronym = false;
-        while (j < stringLength) {
-            ch2 = str.charCodeAt(j);
+        while (j < str2Len) {
+            ch2 = str2.charCodeAt(j);
             if (ch1 === ch2) {
                 found = true;
-                score += (stringLength - j) * (acronym ? 2 : 1);
+                score += maxLength - (acronym ? i : j);
                 break;
             }
             // add acronym bonus for exactly next match after unmatched `-`
@@ -3525,11 +3525,17 @@ function calculateScore(abbr, str) {
             j++;
         }
         if (!found) {
+            if (!partialMatch) {
+                return 0;
+            }
             break;
         }
         i++;
     }
-    return score && score * (i / abbrLength) / sum(stringLength);
+    const matchRatio = i / maxLength;
+    const delta = maxLength - minLength;
+    const maxScore = sum(maxLength) - sum(delta);
+    return (score * matchRatio) / maxScore;
 }
 /**
  * Calculates sum of first `n` numbers, e.g. 1+2+3+...n
@@ -3586,8 +3592,13 @@ function pad(value, len) {
 }
 
 function css(abbr, config) {
+    var _a;
     const out = createOutputStream(config.options);
     const format = config.options['output.format'];
+    if (((_a = config.context) === null || _a === void 0 ? void 0 : _a.name) === "@@section" /* Section */) {
+        // For section context, filter out unmatched snippets
+        abbr = abbr.filter(node => node.snippet);
+    }
     for (let i = 0; i < abbr.length; i++) {
         if (format && i !== 0) {
             pushNewline(out, true);
@@ -3660,12 +3671,15 @@ function outputImportant(node, out, separator) {
     }
 }
 function outputValue(value, out, config) {
-    for (let i = 0; i < value.value.length; i++) {
+    for (let i = 0, prevEnd = -1; i < value.value.length; i++) {
         const token = value.value[i];
-        if (i !== 0) {
+        // Handle edge case: a field is written close to previous token like this: `foo${bar}`.
+        // We should not add delimiter here
+        if (i !== 0 && (token.type !== 'Field' || token.start !== prevEnd)) {
             push(out, ' ');
         }
         outputToken(token, out, config);
+        prevEnd = token['end'];
     }
 }
 function outputToken(token, out, config) {
@@ -3722,12 +3736,18 @@ const gradientName = 'lg';
  * Parses given Emmet abbreviation into a final abbreviation tree with all
  * required transformations applied
  */
-function parse$2(abbr, config, snippets = convertSnippets(config.snippets)) {
-    if (typeof abbr === 'string') {
-        abbr = parse(abbr, { value: !!config.context });
+function parse$2(abbr, config) {
+    var _a;
+    const snippets = ((_a = config.cache) === null || _a === void 0 ? void 0 : _a.stylesheetSnippets) || convertSnippets(config.snippets);
+    if (config.cache) {
+        config.cache.stylesheetSnippets = snippets;
     }
+    if (typeof abbr === 'string') {
+        abbr = parse(abbr, { value: isValueScope(config) });
+    }
+    const filteredSnippets = getSnippetsForScope(snippets, config);
     for (const node of abbr) {
-        resolveNode(node, snippets, config);
+        resolveNode(node, filteredSnippets, config);
     }
     return abbr;
 }
@@ -3748,14 +3768,16 @@ function convertSnippets(snippets) {
 function resolveNode(node, snippets, config) {
     if (!resolveGradient(node, config)) {
         const score = config.options['stylesheet.fuzzySearchMinScore'];
-        if (config.context) {
+        if (isValueScope(config)) {
             // Resolve as value of given CSS property
             const propName = config.context.name;
             const snippet = snippets.find(s => s.type === "Property" /* Property */ && s.property === propName);
             resolveValueKeywords(node, config, snippet, score);
+            node.snippet = snippet;
         }
         else if (node.name) {
-            const snippet = findBestMatch(node.name, snippets, score);
+            const snippet = findBestMatch(node.name, snippets, score, true);
+            node.snippet = snippet;
             if (snippet) {
                 if (snippet.type === "Property" /* Property */) {
                     resolveAsProperty(node, snippet, config);
@@ -3808,28 +3830,37 @@ function resolveGradient(node, config) {
  */
 function resolveAsProperty(node, snippet, config) {
     const abbr = node.name;
-    node.name = snippet.property;
-    if (!node.value.length) {
-        // No value defined in abbreviation node, try to resolve unmatched part
-        // as a keyword alias
-        const inlineValue = getUnmatchedPart(abbr, snippet.key);
-        const kw = inlineValue ? resolveKeyword(inlineValue, config, snippet) : null;
-        if (kw) {
-            node.value.push(cssValue(kw));
+    // Check for unmatched part of abbreviation
+    // For example, in `dib` abbreviation the matched part is `d` and `ib` should
+    // be considered as inline value. If unmatched fragment exists, we should check
+    // if it matches actual value of snippet. If either explicit value is specified
+    // or unmatched fragment did not resolve to to a keyword, we should consider
+    // matched snippet as invalid
+    const inlineValue = getUnmatchedPart(abbr, snippet.key);
+    if (inlineValue) {
+        if (node.value.length) {
+            // Already have value: unmatched part indicates matched snippet is invalid
+            return node;
         }
-        else if (snippet.value.length) {
-            const defaultValue = snippet.value[0];
-            // https://github.com/emmetio/emmet/issues/558
-            // We should auto-select inserted value only if there’s multiple value
-            // choice
-            node.value = snippet.value.length === 1 || defaultValue.some(hasField)
-                ? defaultValue
-                : defaultValue.map(n => wrapWithField(n, config));
+        const kw = resolveKeyword(inlineValue, config, snippet);
+        if (!kw) {
+            return node;
         }
+        node.value.push(cssValue(kw));
     }
-    else {
+    node.name = snippet.property;
+    if (node.value.length) {
         // Replace keyword alias from current abbreviation node with matched keyword
         resolveValueKeywords(node, config, snippet);
+    }
+    else if (snippet.value.length) {
+        const defaultValue = snippet.value[0];
+        // https://github.com/emmetio/emmet/issues/558
+        // We should auto-select inserted value only if there’s multiple value
+        // choice
+        node.value = snippet.value.length === 1 || defaultValue.some(hasField)
+            ? defaultValue
+            : defaultValue.map(n => wrapWithField(n, config));
     }
     return node;
 }
@@ -3896,11 +3927,11 @@ function resolveAsSnippet(node, snippet) {
  * @param items List of items for match
  * @param minScore The minimum score the best matched item should have to be a valid match.
  */
-function findBestMatch(abbr, items, minScore = 0) {
+function findBestMatch(abbr, items, minScore = 0, partialMatch = false) {
     let matchedItem = null;
     let maxScore = 0;
     for (const item of items) {
-        const score = calculateScore(abbr, getScoringPart(item));
+        const score = scoreMatch(abbr, getScoringPart(item), partialMatch);
         if (score === 1) {
             // direct hit, no need to look further
             return item;
@@ -4040,6 +4071,29 @@ function wrapWithField(node, config, state = { index: 1 }) {
     }
     return Object.assign(Object.assign({}, node), { value });
 }
+/**
+ * Check if abbreviation should be expanded in CSS value context
+ */
+function isValueScope(config) {
+    if (config.context) {
+        return config.context.name === "@@value" /* Value */ || !config.context.name.startsWith('@@');
+    }
+    return false;
+}
+/**
+ * Returns snippets for given scope
+ */
+function getSnippetsForScope(snippets, config) {
+    if (config.context) {
+        if (config.context.name === "@@section" /* Section */) {
+            return snippets.filter(s => s.type === "Raw" /* Raw */);
+        }
+        if (config.context.name === "@@property" /* Property */) {
+            return snippets.filter(s => s.type === "Property" /* Property */);
+        }
+    }
+    return snippets;
+}
 
 var markupSnippets = {
 	"a": "a[href]",
@@ -4128,7 +4182,7 @@ var markupSnippets = {
 	"input:f|input:file": "inp[type=file]",
 	"input:s|input:submit": "input[type=submit value]",
 	"input:i|input:image": "input[type=image src alt]",
-	"input:b|input:button": "input[type=button value]",
+	"input:b|input:btn|input:button": "input[type=button value]",
 	"input:reset": "input:button[type=reset]",
 	"isindex": "isindex/",
 	"select": "select[name=${1} id=${1}]",
@@ -4187,7 +4241,7 @@ var markupSnippets = {
 	"ri:t|ri:type": "pic>src:t+img",
 
 	"!!!": "{<!DOCTYPE html>}",
-	"doc": "html[lang=${lang}]>(head>meta[charset=${charset}]+meta:vp+title{${1:Document}})+body",
+	"doc": "html[lang=${lang}]>(head>meta[charset=${charset}]+meta[http-equiv='X-UA-Compatible'][content='IE=edge']+meta:vp+title{${1:Document}})+body",
 	"!|html:5": "!!!+doc",
 
 	"c": "{<!-- ${0} -->}",
@@ -4196,7 +4250,7 @@ var markupSnippets = {
 };
 
 var stylesheetSnippets = {
-	"@f": "@font-face {\n\tfont-family: ${1};\n\tsrc: url(${1});\n}",
+	"@f": "@font-face {\n\tfont-family: ${1};\n\tsrc: url(${2});\n}",
 	"@ff": "@font-face {\n\tfont-family: '${1:FontName}';\n\tsrc: url('${2:FileName}.eot');\n\tsrc: url('${2:FileName}.eot?#iefix') format('embedded-opentype'),\n\t\t url('${2:FileName}.woff') format('woff'),\n\t\t url('${2:FileName}.ttf') format('truetype'),\n\t\t url('${2:FileName}.svg#${1:FontName}') format('svg');\n\tfont-style: ${3:normal};\n\tfont-weight: ${4:normal};\n}",
 	"@i|@import": "@import url(${0});",
 	"@kf": "@keyframes ${1:identifier} {\n\t${2}\n}",
@@ -4271,6 +4325,8 @@ var stylesheetSnippets = {
 	"bxsh": "box-shadow:${1:inset }${2:hoff} ${3:voff} ${4:blur} ${5:#000}|none",
 	"bxsz": "box-sizing:border-box|content-box|border-box",
 	"c": "color:${1:#000}",
+	"cr": "color:rgb(${1:0}, ${2:0}, ${3:0})",
+	"cra": "color:rgba(${1:0}, ${2:0}, ${3:0}, ${4:.5})",
 	"cl": "clear:both|left|right|none",
 	"cm": "/* ${0} */",
 	"cnt": "content:'${0}'|normal|open-quote|no-open-quote|close-quote|no-close-quote|attr(${0})|counter(${0})|counters(${0})",
@@ -4289,7 +4345,7 @@ var stylesheetSnippets = {
 	"cp": "clip:auto|rect(${1:top} ${2:right} ${3:bottom} ${4:left})",
 	"cps": "caption-side:top|bottom",
 	"cur": "cursor:pointer|auto|default|crosshair|hand|help|move|pointer|text",
-	"d": "display:grid|inline-grid|subgrid|block|none|flex|inline-flex|inline|inline-block|list-item|run-in|compact|table|inline-table|table-caption|table-column|table-column-group|table-header-group|table-footer-group|table-row|table-row-group|table-cell|ruby|ruby-base|ruby-base-group|ruby-text|ruby-text-group",
+	"d": "display:block|none|flex|inline-flex|inline|inline-block|grid|inline-grid|subgrid|list-item|run-in|compact|table|inline-table|table-caption|table-column|table-column-group|table-header-group|table-footer-group|table-row|table-row-group|table-cell|ruby|ruby-base|ruby-base-group|ruby-text|ruby-text-group",
 	"ec": "empty-cells:show|hide",
 	"f": "font:${1:1em} ${2:sans-serif}",
 	"fd": "font-display:auto|block|swap|fallback|optional",
@@ -4363,7 +4419,7 @@ var stylesheetSnippets = {
 	"olo": "outline-offset",
 	"ols": "outline-style:none|dotted|dashed|solid|double|groove|ridge|inset|outset",
 	"olw": "outline-width|thin|medium|thick",
-	"op": "opacity",
+	"op|opa": "opacity",
 	"ord": "order",
 	"ori": "orientation:landscape|portrait",
 	"orp": "orphans",
@@ -4512,6 +4568,7 @@ const defaultOptions = {
     'output.selfClosingStyle': 'html',
     'output.field': (index, placeholder) => placeholder,
     'output.text': text => text,
+    'markup.href': true,
     'comment.enabled': false,
     'comment.trigger': ['id', 'class'],
     'comment.before': '',
@@ -4520,7 +4577,7 @@ const defaultOptions = {
     'bem.element': '__',
     'bem.modifier': '_',
     'jsx.enabled': false,
-    'stylesheet.keywords': ['auto', 'inherit', 'unset'],
+    'stylesheet.keywords': ['auto', 'inherit', 'unset', 'none'],
     'stylesheet.unitless': ['z-index', 'line-height', 'opacity', 'font-weight', 'zoom', 'flex', 'flex-grow', 'flex-shrink'],
     'stylesheet.shortHex': true,
     'stylesheet.between': ': ',
@@ -4530,7 +4587,7 @@ const defaultOptions = {
     'stylesheet.unitAliases': { e: 'em', p: '%', x: 'ex', r: 'rem' },
     'stylesheet.json': false,
     'stylesheet.jsonDoubleQuotes': false,
-    'stylesheet.fuzzySearchMinScore': 0.3
+    'stylesheet.fuzzySearchMinScore': 0
 };
 const defaultConfig = {
     type: 'markup',
@@ -4664,7 +4721,7 @@ function consumeWhile(scanner, match) {
 /**
  * Check if given character code is a quote
  */
-function isQuote$3(c) {
+function isQuote$2(c) {
     return c === 39 /* SingleQuote */ || c === 34 /* DoubleQuote */;
 }
 /**
@@ -4674,7 +4731,7 @@ function isQuote$3(c) {
 function consumeQuoted(scanner) {
     const start = scanner.pos;
     const quote = previous(scanner);
-    if (isQuote$3(quote)) {
+    if (isQuote$2(quote)) {
         while (!sol(scanner)) {
             if (previous(scanner) === quote && peek$3(scanner) !== 92 /* Escape */) {
                 return true;
@@ -4702,7 +4759,7 @@ function isHtml(scanner) {
     let ok = false;
     consume$2(scanner, 47 /* Slash */); // possibly self-closed element
     while (!sol(scanner)) {
-        consumeWhile(scanner, isWhiteSpace$4);
+        consumeWhile(scanner, isWhiteSpace$3);
         if (consumeIdent(scanner)) {
             // ate identifier: could be a tag name, boolean attribute or unquoted
             // attribute value
@@ -4716,7 +4773,7 @@ function isHtml(scanner) {
                 ok = true;
                 break;
             }
-            else if (consume$2(scanner, isWhiteSpace$4)) {
+            else if (consume$2(scanner, isWhiteSpace$3)) {
                 // boolean attribute
                 continue;
             }
@@ -4793,32 +4850,32 @@ function consumeIdent(scanner) {
  * Check if given character code belongs to HTML identifier
  */
 function isIdent(ch) {
-    return ch === 58 /* Colon */ || ch === 45 /* Dash */ || isAlpha$2(ch) || isNumber$2(ch);
+    return ch === 58 /* Colon */ || ch === 45 /* Dash */ || isAlpha$1(ch) || isNumber$1(ch);
 }
 /**
  * Check if given character code is alpha code (letter though A to Z)
  */
-function isAlpha$2(ch) {
+function isAlpha$1(ch) {
     ch &= ~32; // quick hack to convert any char code to uppercase char code
     return ch >= 65 && ch <= 90; // A-Z
 }
 /**
  * Check if given code is a number
  */
-function isNumber$2(ch) {
+function isNumber$1(ch) {
     return ch > 47 && ch < 58;
 }
 /**
  * Check if given code is a whitespace
  */
-function isWhiteSpace$4(ch) {
+function isWhiteSpace$3(ch) {
     return ch === 32 /* Space */ || ch === 9 /* Tab */;
 }
 /**
  * Check if given code may belong to unquoted attribute value
  */
 function isUnquotedValue(ch) {
-    return !isNaN(ch) && ch !== 61 /* Equals */ && !isWhiteSpace$4(ch) && !isQuote$3(ch);
+    return !isNaN(ch) && ch !== 61 /* Equals */ && !isWhiteSpace$3(ch) && !isQuote$2(ch);
 }
 function isOpenBracket$2(ch) {
     return ch === 123 /* CurlyL */ || ch === 40 /* RoundL */ || ch === 91 /* SquareL */;
@@ -4910,7 +4967,7 @@ function extractAbbreviation(line, pos = line.length, options = {}) {
  */
 function offsetPastAutoClosed(line, pos, options) {
     // closing quote is allowed only as a next character
-    if (isQuote$3(line.charCodeAt(pos))) {
+    if (isQuote$2(line.charCodeAt(pos))) {
         pos++;
     }
     // offset pointer until non-autoclosed character is found
@@ -5008,27 +5065,26 @@ function markup(abbr, config) {
  * stylesheet languages like CSS, SASS etc.) and outputs it according to options
  * provided in config
  */
-function stylesheet(abbr, config, snippets) {
-    return css(parse$2(abbr, config, snippets), config);
+function stylesheet(abbr, config) {
+    return css(parse$2(abbr, config), config);
 }
 
 /* CUSTOM EMMET.NET CODE STARTS HERE */
 
-var globalExpandConfig = {
-    options: {
-        'output.compactBoolean': true,
-        'output.field': (index, placeholder) => '{' + placeholder + '}'
-    }
+var dotNetConfig = {
+    options: {}
 };
 
 function loadPreferences(config) {
-    // Restore default options if not overriden
+    // Restore my preferences if not overriden
     config.options = config.options || {};
+    config.options['output.indent'] = config.options['output.indent'] || '  ';
     config.options['output.compactBoolean'] = config.options['output.compactBoolean'] || true;
     if (!config.options['output.field']) {
         config.options['output.field'] = (index, placeholder) => '{' + placeholder + '}';
     }
-    globalExpandConfig = config;
+
+    dotNetConfig = config;
 }
 
 function replaceAbbreviation(codeLine, caretPos, contentType, contentToWrap, prefix) {
@@ -5037,15 +5093,15 @@ function replaceAbbreviation(codeLine, caretPos, contentType, contentToWrap, pre
         return false;
     }
 
-    globalExpandConfig.text = contentToWrap;
-    globalExpandConfig.type = contentType;
+    dotNetConfig.text = contentToWrap;
+    dotNetConfig.type = contentType;
     if (prefix) {
-        globalExpandConfig.options['jsx.enabled'] = true;
+        dotNetConfig.options['jsx.enabled'] = true;
     } else {
-        globalExpandConfig.options['jsx.enabled'] = false;
+        dotNetConfig.options['jsx.enabled'] = false;
     }
 
-    var replacement = expandAbbreviation(abbreviation.abbreviation, globalExpandConfig);
+    var replacement = expandAbbreviation(abbreviation.abbreviation, dotNetConfig);
     var retVal = codeLine.slice(0, abbreviation.start) + replacement + codeLine.slice(abbreviation.end); 
 
     return retVal;

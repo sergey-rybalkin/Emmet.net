@@ -5,11 +5,11 @@ using System.Threading;
 using Emmet.Diagnostics;
 using Emmet.EditorExtensions;
 using Emmet.Engine;
-using Emmet.Engine.ChakraInterop;
 using Emmet.Mnemonics;
 using EnvDTE;
 using EnvDTE80;
 using Microsoft;
+using Microsoft.ClearScript;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -84,11 +84,8 @@ namespace Emmet
                 string msg;
                 switch (ex)
                 {
-                    case Exception<ChakraExceptionArgs> jsex:
+                    case ScriptEngineException jsex:
                         msg = $"Unexpected error occurred inside of the Emmet engine. {jsex.Message}";
-                        break;
-                    case COMException comex:
-                        msg = $"Cannot load Microsoft Chakra engine: {comex.Message}";
                         break;
                     default:
                         msg = $"Unexpected error of type {ex.GetType()}: {ex.Message}";
@@ -171,7 +168,7 @@ namespace Emmet
 
         private static bool IsExpectedException(Exception ex)
         {
-            return ex is Exception<ChakraExceptionArgs> || ex is COMException;
+            return ex is ScriptEngineException || ex is COMException;
         }
 
         private static void ShowCriticalError(string message)

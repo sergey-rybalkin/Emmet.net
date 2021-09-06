@@ -1,7 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\Microsoft.VSSDK.BuildTools.16.0.2264\build\Microsoft.VSSDK.BuildTools.props" Condition="Exists('..\packages\Microsoft.VSSDK.BuildTools.16.0.2264\build\Microsoft.VSSDK.BuildTools.props')" />
-  <Import Project="..\packages\Microsoft.ChakraCore.1.5.2\build\netstandard1.0\Microsoft.ChakraCore.props" Condition="Exists('..\packages\Microsoft.ChakraCore.1.5.2\build\netstandard1.0\Microsoft.ChakraCore.props')" />
   <PropertyGroup>
     <MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
@@ -40,6 +38,12 @@
     <IncludeDebugSymbolsInLocalVSIXDeployment>true</IncludeDebugSymbolsInLocalVSIXDeployment>
     <CopyBuildOutputToOutputDirectory>true</CopyBuildOutputToOutputDirectory>
     <CopyOutputSymbolsToOutputDirectory>false</CopyOutputSymbolsToOutputDirectory>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
+    <CodeAnalysisRuleSet>..\build\Custom.ruleset</CodeAnalysisRuleSet>
+    <LangVersion>7</LangVersion>
+    <StartAction>Program</StartAction>
+    <StartProgram>$(DevEnvDir)\devenv.exe</StartProgram>
+    <StartArguments>/rootsuffix Exp</StartArguments>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -58,21 +62,6 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
-    <StartAction>Program</StartAction>
-    <StartProgram>C:\Program Files %28x86%29\Microsoft Visual Studio 14.0\Common7\IDE\devenv.exe</StartProgram>
-    <StartArguments>/rootsuffix Exp</StartArguments>
-    <RunCodeAnalysis>false</RunCodeAnalysis>
-    <CodeAnalysisRuleSet>..\build\Custom.ruleset</CodeAnalysisRuleSet>
-    <LangVersion>7</LangVersion>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
-    <StartAction>Program</StartAction>
-    <StartProgram>C:\Program Files %28x86%29\Microsoft Visual Studio 14.0\Common7\IDE\devenv.exe</StartProgram>
-    <StartArguments>/rootsuffix Exp</StartArguments>
-    <RunCodeAnalysis>false</RunCodeAnalysis>
-    <CodeAnalysisRuleSet>..\build\Custom.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
   <ItemGroup>
     <Compile Include="Diagnostics\Exception.cs" />
     <Compile Include="Diagnostics\ExceptionArgs.cs" />
@@ -86,18 +75,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>EmmetPackage.vsct</DependentUpon>
     </Compile>
-    <Compile Include="Engine\ChakraInterop\ChakraExceptionArgs.cs" />
-    <Compile Include="Engine\ChakraInterop\JavaScriptContext.cs" />
-    <Compile Include="Engine\ChakraInterop\JavaScriptErrorCode.cs" />
-    <Compile Include="Engine\ChakraInterop\JavaScriptMemoryEventType.cs" />
-    <Compile Include="Engine\ChakraInterop\JavaScriptPropertyId.cs" />
-    <Compile Include="Engine\ChakraInterop\JavaScriptPropertyIdType.cs" />
-    <Compile Include="Engine\ChakraInterop\JavaScriptRuntime.cs" />
-    <Compile Include="Engine\ChakraInterop\JavaScriptRuntimeAttributes.cs" />
-    <Compile Include="Engine\ChakraInterop\JavaScriptSourceContext.cs" />
-    <Compile Include="Engine\ChakraInterop\JavaScriptValue.cs" />
-    <Compile Include="Engine\ChakraInterop\JavaScriptValueType.cs" />
-    <Compile Include="Engine\ChakraInterop\NativeMethods.cs" />
     <Compile Include="EmmetPackage.cs" />
     <Compile Include="Engine\EngineCompiler.cs" />
     <Compile Include="Engine\EngineWrapper.cs" />
@@ -126,7 +103,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <None Include="packages.config" />
     <None Include="source.extension.vsixmanifest">
       <SubType>Designer</SubType>
       <Generator>VsixManifestGenerator</Generator>
@@ -153,10 +129,16 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.VisualStudio.SDK" Version="16.0.203" ExcludeAssets="runtime">
+    <PackageReference Include="Microsoft.ClearScript.V8">
+      <Version>7.1.5</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.ClearScript.V8.Native.win-x86">
+      <Version>7.1.5</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.VisualStudio.SDK" Version="16.10.31321.278" ExcludeAssets="runtime">
       <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="16.5.2040">
+    <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="16.10.1055">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
@@ -170,10 +152,8 @@
     <Content Include="emmet.js">
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <Content Include="lib\ChakraCore.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    <Content Include="emmet.min.js">
       <IncludeInVSIX>true</IncludeInVSIX>
-      <VSIXSubPath>.\</VSIXSubPath>
     </Content>
     <Content Include="source.extension.ico">
       <DependentUpon>source.extension.vsixmanifest</DependentUpon>

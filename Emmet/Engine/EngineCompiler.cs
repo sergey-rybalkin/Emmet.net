@@ -1,6 +1,6 @@
 ﻿using System.IO;
 using System.Reflection;
-using Emmet.Engine.ChakraInterop;
+using Microsoft.ClearScript.V8;
 using static Emmet.Diagnostics.Tracer;
 
 namespace Emmet.Engine
@@ -10,7 +10,11 @@ namespace Emmet.Engine
     /// </summary>
     public class EngineCompiler
     {
+#if DEBUG
         private const string EmmetScript = "emmet.js";
+#else
+        private const string EmmetScript = "emmet.min.js";
+#endif
 
         private const string PreferencesFileName = "preferences.json";
 
@@ -29,7 +33,7 @@ namespace Emmet.Engine
         /// <exception cref="Exception{EmmetEngineExceptionArgs}">
         /// Indicates that JavaScript error occurred during compilation.
         /// </exception>
-        public void CompileCore(JavaScriptSourceContext sourceContext)
+        public void CompileCore(V8ScriptEngine sourceContext)
         {
             string extensionFolder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             string emmetScriptPath = Path.Combine(extensionFolder, EmmetScript);
@@ -38,7 +42,7 @@ namespace Emmet.Engine
                 throw new FileNotFoundException("Emmet script not found.", emmetScriptPath);
 
             string script = File.ReadAllText(emmetScriptPath);
-            JavaScriptContext.RunScript(script, sourceContext);
+            sourceContext.Execute(script);
 
             Trace("Emmet core compiled successfully.");
         }
@@ -48,7 +52,7 @@ namespace Emmet.Engine
         /// </summary>
         /// <param name="extensionsDirectory">Pathname of the extensions directory.</param>
         /// <param name="sourceContext">Source context to use during compilation.</param>
-        public void LoadExtensions(string extensionsDirectory, JavaScriptSourceContext sourceContext)
+        public void LoadExtensions(string extensionsDirectory, V8ScriptEngine sourceContext)
         {
             var files = Directory.EnumerateFiles(extensionsDirectory, "*.*");
 
@@ -59,7 +63,7 @@ namespace Emmet.Engine
 
                 // There is no native JSON API available so we need to create object string from file.
                 string content = string.Join(" ", File.ReadAllLines(filePath));
-                JavaScriptContext.RunScript($"loadPreferences({content});", sourceContext);
+                sourceContext.Execute($"loadPreferences({content});");
 
                 Trace($"Successfully loaded Emmet preferences from {filePath}");
             }

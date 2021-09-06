@@ -1,5 +1,5 @@
 ﻿using System;
-using Emmet.Engine.ChakraInterop;
+using Microsoft.ClearScript.V8;
 using static Emmet.Diagnostics.Tracer;
 
 namespace Emmet.Engine
@@ -9,17 +9,11 @@ namespace Emmet.Engine
     /// </summary>
     public class EngineWrapper : IDisposable
     {
-        private const string ScriptTemplate =
-            "replaceAbbreviation('{0}', '{1}', '{2}', {3}, '{4}');";
-
-        private static JavaScriptSourceContext _currentSourceContext =
-            JavaScriptSourceContext.FromIntPtr(IntPtr.Zero);
+        private const string ExpandFunctionName = "replaceAbbreviation";
 
         private bool _initialized = false;
 
-        private JavaScriptRuntime _engine;
-
-        private JavaScriptContext _context;
+        private V8ScriptEngine _engine;
 
         private string _extensionsDir = null;
 
@@ -45,16 +39,16 @@ namespace Emmet.Engine
             if (!_initialized)
                 InitializeEngine();
 
-            string script;
+            object result;
 
             switch (cmdId)
             {
                 case PackageIds.CmdIDExpandAbbreviation:
-                    script = GetExpandAbbreviationScript(view);
+                    result = GetExpandAbbreviationScript(view);
                     break;
                 case PackageIds.CmdIDWrapWithAbbreviation:
-                    script = GetWrapWithAbbreviationScript(view);
-                    if (script is null)
+                    result = GetWrapWithAbbreviationScript(view);
+                    if (result is null)
                         return false;
                     break;
                 default:
@@ -64,24 +58,21 @@ namespace Emmet.Engine
                         "Specified command identifier not found.");
             }
 
-            Trace($"Running script: {script}");
-            JavaScriptContext.Current = _context;
-            JavaScriptValue result = JavaScriptContext.RunScript(script, _currentSourceContext++);
-
-            if (result.ValueType is JavaScriptValueType.Boolean)
+            if (result is bool)
             {
                 Trace("Emmet engine failed to execute command.");
                 return false;
             }
 
             string replacement = result.ToString();
-            JavaScriptContext.Idle();
+            _engine.CollectGarbage(false);
             if (cmdId is PackageIds.CmdIDExpandAbbreviation)
                 view.ReplaceCurrentLine(replacement);
             else
                 view.ReplaceSelection(replacement);
 
-            Trace($"Command {script} completed successfully.");
+            Trace($"Command completed successfully.");
+
             return true;
         }
 
@@ -117,36 +108,30 @@ namespace Emmet.Engine
         {
             Trace("Started initializing Emmet engine.");
 
-            _engine = JavaScriptRuntime.Create(JavaScriptRuntimeAttributes.EnableIdleProcessing);
-            _context = _engine.CreateContext();
-            JavaScriptContext.Current = _context;
+            _engine = new V8ScriptEngine();
             var compiler = new EngineCompiler();
 
-            compiler.CompileCore(_currentSourceContext);
+            compiler.CompileCore(_engine);
             if (null != _extensionsDir)
-                compiler.LoadExtensions(_extensionsDir, _currentSourceContext);
+                compiler.LoadExtensions(_extensionsDir, _engine);
 
             Trace("Emmet engine successfully initialized.");
 
             _initialized = true;
         }
 
-        private string GetExpandAbbreviationScript(ICodeEditor view)
+        private object GetExpandAbbreviationScript(ICodeEditor view)
         {
             string syntax = ContentTypeToSyntax(view.GetContentTypeInActiveBuffer());
             string currentLine = JavaScriptEscape(view.GetCurrentLine());
             int caretPos = view.GetCaretPosColumn();
 
-            return string.Format(
-                ScriptTemplate,
-                currentLine,
-                caretPos,
-                syntax,
-                "null",
-                view.AbbreviationPrefix);
+            Trace($"Trying to expand {currentLine}");
+            return _engine.Invoke(
+                ExpandFunctionName, currentLine, caretPos, syntax, null, view.AbbreviationPrefix);
         }
 
-        private string GetWrapWithAbbreviationScript(ICodeEditor view)
+        private object GetWrapWithAbbreviationScript(ICodeEditor view)
         {
             string syntax = ContentTypeToSyntax(view.GetContentTypeInActiveBuffer());
             string selection = JavaScriptEscape(view.GetSelection());
@@ -157,13 +142,9 @@ namespace Emmet.Engine
                 return null;
             }
 
-            return string.Format(
-                ScriptTemplate,
-                abbreviation,
-                abbreviation.Length,
-                syntax,
-                "'" + selection + "'",
-                string.Empty);
+            Trace($"Trying to wrap {selection} with {abbreviation}");
+            return _engine.Invoke(
+                ExpandFunctionName, abbreviation, abbreviation.Length, syntax, selection, string.Empty);
         }
     }
 }
