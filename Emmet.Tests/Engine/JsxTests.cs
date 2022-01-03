@@ -8,8 +8,6 @@ namespace Emmet.Tests.Engine
     /// Unit tests for HTML abbreviations and actions engine in JSX syntax.
     /// </summary>
     [TestClass]
-    [DeploymentItem(@"..\..\..\Emmet\lib")]
-    [DeploymentItem(@"..\..\..\Emmet\emmet.js")]
     public class JsxTests : EngineTestsBase
     {
         [TestMethod]

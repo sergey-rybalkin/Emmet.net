@@ -1,7 +1,7 @@
 ﻿using System.IO;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using Emmet.Engine;
-using Emmet.Tests.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Emmet.Tests.Engine
@@ -15,18 +15,19 @@ namespace Emmet.Tests.Engine
 
         private readonly string _extensionsDir;
 
-        public TestContext TestContext { get; set; }
+        private readonly string _baseDirectory;
 
         public EngineTestsBase(string extensionsDir = null)
         {
             _extensionsDir = extensionsDir;
+            _baseDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
         }
 
         [TestInitialize]
         public void SetUp()
         {
             if (!string.IsNullOrEmpty(_extensionsDir))
-                _engine = new EngineWrapper(Path.Combine(TestContext.DeploymentDirectory, _extensionsDir));
+                _engine = new EngineWrapper(Path.Combine(_baseDirectory, _extensionsDir));
             else
                 _engine = new EngineWrapper(null);
         }
@@ -38,9 +39,10 @@ namespace Emmet.Tests.Engine
             _engine = null;
         }
 
-        protected static string GetSourceFromResource(string resourceName)
+        protected string GetSourceFromResource(string resourceName)
         {
-            string retVal = DataHelper.GetEmbeddedResource(resourceName);
+            string filePath = Path.Combine(_baseDirectory, "Resources", resourceName);
+            string retVal = File.ReadAllText(filePath);
 
             return NormalizeWhiteSpace(retVal);
         }

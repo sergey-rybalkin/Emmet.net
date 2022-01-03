@@ -1,5 +1,6 @@
 # Version history
 
+* v5.1 - Updated to Visual Studio 2022, switched to V8 engine via ClearScript, updated Emmet engine to version 2.3.5.
 * v4.2 - Updated ChakraCore to v1.11.15, Emmet engine to version 2.0.0-rc.10. Removed deprecated commands, improved JSX/TSX support.
 * v4.1 - Added experimental 'Sort CSS properties' command.
 * v4.0 - Upgrade to Visual Studio 2019.

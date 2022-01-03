@@ -16,7 +16,7 @@ namespace Emmet.EditorExtensions
     [ContentType("LESS")]
     [ContentType("SCSS")]
     [ContentType("HTML")]
-    [ContentType("HTMLX")]
+    [ContentType("Razor")]
     [ContentType("CSharp")]
     [ContentType("TypeScript")]
     [ContentType("JavaScript")]

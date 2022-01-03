@@ -8,9 +8,6 @@ namespace Emmet.Tests.Engine
     /// Unit tests for CSS abbreviations engine.
     /// </summary>
     [TestClass]
-    [DeploymentItem(@"..\..\..\Emmet\lib")]
-    [DeploymentItem(@"..\..\..\Emmet\emmet.js")]
-    [DeploymentItem(@"..\..\Resources\", @"Resources\")]
     public class CssTests : EngineTestsBase
     {
         public CssTests() : base(@"Resources")
