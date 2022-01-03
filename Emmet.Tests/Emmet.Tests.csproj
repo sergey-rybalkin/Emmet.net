@@ -65,6 +65,10 @@
       <Link>emmet.js</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="..\Emmet\emmet.min.js">
+      <Link>emmet.min.js</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Resources\preferences.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
