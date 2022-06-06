@@ -98,4 +98,4 @@ For example, mnemonic `_rif` will generate new private field `private readonly i
 
 Emmet is originally written in JavaScript and Visual Studio cannot run it natively, so this project is using [Microsoft ChakraCore engine](https://github.com/Microsoft/ChakraCore) to execute Emmet code. ChakraCore.dll library is included with source code and other dependencies are managed with NuGet.
 
-Visual Studio 2019 and Visual Studio SDK are required to build the project.
+Visual Studio 2022 and Visual Studio SDK are required to build the project.
