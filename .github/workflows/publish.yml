@@ -22,7 +22,7 @@ permissions:
   contents: write
 
 env:
-  DEFAULT_BRANCH: main
+  DEFAULT_BRANCH: master
   TAG_PREFIX: v
 
 jobs:
@@ -63,7 +63,7 @@ jobs:
             exit 1
           fi
 
-      - name: Create annotated tag at current main HEAD
+      - name: Create annotated tag at current default branch HEAD
         shell: bash
         if: ${{ inputs.create_tag }}
         run: |
