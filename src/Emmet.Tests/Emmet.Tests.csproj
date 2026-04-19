@@ -4,6 +4,10 @@
         <CopyToOutputDirectory>IfDifferent</CopyToOutputDirectory>
       <TargetPath>Resources\emmet.js</TargetPath>
     </Content>
+    <Content Include="..\Emmet\Resources\emmet.min.js">
+        <CopyToOutputDirectory>IfDifferent</CopyToOutputDirectory>
+      <TargetPath>Resources\emmet.min.js</TargetPath>
+    </Content>
     <Content Include="..\Emmet\Resources\preferences.json">
       <CopyToOutputDirectory>IfDifferent</CopyToOutputDirectory>
       <TargetPath>Resources\preferences.json</TargetPath>
