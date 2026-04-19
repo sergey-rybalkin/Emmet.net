@@ -26,7 +26,36 @@ env:
   TAG_PREFIX: v
 
 jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v3
+
+      - name: Restore solution
+        run: msbuild Emmet.slnx /t:Restore /p:Configuration=Release /v:m
+
+      - name: Build solution
+        run: msbuild Emmet.slnx /t:Build /p:Configuration=Release /m /v:m
+
+      - name: Upload built binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: emmet-binary
+          path: src/Emmet/bin/Release/Emmet.visx
+          if-no-files-found: error
+
   release:
+    needs: build
     runs-on: ubuntu-latest
 
     steps:
@@ -35,6 +64,12 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ env.DEFAULT_BRANCH }}
+
+      - name: Download built binary
+        uses: actions/download-artifact@v4
+        with:
+          name: emmet-binary
+          path: release-assets
 
       - name: Validate tag format
         shell: bash
@@ -93,3 +128,4 @@ jobs:
           tag_name: ${{ inputs.tag_name }}
           generate_release_notes: true
           name: ${{ steps.release_name.outputs.value }}
+          files: release-assets/Emmet.visx
