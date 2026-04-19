@@ -31,5 +31,5 @@ jobs:
         run: msbuild Emmet.slnx /t:Build /p:Configuration=Release /m /v:m
 
       - name: Run unit tests
-        run: dotnet test src\Emmet.Tests\Emmet.Tests.csproj --configuration Release
-          --no-build --verbosity normal
+        run: dotnet test --project src\Emmet.Tests\Emmet.Tests.csproj --configuration
+          Release --no-build --verbosity normal
