@@ -34,7 +34,7 @@ Supported in HTML and CSS-like syntaxes (Razor views, LESS, SCSS). Can be bound 
 
 Configuration settings are available under Tools -> Options -> Emmet section. Restart Visual Studio to apply your changes.
 
-![Configuration](docs/i/conf.png)
+![Configuration](docs/i/conf.jpg)
 
 Default keyboard shortcuts configuration:
 
