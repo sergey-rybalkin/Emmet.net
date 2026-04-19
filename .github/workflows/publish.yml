@@ -1,0 +1,95 @@
+name: Publish release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: "Release tag, e.g. v1.4.2"
+        required: true
+        type: string
+      create_tag:
+        description: "Create a new tag for the release"
+        required: true
+        type: boolean
+        default: true
+      prerelease:
+        description: "Mark as prerelease"
+        required: true
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+
+env:
+  DEFAULT_BRANCH: main
+  TAG_PREFIX: v
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout default branch
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ref: ${{ env.DEFAULT_BRANCH }}
+
+      - name: Validate tag format
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG="${{ inputs.tag_name }}"
+          if [[ "$TAG" != "$TAG_PREFIX"* ]]; then
+            echo "Invalid tag format: $TAG"
+            exit 1
+          fi
+
+          VERSION_PART="${TAG:${#TAG_PREFIX}}"
+          [[ "$VERSION_PART" =~ ^[0-9]+\.[0-9]+(\.[0-9]+)?$ ]] || {
+            echo "Invalid tag format: $TAG"
+            exit 1
+          }
+
+      - name: Fail if tag already exists
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG="${{ inputs.tag_name }}"
+          git fetch --tags --force
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "Tag already exists: $TAG"
+            exit 1
+          fi
+
+      - name: Create annotated tag at current main HEAD
+        shell: bash
+        if: ${{ inputs.create_tag }}
+        run: |
+          set -euo pipefail
+          ACTOR="${{ github.triggering_actor || github.actor }}"
+          TAG="${{ inputs.tag_name }}"
+
+          git config user.name "$ACTOR"
+          git config user.email "$ACTOR@users.noreply.github.com"
+
+          git tag -a "$TAG" -m "Version $TAG"
+          git push origin "$TAG"
+
+      - name: Build release name
+        id: release_name
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG="${{ inputs.tag_name }}"
+          VERSION_PART="${TAG:${#TAG_PREFIX}}"
+          echo "value=Version $VERSION_PART" >> "$GITHUB_OUTPUT"
+
+      - name: Release
+        uses: softprops/action-gh-release@v3
+        with:
+          prerelease: ${{ inputs.prerelease }}
+          tag_name: ${{ inputs.tag_name }}
+          generate_release_notes: true
+          name: ${{ steps.release_name.outputs.value }}

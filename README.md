@@ -1,6 +1,6 @@
 # Emmet.net - Emmet for Microsoft Visual Studio
 
-[![Build status](https://ci.appveyor.com/api/projects/status/b5sa82u73by2bcq1?svg=true)](https://ci.appveyor.com/project/sergey-rybalkin/emmet-net)
+[![CI Build](https://github.com/sergey-rybalkin/Emmet.net/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/sergey-rybalkin/Emmet.net/actions/workflows/ci.yml)
 
 This project is a MS Visual Studio port of Emmet editor extensions created by Sergey Chikuyonok.
 
@@ -96,6 +96,6 @@ For example, mnemonic `_rif` will generate new private field `private readonly i
 
 ## Build
 
-Emmet is originally written in JavaScript and Visual Studio cannot run it natively, so this project is using [Microsoft ChakraCore engine](https://github.com/Microsoft/ChakraCore) to execute Emmet code. ChakraCore.dll library is included with source code and other dependencies are managed with NuGet.
+Emmet is originally written in JavaScript and Visual Studio cannot run it natively, so this project is using [ClearScript V8 engine](https://github.com/ClearFoundry/ClearScript) to execute Emmet code.
 
-Visual Studio 2022 and Visual Studio SDK are required to build the project.
+Visual Studio 2026 and Visual Studio SDK are required to build the project.

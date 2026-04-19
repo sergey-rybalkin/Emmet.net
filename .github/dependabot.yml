@@ -1,0 +1,30 @@
+version: 2
+updates:
+  - package-ecosystem: "nuget"
+    directory: "/src"
+    schedule:
+      interval: "daily"
+    commit-message:
+      prefix: "[DPBOT-NUGET] "
+    target-branch: "master"
+    ignore:
+      - dependency-name: "Microsoft.*"
+        update-types:
+          - "version-update:semver-major"
+      - dependency-name: "System.*"
+        update-types:
+          - "version-update:semver-major"
+    groups:
+      nuget-packages:
+        applies-to: version-updates
+        patterns:
+          - "*"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "[DPBOT-ACTIONS] "
+    target-branch: "master"
+    open-pull-requests-limit: 1

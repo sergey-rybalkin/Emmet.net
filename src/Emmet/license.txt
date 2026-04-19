@@ -1,0 +1,3 @@
+Copyright 2026 Sergey Rybalkin (s.rybalkin@hotmail.com)
+
+The software is provided "as is", without warranty of any kind.
