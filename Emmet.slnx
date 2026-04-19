@@ -1,0 +1,12 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="arm64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="src/Emmet.Tests/Emmet.Tests.csproj" Id="e75cd27b-84c2-43e3-a63d-7d85d0492848" />
+  <Project Path="src/Emmet/Emmet.csproj" Id="f6cc6e9d-780b-4441-8081-fc3cfcbdaf5f">
+    <Platform Solution="*|arm64" Project="arm64" />
+    <Platform Solution="*|x86" Project="x86" />
+  </Project>
+</Solution>

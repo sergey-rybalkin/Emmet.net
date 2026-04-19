@@ -1,0 +1,40 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <Content Include="..\Emmet\Resources\emmet.js">
+        <CopyToOutputDirectory>IfDifferent</CopyToOutputDirectory>
+      <TargetPath>Resources\emmet.js</TargetPath>
+    </Content>
+    <Content Include="..\Emmet\Resources\preferences.json">
+      <CopyToOutputDirectory>IfDifferent</CopyToOutputDirectory>
+      <TargetPath>Resources\preferences.json</TargetPath>
+    </Content>
+  </ItemGroup>
+    
+  <PropertyGroup>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.ClearScript.V8" />
+    <PackageReference Include="Microsoft.ClearScript.V8.Native.win-x64" />
+    <PackageReference Include="NSubstitute" />
+    <PackageReference Include="Shouldly" />
+    <PackageReference Include="TUnit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Emmet\Engine\EngineCompiler.cs" Link="Engine\EngineCompiler.cs" />
+    <Compile Include="..\Emmet\Engine\EngineWrapper.cs" Link="Engine\EngineWrapper.cs" />
+    <Compile Include="..\Emmet\ICodeEditor.cs" Link="ICodeEditor.cs" />
+    <Compile Include="..\Emmet\EmmetPackage.Constants.cs" Link="EmmetPackage.Constants.cs" />
+    <Compile Include="..\Emmet\Mnemonics\MnemonicParser.cs" Link="Mnemonics\MnemonicParser.cs" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <RunSettingsFilePath>$(MSBuildProjectDirectory)\..\..\build\default.runsettings</RunSettingsFilePath>
+  </PropertyGroup>
+
+</Project>

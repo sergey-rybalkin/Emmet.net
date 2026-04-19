@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - "src/**"
+      - ".github/workflows/**"
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v3
+
+      - name: Restore solution
+        run: msbuild Emmet.slnx /t:Restore /p:Configuration=Release /v:m
+
+      - name: Build solution
+        run: msbuild Emmet.slnx /t:Build /p:Configuration=Release /m /v:m
+
+      - name: Run unit tests
+        run: dotnet test src\Emmet.Tests\Emmet.Tests.csproj --configuration Release
+          --no-build --verbosity normal
