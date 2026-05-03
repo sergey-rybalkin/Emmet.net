@@ -48,7 +48,7 @@ jobs:
         run: msbuild Emmet.slnx /t:Build /p:Configuration=Release /m /v:m
 
       - name: Upload built binary
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: emmet-binary
           path: src/Emmet/bin/Release/Emmet.visx
