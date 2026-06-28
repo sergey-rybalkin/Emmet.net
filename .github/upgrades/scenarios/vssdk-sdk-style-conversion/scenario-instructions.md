@@ -13,6 +13,7 @@ Convert the Emmet VSIX project in-place to SDK-style, preserving target framewor
 ## Decisions
 - Stash existing local changes before starting conversion work.
 - Keep conversion scope to the Emmet VSIX project and required solution deploy-marker updates.
+- Use the current git branch for remaining conversion changes (user request, 2026-06-28).
 
 ## Source Control
 - **Source Branch**: master
