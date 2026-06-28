@@ -1,5 +1,6 @@
 using System;
 using Emmet.Engine;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Text.Projection;
@@ -104,6 +105,8 @@ namespace Emmet
         /// </param>
         public void ReplaceCurrentLine(string newContent, bool formatNewCode = true)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             int caretPosition = WpfView.Caret.Position.BufferPosition.Position;
             ITextSnapshotLine line = WpfView.TextSnapshot.GetLineFromPosition(caretPosition);
             Span currentLineSpan = new Span(line.Start.Position, line.End.Position - line.Start.Position);
@@ -120,6 +123,8 @@ namespace Emmet
         /// </param>
         public void ReplaceSelection(string newContent, bool formatNewCode = true)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             var selection = WpfView.Selection;
             int selectionLength = selection.End.Position - selection.Start.Position;
             Span selectionSpan = new Span(selection.Start.Position, selectionLength);
@@ -172,6 +177,8 @@ namespace Emmet
 
         private void ReplaceRegion(Span region, string replacement, bool format = true)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             TabStopsParser parser = TabStopsParser.ParseContent(replacement, region.Start);
 
             WpfView.TextBuffer.Replace(region, parser.Content);
@@ -184,6 +191,8 @@ namespace Emmet
 
         private void FormatRegion(int startPosition = -1, int endPosition = 0)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             Span span;
             if (startPosition > 0)
                 span = new Span(startPosition, endPosition - startPosition);

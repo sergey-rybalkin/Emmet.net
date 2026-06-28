@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.OLE.Interop;
+using Microsoft.VisualStudio.Shell;
 
 namespace Emmet.EditorExtensions
 {
@@ -20,7 +21,6 @@ namespace Emmet.EditorExtensions
         public CommandTargetBase(ViewContext view)
         {
             View = view;
-            View.TextView.AddCommandFilter(this, out _nextTarget);
         }
 
         protected ViewContext View { get; private set; }
@@ -33,6 +33,8 @@ namespace Emmet.EditorExtensions
         public virtual int Exec(
             ref Guid pguidCmdGroup, uint nCmdID, uint nCmdexecopt, IntPtr pvaIn, IntPtr pvaOut)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             // Put this command target instance at the end of the chain in order to be able to handle TAB key
             // before the intellisense system.
             if (!_reloadedWithHighPriority && (uint)VSConstants.VSStd2KCmdID.TYPECHAR == nCmdID)
@@ -51,6 +53,8 @@ namespace Emmet.EditorExtensions
 
         public int QueryStatus(ref Guid pguidCmdGroup, uint cCmds, OLECMD[] prgCmds, IntPtr pCmdText)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             if (pguidCmdGroup != PackageGuids.GuidEmmetPackageCmdSet)
                 return NextTarget.QueryStatus(ref pguidCmdGroup, cCmds, prgCmds, pCmdText);
 
@@ -58,6 +62,12 @@ namespace Emmet.EditorExtensions
                 prgCmds[i].cmdf = (uint)GetCommandStatus(prgCmds[i].cmdID);
 
             return VSConstants.S_OK;
+        }
+
+        protected void InitializeCommandFilter()
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            View.TextView.AddCommandFilter(this, out _nextTarget);
         }
 
         protected virtual OLECMDF GetCommandStatus(uint commandId)

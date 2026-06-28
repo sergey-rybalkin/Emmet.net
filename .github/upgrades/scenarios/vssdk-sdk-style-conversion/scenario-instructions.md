@@ -20,5 +20,9 @@ Convert the Emmet VSIX project in-place to SDK-style, preserving target framewor
 - **Working Branch**: vssdk-sdk-style-conversion
 - **Pending Changes Handling**: stash
 
+## Build Tool Decisions
+- **src/Emmet/Emmet.csproj**: Visual Studio/MSBuild (SDK-style VSIX project targeting .NET Framework 4.7.2 with VSIX packaging and WPF/XAML content)
+- **Emmet.slnx**: Visual Studio/MSBuild for final solution validation
+
 ## Custom Instructions
 <!-- Task-specific overrides: "For {taskId}: {instruction}" -->

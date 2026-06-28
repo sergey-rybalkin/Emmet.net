@@ -1,6 +1,6 @@
 # VSSDK SDK-Style Conversion Progress
 
-**Progress**: 4/5 tasks complete <progress value="80" max="100"></progress> 80%
+**Progress**: 5/5 tasks complete <progress value="100" max="100"></progress> 100%
 **Progress**: 1/5 tasks complete <progress value="20" max="100"></progress> 20%
 **Progress**: 1/5 tasks complete <progress value="20" max="100"></progress> 20%
 **Progress**: 0/5 tasks complete <progress value="0" max="100"></progress> 0%
@@ -12,4 +12,4 @@
 - 🔲 02-convert-project-format: Convert Emmet project file to SDK-style
 - ✅ 03-apply-vssdk-overlay: Apply VSIX-specific SDK-style adjustments ([Content](tasks/03-apply-vssdk-overlay/task.md), [Progress](tasks/03-apply-vssdk-overlay/progress-details.md))
 - ✅ 04-update-solution-deploy-markers: Add deploy marker for SDK-style VSIX debugging ([Content](tasks/04-update-solution-deploy-markers/task.md), [Progress](tasks/04-update-solution-deploy-markers/progress-details.md))
-- 🔲 05-validate-build-and-output: Validate build and VSIX output
+- ✅ 05-validate-build-and-output: Validate build and VSIX output ([Content](tasks/05-validate-build-and-output/task.md), [Progress](tasks/05-validate-build-and-output/progress-details.md))

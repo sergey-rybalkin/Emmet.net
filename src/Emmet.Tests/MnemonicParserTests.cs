@@ -1,3 +1,5 @@
+#nullable enable
+
 using Emmet.Mnemonics;
 using Shouldly;
 

@@ -59,6 +59,7 @@ namespace Emmet
         {
             base.OnApply(e);
 
+            ThreadHelper.ThrowIfNotOnUIThread();
             EmmetPackage.Instance?.ReloadOptions();
         }
     }

@@ -1,3 +1,5 @@
+#nullable enable
+
 using Emmet.Engine;
 using Emmet.Tests.Helpers;
 using Microsoft.ClearScript.V8;

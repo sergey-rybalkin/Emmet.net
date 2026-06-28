@@ -2,7 +2,12 @@
   <PropertyGroup>
     <MinimumVisualStudioVersion>17.0</MinimumVisualStudioVersion>
     <TargetFramework>net472</TargetFramework>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <AssemblyTitle>Emmet</AssemblyTitle>
+    <Description>Visual Studio port of the https://github.com/emmetio/emmet coding assistant by Sergey Chikuyonok.</Description>
+    <Company>Sergey Rybalkin</Company>
+    <Product>Emmet</Product>
+    <AssemblyVersion>6.0.1</AssemblyVersion>
+    <FileVersion>6.0.1</FileVersion>
     <GeneratePkgDefFile>true</GeneratePkgDefFile>
     <UseCodebase>true</UseCodebase>
     <VSSDKBuildToolsAutoSetup>true</VSSDKBuildToolsAutoSetup>
@@ -86,10 +91,10 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.ClearScript.V8" />
     <PackageReference Include="Microsoft.ClearScript.V8.Native.win-x64" />
-    <PackageReference Include="Microsoft.VisualStudio.SDK" ExcludeAssets="runtime" NoWarn="NU1604">
+    <PackageReference Include="Microsoft.VisualStudio.SDK" ExcludeAssets="runtime">
       <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.VSSDK.BuildTools" NoWarn="NU1604">
+    <PackageReference Include="Microsoft.VSSDK.BuildTools">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
