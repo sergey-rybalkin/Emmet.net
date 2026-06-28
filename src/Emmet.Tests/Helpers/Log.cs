@@ -1,5 +1,3 @@
-#nullable enable
-
 namespace Emmet.Diagnostics;
 
 /// <summary>

@@ -1,7 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <MinimumVisualStudioVersion>17.0</MinimumVisualStudioVersion>
-    <TargetFramework>net472</TargetFramework>
+    <TargetFramework>net48</TargetFramework>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
     <AssemblyTitle>Emmet</AssemblyTitle>
     <Description>Visual Studio port of the https://github.com/emmetio/emmet coding assistant by Sergey Chikuyonok.</Description>
     <Company>Sergey Rybalkin</Company>
@@ -41,11 +43,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="EmmetPackage.Constants.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>EmmetPackage.vsct</DependentUpon>
-    </Compile>
     <Compile Update="Engine\Prompt.xaml.cs">
       <DependentUpon>Prompt.xaml</DependentUpon>
     </Compile>
@@ -90,7 +87,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.ClearScript.V8" />
-    <PackageReference Include="Microsoft.ClearScript.V8.Native.win-x64" />
+    <PackageReference Include="Microsoft.ClearScript.V8.Native.win-x64" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="Microsoft.VisualStudio.SDK" ExcludeAssets="runtime">
       <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
@@ -142,5 +139,14 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="$(PkgMicrosoft_ClearScript_V8_Native_win-x64)\runtimes\win-x64\native\ClearScriptV8.win-x64.dll">
+      <Link>ClearScriptV8.win-x64.dll</Link>
+      <TargetPath>ClearScriptV8.win-x64.dll</TargetPath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
   </ItemGroup>
 </Project>

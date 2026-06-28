@@ -1,5 +1,3 @@
-#nullable enable
-
 using System.Text;
 
 namespace Emmet.Tests.Helpers;
@@ -17,7 +15,7 @@ public class EditorStub : ICodeEditor
 
     private readonly string _syntax;
 
-    private string _content = string.Empty;
+    private string _content;
 
     private int _selectionStart;
 
@@ -32,9 +30,9 @@ public class EditorStub : ICodeEditor
         get { return _content; }
     }
 
-    public string UserInput { get; set; } = string.Empty;
+    public string UserInput { get; set; }
 
-    public string AbbreviationPrefix { get; set; } = string.Empty;
+    public string AbbreviationPrefix { get; set; }
 
     private EditorStub(string syntax)
     {

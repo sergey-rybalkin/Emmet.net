@@ -15,7 +15,7 @@ namespace Emmet.Engine
 
         private V8ScriptEngine _engine;
 
-        private string _preferencesFile = null;
+        private readonly string? _preferencesFile = null;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="EngineWrapper"/> class.
@@ -68,7 +68,7 @@ namespace Emmet.Engine
                 return false;
             }
 
-            string replacement = result.ToString();
+            string replacement = result.ToString() ?? "";
             _engine.CollectGarbage(false);
             if (cmdId is PackageIds.CmdIDExpandAbbreviation)
                 view.ReplaceCurrentLine(replacement, formatCode);
