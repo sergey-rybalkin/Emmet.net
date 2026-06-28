@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using EnvDTE;
 using EnvDTE80;
 using Microsoft.VisualStudio.Shell;
@@ -17,6 +17,8 @@ namespace Emmet
         {
             get
             {
+                ThreadHelper.ThrowIfNotOnUIThread();
+
                 if (null == s_dte)
                     s_dte = ServiceProvider.GlobalProvider.GetService(typeof(DTE)) as DTE2;
 

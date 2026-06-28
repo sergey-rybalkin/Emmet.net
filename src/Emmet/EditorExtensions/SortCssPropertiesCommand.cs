@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel.Design;
 using System.Linq;
 using EnvDTE;
@@ -45,6 +45,8 @@ namespace Emmet.EditorExtensions
 
         private static void SelectInnerDefinition(TextSelection selection, TextDocument document)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             EditPoint pt = document.CreateEditPoint();
 
             int startPos = selection.ActivePoint.Line;

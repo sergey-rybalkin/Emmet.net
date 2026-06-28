@@ -1,8 +1,9 @@
-﻿using System;
+using System;
 using Emmet.Mnemonics;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Language.Intellisense;
 using Microsoft.VisualStudio.OLE.Interop;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Text;
 
 namespace Emmet.EditorExtensions
@@ -22,12 +23,17 @@ namespace Emmet.EditorExtensions
         public ZenSharpCommandTarget(ViewContext view, ICompletionBroker completionBroker)
             : base(view)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             _completionBroker = completionBroker;
+            InitializeCommandFilter();
         }
 
         public override int Exec(
             ref Guid pguidCmdGroup, uint nCmdID, uint nCmdexecopt, IntPtr pvaIn, IntPtr pvaOut)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             if (PackageGuids.GuidEmmetPackageCmdSet != pguidCmdGroup ||
                 PackageIds.CmdIDExpandMnemonic != nCmdID)
             {
@@ -67,6 +73,8 @@ namespace Emmet.EditorExtensions
 
         protected override OLECMDF GetCommandStatus(uint commandId)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             if (PackageIds.CmdIDExpandMnemonic == commandId &&
                 "CSharp" == View.WpfView.TextBuffer.ContentType.TypeName)
             {

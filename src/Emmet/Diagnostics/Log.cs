@@ -1,6 +1,7 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 
 namespace Emmet.Diagnostics
@@ -28,9 +29,11 @@ namespace Emmet.Diagnostics
                 return;
 
             string caller = GenerateCallerName(callerFilePath, callingMember);
-
-            Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
-            s_logger.OutputString($"{caller}({codeLineNumber}): {message}\n");
+            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            {
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                s_logger.OutputString($"{caller}({codeLineNumber}): {message}\n");
+            });
         }
 
         private static string GenerateCallerName(string path, string member)

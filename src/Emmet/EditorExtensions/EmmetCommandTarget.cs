@@ -1,7 +1,8 @@
-﻿using System;
+using System;
 using Emmet.Engine;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Language.Intellisense;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Text;
 
 namespace Emmet.EditorExtensions
@@ -21,7 +22,10 @@ namespace Emmet.EditorExtensions
         public EmmetCommandTarget(ViewContext view, ICompletionBroker completionBroker)
             : base(view)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             _completionBroker = completionBroker;
+            InitializeCommandFilter();
             ExpandAbbreviationOnTab = EmmetPackage.Options.InterceptTabs;
         }
 
@@ -79,6 +83,8 @@ namespace Emmet.EditorExtensions
         public override int Exec(
             ref Guid pguidCmdGroup, uint nCmdID, uint nCmdexecopt, IntPtr pvaIn, IntPtr pvaOut)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             // Since VS extensions became async make sure that initialization has finished.
             if (VSConstants.VSStd2K == pguidCmdGroup && EmmetPackage.Instance != null)
             {
@@ -110,6 +116,8 @@ namespace Emmet.EditorExtensions
 
         private bool InterceptNativeEvents(uint cmdID)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             // TAB and Shift+TAB should cycle through all tab stops until ESC or Enter are pressed.
             switch (cmdID)
             {
@@ -153,6 +161,8 @@ namespace Emmet.EditorExtensions
 
         private bool TryExpandAbbreviation()
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             // Ensure that the caret is at a non-empty line.
             SnapshotPoint position = View.WpfView.Caret.Position.BufferPosition;
             ITextSnapshotLine line = View.WpfView.Caret.Position.BufferPosition.GetContainingLine();
@@ -175,6 +185,8 @@ namespace Emmet.EditorExtensions
 
         private bool TryWrapAbbreviation()
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             // Ensure that we have selection to wrap with abbreviation.
             if (View.WpfView.Selection.IsEmpty)
                 return false;

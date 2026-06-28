@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
     <Content Include="..\Emmet\Resources\emmet.js">
         <CopyToOutputDirectory>IfDifferent</CopyToOutputDirectory>
